@@ -59,11 +59,17 @@ ShahinKit defaults to preview-first operation.
 ## Core Workflows
 
 - `prime`: read the smallest useful project context at session start.
-- `new-idea`: turn a rough idea into research, PRD, build context, and a deep-plan-ready package.
-- `deep-plan`: plan mature repo work through memory retrieval, codebase mapping, dependency graph, parallel batches, and review gate.
+- `new-idea`: turn a rough idea into research, PRD, build context, and a deep-plan-ready package before implementation starts.
+- `deep-plan`: upgrade mature repo planning through memory retrieval, codebase mapping, dependency graph, parallel batches, and review gate.
 - `wrap-up`: write durable end-of-session state across `NEXT.md`, `HANDOFF.md`, logs, build state, and memory.
 - `ingest-large-folder`: inventory and route OneDrive, zip, course, or project exports.
 - `rag-consent`: require approval before embedding or indexing vault contents.
+
+## Planning Upgrade
+
+`new-idea` and `deep-plan` are the core planning advantage in ShahinKit. They are built from observed Claude Code and Codex usage where Codex can be weaker at planning out of the box, especially on greenfield ideas, multi-file changes, and repo-scale execution.
+
+The goal is to make Codex plan with more structure than a normal prompt: memory first, real codebase map second, dependency graph third, parallel execution plan fourth. In practice, this can turn Codex from a weaker planner than Claude Code into a stronger one for implementation planning, because the workflow forces it to ground every plan in files, constraints, handoff state, and verification gates.
 
 ## Safety Model
 
