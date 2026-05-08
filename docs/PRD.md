@@ -24,6 +24,8 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - Development vault template matching Ammar's current workflow style, including indexing.
 - Basic Memory and Claude Memory setup for Claude workflows.
 - Basic Memory and Claude Memory setup for school/university vault workflows.
+- `new-idea` workflow, based on Ammar's current `deep-idea`, for turning a rough idea into research, PRD, build context, and a deep-plan-ready project package.
+- Planning workflow, based on Ammar's current `deep-plan`, for transforming Codex planning quality through mandatory memory retrieval, codebase mapping, dependency graphs, parallel batch schedules, review gates, and execution-mode selection.
 - Comprehensive handoff system:
   - start-of-session hooks/context so Codex and Claude Code know the current project state;
   - `/wrap-up` or equivalent wrap-up flow;
@@ -48,6 +50,8 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 
 - A new user can install or copy the kit and get a working agent-compatible vault.
 - A project can be stopped and resumed from handoff files without the agent losing context.
+- A rough project idea can become a useful PRD/build-context package before implementation starts.
+- A non-trivial coding task can produce a plan grounded in memory context, actual files, dependency ordering, and parallel execution batches.
 - Large folders or zip exports can be ingested through a documented, repeatable flow.
 - The kit works across Claude CLI, Codex App, and Claude Code Desktop App.
 - The highest-value workflows from Ammar's personal setup are captured as reusable templates instead of remaining implicit.
@@ -59,6 +63,8 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - Must support Claude Code Desktop App.
 - Must keep destructive operations opt-in.
 - Must ask before embedding or indexing user vault contents.
+- Must preserve the `deep-idea` to `deep-plan` progression: pre-code product discovery first, then codebase-grounded planning once real code exists.
+- Must preserve planning quality gates that prevent serial todo-list plans for multi-file work.
 - Must be template-oriented enough that users can adapt it without adopting Ammar's entire private setup.
 - Must keep school/university and development workflows separate enough to avoid mixed context.
 
@@ -73,6 +79,7 @@ Open question. Candidate directions:
 ## Competitive Differentiation
 
 - Focuses on complete agent operating systems, not just prompt snippets.
+- Makes Codex a stronger planner by packaging Ammar's planning infrastructure instead of relying on default model planning.
 - Covers both development and school/university workflows.
 - Treats handoff/resume as the main product surface.
 - Bridges Obsidian, RAG/indexing, Basic Memory, Claude Memory, Claude Code, and Codex.
@@ -81,6 +88,7 @@ Open question. Candidate directions:
 ## Open Questions
 
 - Final public name: `shahinkit`, `ShahinKit`, or another brand.
+- Whether the public command/skill name should be `new-idea`, while the internal source remains `deep-idea`.
 - Whether folder naming should be `school-university/`, `learning/`, or separate `school/` and `university/`.
 - Which RAG/indexing stack should be the default.
 - Whether the repo ships scripts, docs-only templates, or both.
