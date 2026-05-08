@@ -89,10 +89,10 @@ shahinkit/
 
 ## Tooling
 
-- `scripts/doctor.sh`: verify required commands, client config locations, memory server availability, and hook install state.
+- `scripts/doctor.sh`: verify required commands, repository layout, and optional Claude/Codex/memory tools.
 - `scripts/render-client-config.sh`: render shared source files into client-specific templates and config snippets.
 - `scripts/install.sh`: explicit opt-in installer that previews changes and never overwrites user config without confirmation.
-- `bin/shahinkit`: launcher for modes such as `dev`, `school`, `plan`, `idea`, `wrap`, and `resume`.
+- `bin/shahinkit`: launcher for `doctor`, `render`, `install`, `show-layout`, and skill path helpers for `new-idea`, `deep-plan`, and `wrap-up`.
 
 ## Agent Configuration
 
@@ -128,7 +128,7 @@ Treat as a desktop extension and MCP integration surface first. Do not promise f
 
 Not decided yet.
 
-Required research lanes before implementation:
+Required research lanes before post-MVP automation:
 
 - local RAG/indexing stack;
 - Obsidian-compatible indexing tools;
