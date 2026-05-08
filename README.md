@@ -12,6 +12,8 @@
   <img alt="Works with OpenAI Codex" src="https://img.shields.io/badge/Works%20With-OpenAI%20Codex-00A67E?style=for-the-badge&logo=openai&logoColor=white&labelColor=000">
 </p>
 
+<img alt="ShahinKit agent operating system banner" src="docs/assets/shahinkit-agent-os-banner.svg">
+
 </div>
 
 ShahinKit is the missing layer around Claude Code and OpenAI Codex: repo instructions, skills, memory routes, handoff files, Obsidian vault templates, and consent-gated indexing in one copyable kit. It gives your agent a home, a start-up ritual, a planning spine, and a clean way to hand work back before context disappears. No hosted account, no mystery daemon, no "just paste this mega-prompt and hope". Clone it, render the adapter, inspect the files, and your agent starts acting like it has been here before.
@@ -84,6 +86,8 @@ ShahinKit is the missing layer around Claude Code and OpenAI Codex: repo instruc
 ```
 
 ## 🧠 Workflows
+
+![ShahinKit workflow callout](docs/assets/shahinkit-workflow-callout.svg)
 
 | Workflow | What It Does | When To Use |
 |---|---|---|
