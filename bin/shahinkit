@@ -14,8 +14,10 @@ Commands:
   render       Render a client adapter package
   install      Preview or install a rendered client package
   show-layout  Print the repository layout
+  deep-idea    Print the deep-idea skill path
   new-idea     Print the new-idea skill path
   deep-plan    Print the deep-plan skill path
+  skill-builder  Print the skill-builder skill path
   wrap-up      Print the wrap-up skill path
 USAGE
 }
@@ -36,11 +38,17 @@ case "${command_name}" in
   show-layout)
     find "${repo_root}" -maxdepth 3 -type d -not -path "${repo_root}/.git*" | sort
     ;;
+  deep-idea)
+    printf '%s\n' "${repo_root}/shared/skills/deep-idea/SKILL.md"
+    ;;
   new-idea)
     printf '%s\n' "${repo_root}/shared/skills/new-idea/SKILL.md"
     ;;
   deep-plan)
     printf '%s\n' "${repo_root}/shared/skills/deep-plan/SKILL.md"
+    ;;
+  skill-builder)
+    printf '%s\n' "${repo_root}/shared/skills/skill-builder/SKILL.md"
     ;;
   wrap-up)
     printf '%s\n' "${repo_root}/shared/skills/wrap-up/SKILL.md"

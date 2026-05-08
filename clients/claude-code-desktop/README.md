@@ -19,4 +19,12 @@ Use this adapter when the user works from a desktop app but wants the same proje
 4. Configure memory connectors manually.
 5. Run `rag-consent` before embedding or indexing local files.
 
+## Core Skills
+
+- `deep-idea` / `new-idea`: rough idea to PRD and build context.
+- `deep-plan`: codebase-grounded implementation planning.
+- `skill-builder`: reusable domain skill from a rough description or transcript.
+- `prime`: start-of-session context loading.
+- `wrap-up`: durable end-of-session handoff.
+
 Do not paste private transcripts, credentials, or unredacted local paths into desktop memory.

@@ -19,10 +19,11 @@ Client-specific files such as `CLAUDE.md`, `AGENTS.md`, Codex config snippets, C
 Use this order unless the user explicitly asks for a narrower task:
 
 1. `prime`: read the smallest useful context.
-2. `new-idea`: use for greenfield projects, product ideas, school systems, or immature repos.
+2. `deep-idea` or `new-idea`: use for greenfield projects, product ideas, school systems, or immature repos.
 3. `deep-plan`: use for non-trivial work in a mature repo.
-4. Implementation: follow the approved plan.
-5. `wrap-up`: write resumable state before ending the session.
+4. `skill-builder`: use when the user wants a reusable assistant skill for a recurring domain.
+5. Implementation: follow the approved plan.
+6. `wrap-up`: write resumable state before ending the session.
 
 ## Adapter Boundary
 

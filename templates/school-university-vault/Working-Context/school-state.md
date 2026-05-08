@@ -12,7 +12,11 @@ current-term: {{CURRENT_TERM}}
 - {{CURRENT_FOCUS}}
 
 ## Active Subjects
-- {{SUBJECT_NAME}}: {{STATUS}}
+- Subject 1: {{STATUS}}
+- Subject 2: {{STATUS}}
+- Subject 3: {{STATUS}}
+- Subject 4: {{STATUS}}
+- Subject 5: {{STATUS}}
 
 ## Upcoming Deadlines
 - {{DATE}}: {{ITEM}}

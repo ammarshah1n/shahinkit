@@ -23,7 +23,7 @@ Implementation creates the plug-and-play kit exactly under these top-level folde
 
 - `README.md`: public entrypoint with install, layout, safety model, and usage paths.
 - `shared/instructions/`: client-neutral operating contract.
-- `shared/skills/`: portable skills for `new-idea`, `deep-plan`, `prime`, `wrap-up`, `miniwrap`, `checkpoint`, `ingest-large-folder`, and `rag-consent`.
+- `shared/skills/`: portable skills for `deep-idea`, `new-idea`, `deep-plan`, `skill-builder`, `prime`, `wrap-up`, `miniwrap`, `checkpoint`, `ingest-large-folder`, and `rag-consent`.
 - `shared/hooks/`: shell hooks that are inert unless installed and explicitly enabled.
 - `shared/handoff/`: handoff file templates.
 - `shared/memory/`: Basic Memory and Claude Memory routing/config templates.
@@ -491,8 +491,6 @@ Create the exact school/university files from `docs/CODEBASE_MAP.md`.
 - current term;
 - subjects;
 - assignments;
-- milestones;
-- evidence;
 - import holding folder;
 - agent read order.
 
@@ -671,7 +669,7 @@ Expected: all paths from `docs/CODEBASE_MAP.md` exist.
 - [ ] **Step 3: Run private-data scan**
 
 ```bash
-rg '/Users/integrale|Ammar|Yasser|office@pff.org|ANTHROPIC_API_KEY|OPENAI_API_KEY'
+rg '<PRIVATE_HOME>|<PRIVATE_NAME>|<PRIVATE_EMAIL>|ANTHROPIC_API_KEY|OPENAI_API_KEY'
 ```
 
 Expected: matches only inside planning docs that intentionally record source constraints, not shipped templates under `shared/`, `clients/`, `templates/`, `scripts/`, or `bin/`.

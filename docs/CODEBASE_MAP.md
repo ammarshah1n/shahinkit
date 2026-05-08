@@ -31,8 +31,10 @@
 - `shared/instructions/safety.md`
 - `shared/instructions/memory-protocol.md`
 - `shared/instructions/handoff-protocol.md`
+- `shared/skills/deep-idea/SKILL.md`
 - `shared/skills/new-idea/SKILL.md`
 - `shared/skills/deep-plan/SKILL.md`
+- `shared/skills/skill-builder/SKILL.md`
 - `shared/skills/prime/SKILL.md`
 - `shared/skills/wrap-up/SKILL.md`
 - `shared/skills/miniwrap/SKILL.md`
@@ -85,11 +87,37 @@
 - `templates/school-university-vault/VAULT-INDEX.md`
 - `templates/school-university-vault/Working-Context/school-state.md`
 - `templates/school-university-vault/Current-Term/index.md`
-- `templates/school-university-vault/Subjects/SUBJECT_TEMPLATE/Lessons/index.md`
-- `templates/school-university-vault/Subjects/SUBJECT_TEMPLATE/Readings/index.md`
-- `templates/school-university-vault/Subjects/SUBJECT_TEMPLATE/Notes/index.md`
-- `templates/school-university-vault/Subjects/SUBJECT_TEMPLATE/Sources/index.md`
-- `templates/school-university-vault/Subjects/SUBJECT_TEMPLATE/Assessment/index.md`
+- `templates/school-university-vault/Subjects/README.md`
+- `templates/school-university-vault/Subjects/Subject 1/index.md`
+- `templates/school-university-vault/Subjects/Subject 1/Lessons/index.md`
+- `templates/school-university-vault/Subjects/Subject 1/Readings/index.md`
+- `templates/school-university-vault/Subjects/Subject 1/Notes/index.md`
+- `templates/school-university-vault/Subjects/Subject 1/Sources/index.md`
+- `templates/school-university-vault/Subjects/Subject 1/Assessment/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/Lessons/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/Readings/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/Notes/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/Sources/index.md`
+- `templates/school-university-vault/Subjects/Subject 2/Assessment/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/Lessons/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/Readings/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/Notes/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/Sources/index.md`
+- `templates/school-university-vault/Subjects/Subject 3/Assessment/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/Lessons/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/Readings/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/Notes/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/Sources/index.md`
+- `templates/school-university-vault/Subjects/Subject 4/Assessment/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/Lessons/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/Readings/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/Notes/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/Sources/index.md`
+- `templates/school-university-vault/Subjects/Subject 5/Assessment/index.md`
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/_INDEX.md`
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/brief.md`
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/rubric.md`
@@ -97,8 +125,6 @@
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/drafts/.gitkeep`
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/feedback.md`
 - `templates/school-university-vault/Assignments/ASSIGNMENT_TEMPLATE/handoff.md`
-- `templates/school-university-vault/Milestones/MILESTONE_TEMPLATE/_INDEX.md`
-- `templates/school-university-vault/Evidence/index.md`
 - `templates/school-university-vault/OneDrive-Imports/README.md`
 - `templates/school-university-vault/Archive/.gitkeep`
 - `templates/repo-adapter/AGENTS.md`
@@ -153,7 +179,7 @@ graph TD
 - Hook scripts must default to dry-run-safe behavior and never mutate user files without explicit opt-in.
 - Installer scripts must preview changes before writing to client config locations.
 - RAG/indexing templates must require consent before embedding or scanning vault contents.
-- Memory config templates must use placeholders and must not contain Ammar's local project names, paths, or secrets.
+- Memory config templates must use placeholders and must not contain private project names, paths, identities, or secrets.
 - Client adapters must not duplicate workflow logic; they should reference or render from `shared/`.
 
 ## Test Files
@@ -162,5 +188,5 @@ graph TD
 - Verification for the first implementation should be shell/static checks:
   - `bash -n scripts/*.sh shared/hooks/*.sh bin/shahinkit`
   - `find . -type f -not -path './.git/*' -print`
-  - `rg '/Users/integrale|Ammar|Yasser|office@pff.org|ANTHROPIC_API_KEY|OPENAI_API_KEY'`
+  - `rg '<PRIVATE_HOME>|<PRIVATE_NAME>|<PRIVATE_EMAIL>|ANTHROPIC_API_KEY|OPENAI_API_KEY'`
   - `git diff --check`

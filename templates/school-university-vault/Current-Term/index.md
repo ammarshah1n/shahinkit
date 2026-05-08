@@ -5,7 +5,11 @@
 - Dates: {{TERM_DATES}}
 
 ## Subjects
-- {{SUBJECT_NAME}}: {{TEACHER_OR_COORDINATOR}}
+- Subject 1: {{TEACHER_OR_COORDINATOR}}
+- Subject 2: {{TEACHER_OR_COORDINATOR}}
+- Subject 3: {{TEACHER_OR_COORDINATOR}}
+- Subject 4: {{TEACHER_OR_COORDINATOR}}
+- Subject 5: {{TEACHER_OR_COORDINATOR}}
 
 ## Key Dates
 - {{DATE}}: {{EVENT}}

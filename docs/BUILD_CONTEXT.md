@@ -29,8 +29,10 @@ shahinkit/
       memory-protocol.md
       handoff-protocol.md
     skills/
+      deep-idea/
       new-idea/
       deep-plan/
+      skill-builder/
       prime/
       wrap-up/
       miniwrap/
@@ -92,7 +94,7 @@ shahinkit/
 - `scripts/doctor.sh`: verify required commands, repository layout, and optional Claude/Codex/memory tools.
 - `scripts/render-client-config.sh`: render shared source files into client-specific templates and config snippets.
 - `scripts/install.sh`: explicit opt-in installer that previews changes and never overwrites user config without confirmation.
-- `bin/shahinkit`: launcher for `doctor`, `render`, `install`, `show-layout`, and skill path helpers for `new-idea`, `deep-plan`, and `wrap-up`.
+- `bin/shahinkit`: launcher for `doctor`, `render`, `install`, `show-layout`, and skill path helpers for `deep-idea`, `new-idea`, `deep-plan`, `skill-builder`, and `wrap-up`.
 
 ## Agent Configuration
 
@@ -144,7 +146,7 @@ Required research lanes before post-MVP automation:
 - Every template must use placeholders instead of personal paths.
 - Every indexing/import/export flow must show a preview and require explicit consent.
 - Dev and school/university templates should be separate from the first commit that introduces them, so each can be reviewed independently.
-- Skills should be copied from Ammar's current workflow only after private content is removed and client-specific behavior is split into adapters.
+- Skills should be generalized from proven workflows with private content removed and client-specific behavior split into adapters.
 
 ## Dependency Graph Notes
 
@@ -177,7 +179,7 @@ Initial implementation should run in parallel by module once the plan is approve
 ## Open Architectural Decisions
 
 - Final RAG/indexing stack.
-- Whether `new-idea` replaces `deep-idea` publicly while keeping `deep-idea` as an alias.
+- Whether `new-idea` remains an alias for `deep-idea` or both stay public.
 - Whether `deep-plan` remains one skill or splits into `memory-retrieval`, `codebase-map`, `plan-review`, and `execution-router`.
 - Whether installers mutate live client config or only generate patch files by default.
 - Whether Claude Desktop support ships as documentation first or a `.mcpb` desktop extension later.

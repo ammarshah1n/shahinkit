@@ -5,7 +5,7 @@ ShahinKit separates memory by domain so development, school/university, and clie
 ## Memory Routes
 
 - `dev`: project architecture, coding decisions, bugs, verification, release notes.
-- `school-university`: subjects, assignment briefs, rubrics, feedback, evidence, learning reflections.
+- `school-university`: subjects, assignment briefs, rubrics, feedback, readings, notes, and sources.
 - `client`: client-specific decisions, context, handoffs, and deliverables.
 
 Use separate Basic Memory projects, Claude Memory corpora, or vault folders for these routes.

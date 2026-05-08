@@ -4,8 +4,9 @@
 
 - ShahinKit should package a complete Claude/Codex operating system, not only prompt snippets.
 - The handoff/resume system is the core product surface: `NEXT.md`, `HANDOFF.md`, session logs, current-state files, and wrap-up flows must be first-class.
-- `new-idea` should be the public-facing idea workflow, based on Ammar's current `deep-idea` skill.
+- `deep-idea` should be the full idea workflow, with `new-idea` as a shorter public alias.
 - The planning workflow based on `deep-plan` is a core differentiator because it forces memory retrieval, codebase mapping, dependency graphs, parallel batches, and human review before implementation.
+- `skill-builder` should be included as a generic way to create reusable domain skills from transcripts or rough descriptions.
 - School/university and development workflows need separate vault templates and separate memory corpora to avoid context contamination.
 
 ## Relevant Patterns
@@ -35,15 +36,16 @@
 
 ## Related Past Work
 
-- Local `deep-idea` defines the greenfield flow: memory context, idea brief, interview, research lanes, PRD, build context, and a deep-plan graduation gate.
-- Local `deep-plan` defines mature-repo planning: memory retrieval, codebase mapping, plan writing, validation checklist, and execution-mode selection.
-- Local `wrap-up`, `miniwrap`, `checkpoint`, and `prime` skills define reusable lifecycle pieces.
-- Timed and PFF vaults show the current-state and vault-index pattern.
-- School workflow artifacts show assignment, milestone, evidence, and reflection structures that can become placeholders without copying private content.
+- `deep-idea` defines the greenfield flow: memory context, idea brief, interview, research lanes, PRD, build context, and a deep-plan graduation gate.
+- `deep-plan` defines mature-repo planning: memory retrieval, codebase mapping, plan writing, validation checklist, and execution-mode selection.
+- `skill-builder` defines a reusable flow for building new domain skills.
+- `wrap-up`, `miniwrap`, `checkpoint`, and `prime` define reusable lifecycle pieces.
+- Existing vault workflows show the current-state and vault-index pattern.
+- School workflow artifacts show subject, assignment, reading, source, and note structures that can become placeholders without copying private content.
 
 ## Known Constraints
 
-- Do not copy Ammar-specific identity, project paths, private vault content, school details, client details, TickTick/AIF private rules, secrets, or raw transcripts into the public kit.
+- Do not copy private identity, project paths, private vault content, school details, client details, private rules, secrets, or raw transcripts into the public kit.
 - Do not ship local config wholesale; render templates with placeholders and patch snippets instead.
 - Do not enable embedding, indexing, transcript export, public export, or git-pull hooks by default.
 - Claude Code and Codex support overlapping but different surfaces, so ShahinKit needs shared source files plus thin client adapters.
@@ -52,8 +54,8 @@
 
 ## Phase M Refresh For Plug-And-Play Build
 
-- Claude Memory returned ShahinKit-specific session records for the initial PRD, planning pillar, and discovery work on 2026-05-08.
-- Basic Memory was unavailable in this turn, so the build plan must not claim fresh Basic Memory retrieval.
-- Timed-Brain reinforces the key reusable pattern: repo rules are the source of truth, vault state mirrors project state, and startup reads should be ordered and bounded.
-- Timed planning context reinforces that large work should carry the planning prelude, parallel execution model, and ccswarm-style split criteria without requiring the user to re-prompt.
-- Architecture rules from Timed-Brain reinforce a reusable ShahinKit rule: separate entrypoints/adapters from business workflow logic.
+- Prior ShahinKit notes support the initial PRD, planning pillar, and discovery work.
+- Memory retrieval can be unavailable, so generated plans should state unavailable sources instead of inventing context.
+- Reusable pattern: repo rules are the source of truth, vault state mirrors project state, and startup reads should be ordered and bounded.
+- Large work should carry the planning prelude, parallel execution model, and split criteria without requiring the user to re-prompt.
+- Architecture rule: separate entrypoints/adapters from shared workflow logic.

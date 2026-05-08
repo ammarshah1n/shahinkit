@@ -7,6 +7,8 @@ description: Turn a rough product or project idea into research notes, PRD, buil
 
 Use this for greenfield products, rough project ideas, and immature repos that need definition before implementation planning.
 
+This is the short public alias for `deep-idea`.
+
 ## Workflow
 
 1. Capture the idea, intended users, desired outcome, constraints, and known assumptions.

@@ -29,8 +29,9 @@ Read order:
 
 ## Core Skills
 
-- `new-idea`: rough idea to research, PRD, and build context.
+- `deep-idea` / `new-idea`: rough idea to research, PRD, and build context.
 - `deep-plan`: memory retrieval, codebase map, dependency graph, parallel batches, review gate.
+- `skill-builder`: reusable domain skill from rough description or transcript.
 - `wrap-up`: durable end-of-session handoff and memory updates.
 - `miniwrap`: tiny task closeout.
 - `checkpoint`: mid-session pause state.

@@ -5,8 +5,7 @@
 2. `Current-Term/index.md`
 3. Relevant subject index.
 4. Relevant assignment `_INDEX.md`.
-5. Relevant milestone `_INDEX.md`.
-6. Evidence and source notes only as needed.
+5. Source notes only as needed.
 
 ## Current Term
 - Term: {{CURRENT_TERM}}
@@ -14,21 +13,18 @@
 - End: {{TERM_END}}
 
 ## Subjects
-- `Subjects/SUBJECT_TEMPLATE/`: copy for each subject.
+- `Subjects/Subject 1/` through `Subjects/Subject 5/`: rename these to your real subjects.
+- If you do not want to rename manually, tell your agent your subject list and ask it to rename the folders.
 - Use `Lessons/`, `Readings/`, `Notes/`, `Sources/`, and `Assessment/` consistently.
 
 ## Assignments
 - `Assignments/ASSIGNMENT_TEMPLATE/`: copy for each assignment.
 - Keep brief, rubric, sources, drafts, feedback, and handoff together.
 
-## Milestones
-- `Milestones/MILESTONE_TEMPLATE/`: copy for exams, checkpoints, submissions, or presentations.
-
-## Evidence
-- `Evidence/`: polished evidence, reflections, and artefact links.
-
 ## Import Holding Folder
 - `OneDrive-Imports/`: temporary holding area for imported files before sorting.
+- Give the agent a large school folder, zip, or export and ask it to run `ingest-large-folder`.
+- The agent should inventory it first, ask before installing indexing tools, ask before embedding, then build the approved school RAG corpus.
 
 ## Agent Read Order
 - Start with school state, then current term, then the relevant subject or assignment.

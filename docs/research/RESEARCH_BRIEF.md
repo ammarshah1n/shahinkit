@@ -51,8 +51,6 @@ ShahinKit should be structured as a portable workflow kit with one shared source
   - sources;
   - assessments;
   - assignments with brief, rubric, sources, drafts, feedback, and handoff;
-  - milestones;
-  - evidence;
   - import holding folders.
 - Bulk imports should create `_INDEX.md` files with source metadata, summary, tags, and links.
 - RAG/indexing must be explicit opt-in with redaction and public-export allowlists.
@@ -109,7 +107,9 @@ shahinkit/
 ## Highest-Value Product Additions
 
 - `new-idea`: public name for the greenfield `deep-idea` workflow.
+- `deep-idea`: full discovery workflow for turning rough ideas into PRDs and build context.
 - `deep-plan`: mature-repo planning workflow that makes Codex produce grounded dependency-aware plans.
+- `skill-builder`: generic workflow for creating reusable domain skills from transcripts or descriptions.
 - `wrap-up`: comprehensive handoff writer.
 - `prime`: start-of-session orientation.
 - `memory-routing`: separate dev, school, and optional client memory projects.
@@ -119,7 +119,7 @@ shahinkit/
 
 ## Open-Source Candidates And Decisions
 
-Not researched yet. This pass focused on Ammar's local workflow and official client compatibility. RAG/indexing stack and installer tooling still need a dedicated open-source evaluation lane.
+Not researched yet. This pass focused on workflow structure and official client compatibility. RAG/indexing stack and installer tooling still need a dedicated open-source evaluation lane.
 
 ## Contradictions Or Conflicts
 
@@ -131,14 +131,14 @@ Not researched yet. This pass focused on Ammar's local workflow and official cli
 
 - High confidence: shared source plus thin client adapters.
 - High confidence: handoff/resume is the highest-value differentiator.
-- High confidence: `new-idea`, `deep-plan`, `prime`, and `wrap-up` should be core modules.
+- High confidence: `deep-idea`, `new-idea`, `deep-plan`, `skill-builder`, `prime`, and `wrap-up` should be core modules.
 - Medium confidence: default repo layout.
 - Low confidence: final RAG/indexing stack until open-source research is complete.
 
 ## Implications For PRD
 
 - Add "shared source plus adapters" as an architectural constraint.
-- Treat `new-idea` and `deep-plan` as core MVP features.
+- Treat `deep-idea`, `new-idea`, `deep-plan`, and `skill-builder` as core MVP features.
 - Add a `doctor`/installer workflow to make the kit usable by non-experts.
 - Add explicit privacy/export/indexing constraints.
 - Separate Claude Desktop promises from Claude Code CLI/IDE promises until verified.

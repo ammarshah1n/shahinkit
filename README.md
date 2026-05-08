@@ -11,6 +11,7 @@ It is not a hosted app. It is a template-first repository that gives a person a 
 - starting an agent session with the right context;
 - turning rough ideas into PRDs and build context;
 - producing better code plans before implementation;
+- building reusable personal, school, work, and life-management skills;
 - using Basic Memory and Claude Memory without mixing contexts;
 - ingesting large folders or exports into a vault;
 - ending sessions with durable handoff files.
@@ -21,6 +22,8 @@ It is not a hosted app. It is a template-first repository that gives a person a 
 - Students using Obsidian with Claude/Codex for school or university.
 - People who move large course, project, OneDrive, or zip exports into a structured vault.
 - Anyone who needs `NEXT.md`, `HANDOFF.md`, session logs, and memory to make agent work resumable.
+
+For school or university, the vault starts with `Subject 1` through `Subject 5`. Rename those folders to your real subjects, or just tell your agent your subjects and have it rename them. For a large school database, folder, zip, or OneDrive export, give it to the agent and run `ingest-large-folder`; the agent should inventory it, ask before installing RAG/indexing tools, ask before embedding, and then embed only the approved school files into the school RAG system.
 
 ## Repository Layout
 
@@ -59,17 +62,36 @@ ShahinKit defaults to preview-first operation.
 ## Core Workflows
 
 - `prime`: read the smallest useful project context at session start.
-- `new-idea`: turn a rough idea into research, PRD, build context, and a deep-plan-ready package before implementation starts.
+- `deep-idea` / `new-idea`: turn a rough idea into research, PRD, build context, and a deep-plan-ready package before implementation starts.
 - `deep-plan`: upgrade mature repo planning through memory retrieval, codebase mapping, dependency graph, parallel batches, and review gate.
+- `skill-builder`: create reusable personal, school, work, or life-management skills from rough descriptions or voice transcripts.
 - `wrap-up`: write durable end-of-session state across `NEXT.md`, `HANDOFF.md`, logs, build state, and memory.
 - `ingest-large-folder`: inventory and route OneDrive, zip, course, or project exports.
 - `rag-consent`: require approval before embedding or indexing vault contents.
 
-## Planning Upgrade
+## Deep Idea And Deep Plan
 
-`new-idea` and `deep-plan` are the core planning advantage in ShahinKit. They are built from observed Claude Code and Codex usage where Codex can be weaker at planning out of the box, especially on greenfield ideas, multi-file changes, and repo-scale execution.
+`deep-idea` handles the stage before code exists. It takes a rough concept and forces the agent to produce an idea brief, interview notes, research brief, PRD, and build context before implementation planning starts. `new-idea` is the shorter alias for the same public workflow.
 
-The goal is to make Codex plan with more structure than a normal prompt: memory first, real codebase map second, dependency graph third, parallel execution plan fourth. In practice, this can turn Codex from a weaker planner than Claude Code into a stronger one for implementation planning, because the workflow forces it to ground every plan in files, constraints, handoff state, and verification gates.
+`deep-plan` handles mature repo work. It forces memory retrieval, a real codebase map, dependency graph, parallel batch schedule, validation gates, and a review point before code changes.
+
+Together, they are the core planning advantage in ShahinKit. They are built from observed Claude Code and Codex usage where Codex can be weaker at planning out of the box, especially on greenfield ideas, multi-file changes, and repo-scale execution.
+
+The point is to make Codex plan with more structure than a normal prompt: memory first, real codebase map second, dependency graph third, parallel execution plan fourth. In practice, this can turn Codex from a weaker planner than Claude Code into the main driver for implementation planning, because the workflow forces it to ground every plan in files, constraints, handoff state, and verification gates.
+
+## Skill Builder
+
+`skill-builder` turns a rough description, voice transcript, or recurring life/work problem into a reusable agent skill.
+
+Use it when someone wants a dedicated assistant for a domain such as:
+
+- a school subject or study workflow;
+- a business or admin process;
+- a health, finance, property, travel, or family workflow;
+- a project-specific assistant;
+- a repeatable document or research workflow.
+
+The skill-builder flow asks targeted questions, writes a blueprint, creates the skill folder, adds references/checklists/templates only where useful, and tests the trigger. It is designed to be generic: no private paths, no personal details, no niche school framework, and no live config writes unless the user approves them.
 
 ## Safety Model
 

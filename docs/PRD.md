@@ -21,11 +21,12 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - School/university Obsidian vault template compatible with Claude Code and Codex.
 - Built-in opt-in RAG/indexing flow that asks the user before embedding vault contents.
 - Prompt/template workflow for ingesting OneDrive exports, large zip files, and other bulk folders into the vault.
-- Development vault template matching Ammar's current workflow style, including indexing.
+- Development vault template with indexing and handoff support.
 - Basic Memory and Claude Memory setup for Claude workflows.
 - Basic Memory and Claude Memory setup for school/university vault workflows.
-- `new-idea` workflow, based on Ammar's current `deep-idea`, for turning a rough idea into research, PRD, build context, and a deep-plan-ready project package.
-- Planning workflow, based on Ammar's current `deep-plan`, for transforming Codex planning quality through mandatory memory retrieval, codebase mapping, dependency graphs, parallel batch schedules, review gates, and execution-mode selection.
+- `deep-idea` / `new-idea` workflow for turning a rough idea into research, PRD, build context, and a deep-plan-ready project package.
+- `deep-plan` workflow for transforming Codex planning quality through mandatory memory retrieval, codebase mapping, dependency graphs, parallel batch schedules, review gates, and execution-mode selection.
+- `skill-builder` workflow for creating reusable personal, school, work, and life-management skills from rough descriptions or transcripts.
 - Shared workflow source with thin adapters for Claude Code, Codex, and desktop/MCP surfaces.
 - `doctor` workflow for checking client config, memory setup, hooks, skills, and required local tools.
 - Comprehensive handoff system:
@@ -56,7 +57,7 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - A non-trivial coding task can produce a plan grounded in memory context, actual files, dependency ordering, and parallel execution batches.
 - Large folders or zip exports can be ingested through a documented, repeatable flow.
 - The kit works across Claude CLI, Codex App, and Claude Code Desktop App.
-- The highest-value workflows from Ammar's personal setup are captured as reusable templates instead of remaining implicit.
+- The highest-value workflows are captured as reusable templates instead of remaining implicit.
 
 ## Technical Constraints
 
@@ -68,7 +69,7 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - Must keep shared workflow logic in one source and render client-specific adapters from it.
 - Must preserve the `deep-idea` to `deep-plan` progression: pre-code product discovery first, then codebase-grounded planning once real code exists.
 - Must preserve planning quality gates that prevent serial todo-list plans for multi-file work.
-- Must be template-oriented enough that users can adapt it without adopting Ammar's entire private setup.
+- Must be template-oriented enough that users can adapt it without adopting any private setup.
 - Must keep school/university and development workflows separate enough to avoid mixed context.
 
 ## Business Model
@@ -76,13 +77,13 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 Open question. Candidate directions:
 
 - Free/open-source core kit with paid implementation help.
-- Personal brand asset for Facilitated.
+- Paid advanced templates for teams, schools, and professional agent workflows.
 - Paid advanced templates for school/university and professional agent workflows.
 
 ## Competitive Differentiation
 
 - Focuses on complete agent operating systems, not just prompt snippets.
-- Makes Codex a stronger planner by packaging Ammar's planning infrastructure instead of relying on default model planning.
+- Makes Codex a stronger planner by packaging structured planning infrastructure instead of relying on default model planning.
 - Covers both development and school/university workflows.
 - Treats handoff/resume as the main product surface.
 - Bridges Obsidian, RAG/indexing, Basic Memory, Claude Memory, Claude Code, and Codex.
@@ -91,12 +92,12 @@ Open question. Candidate directions:
 ## Open Questions
 
 - Final public name: `shahinkit`, `ShahinKit`, or another brand.
-- Whether the public command/skill name should be `new-idea`, while the internal source remains `deep-idea`.
+- Whether `new-idea` remains an alias for `deep-idea` or both stay public.
 - Whether folder naming should be `school-university/`, `learning/`, or separate `school/` and `university/`.
 - Which RAG/indexing stack should be the default.
 - Whether Claude Desktop support should ship first as docs/templates or later as a `.mcpb` desktop extension.
 - Whether the repo ships scripts, docs-only templates, or both.
-- How much of Ammar's current personal workflow should be generalized versus copied directly.
+- How much workflow detail should be included by default versus left as optional templates.
 - Whether `wrap-up` should be implemented as a portable skill, shell script, prompt pack, or client-specific adapter.
 - What the first install path should be for non-technical users.
 

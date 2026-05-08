@@ -7,7 +7,9 @@ For a local Codex installation, copy the selected skill folders into the user's 
 Recommended set:
 
 - `new-idea`
+- `deep-idea`
 - `deep-plan`
+- `skill-builder`
 - `prime`
 - `wrap-up`
 - `miniwrap`

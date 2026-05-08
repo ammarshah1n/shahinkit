@@ -33,6 +33,7 @@ Always inventory first. Ask before moving, deleting, extracting, embedding, or i
    - Moving files.
    - Deleting files.
    - Extracting archives.
+   - Installing indexing or RAG tools.
    - Embedding or indexing content.
    - Renaming large batches.
 
@@ -45,6 +46,8 @@ Always inventory first. Ask before moving, deleting, extracting, embedding, or i
    - Preserve original content unless the user approves changes.
    - Keep generated indexes separate from source files.
    - Record skipped files and reasons.
+   - If RAG tooling is missing, propose the exact install command and get approval before installing it.
+   - Embed only approved files into the named school, dev, or client corpus.
 
 ## Output
 
