@@ -1,0 +1,60 @@
+# Project Agent Instructions
+
+This project uses ShahinKit for Codex App and Codex CLI workflows.
+
+## Source Of Truth
+
+Read these shared files before planning or editing:
+
+- `shared/instructions/core.md`
+- `shared/instructions/safety.md`
+- `shared/instructions/memory-protocol.md`
+- `shared/instructions/handoff-protocol.md`
+
+Keep reusable workflow behavior in `shared/`.
+Keep Codex-specific configuration in `clients/codex-app/` or the host repo's `AGENTS.md`.
+
+## Codex Skill Invocation
+
+Use skill names as plain text, not slash commands:
+
+- `prime`
+- `new-idea`
+- `deep-plan`
+- `wrap-up`
+- `miniwrap`
+- `checkpoint`
+- `ingest-large-folder`
+- `rag-consent`
+
+## Session Start
+
+Use `prime` first for any non-trivial task.
+
+Read order:
+
+1. `AGENTS.md`
+2. `NEXT.md`
+3. `HANDOFF.md`
+4. `BUILD_STATE.md`
+5. `docs/MEMORY_CONTEXT.md`
+6. `VAULT-INDEX.md` when present
+
+## Planning
+
+Use `new-idea` for greenfield work.
+Use `deep-plan` for non-trivial feature work in an existing repo.
+Do not implement a deep plan until the plan is approved or the user explicitly asks to continue.
+
+## Safety
+
+- Read target files before editing.
+- Edit minimally.
+- Ask before destructive operations, public export, indexing, embedding, or bulk import.
+- Keep dev, school/university, and client memory separate.
+- Do not store secrets, raw transcripts, private local paths, or personal identifiers in reusable files.
+
+## End Of Session
+
+Use `wrap-up` for substantial work and `miniwrap` for tiny changes.
+Update durable handoff state before ending the session.

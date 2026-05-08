@@ -1,0 +1,51 @@
+# Project Agent Instructions
+
+This project uses ShahinKit for Claude Code workflows.
+
+## Source Of Truth
+
+Read these shared files before planning or editing:
+
+- `shared/instructions/core.md`
+- `shared/instructions/safety.md`
+- `shared/instructions/memory-protocol.md`
+- `shared/instructions/handoff-protocol.md`
+
+Client-specific Claude Code behavior belongs in this file or `.claude/`.
+Reusable workflow rules belong in `shared/`.
+
+## Session Start
+
+Use `prime` first for any non-trivial task.
+
+Read order:
+
+1. `CLAUDE.md`
+2. `NEXT.md`
+3. `HANDOFF.md`
+4. `BUILD_STATE.md`
+5. `docs/MEMORY_CONTEXT.md`
+6. `VAULT-INDEX.md` when present
+
+## Core Skills
+
+- `new-idea`: rough idea to research, PRD, and build context.
+- `deep-plan`: memory retrieval, codebase map, dependency graph, parallel batches, review gate.
+- `wrap-up`: durable end-of-session handoff and memory updates.
+- `miniwrap`: tiny task closeout.
+- `checkpoint`: mid-session pause state.
+- `ingest-large-folder`: inventory and route archives or cloud exports.
+- `rag-consent`: consent gate before indexing or embedding.
+
+## Safety
+
+- Read target files before editing.
+- Edit minimally.
+- Ask before destructive operations, public export, indexing, embedding, or bulk import.
+- Do not store secrets, raw transcripts, private local paths, or personal identifiers in reusable files.
+- Keep dev, school/university, and client memory separate.
+
+## End Of Session
+
+Use `wrap-up` for meaningful work and `miniwrap` for tiny changes.
+Update handoff files before ending the session.
