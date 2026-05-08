@@ -26,6 +26,8 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 - Basic Memory and Claude Memory setup for school/university vault workflows.
 - `new-idea` workflow, based on Ammar's current `deep-idea`, for turning a rough idea into research, PRD, build context, and a deep-plan-ready project package.
 - Planning workflow, based on Ammar's current `deep-plan`, for transforming Codex planning quality through mandatory memory retrieval, codebase mapping, dependency graphs, parallel batch schedules, review gates, and execution-mode selection.
+- Shared workflow source with thin adapters for Claude Code, Codex, and desktop/MCP surfaces.
+- `doctor` workflow for checking client config, memory setup, hooks, skills, and required local tools.
 - Comprehensive handoff system:
   - start-of-session hooks/context so Codex and Claude Code know the current project state;
   - `/wrap-up` or equivalent wrap-up flow;
@@ -60,9 +62,10 @@ ShahinKit is an all-in-one kit for setting up those workflows for development an
 
 - Must support Claude CLI.
 - Must support Codex App.
-- Must support Claude Code Desktop App.
+- Must support Claude Code Desktop App where official extension/MCP surfaces allow it, without promising unverified Claude Code CLI parity.
 - Must keep destructive operations opt-in.
 - Must ask before embedding or indexing user vault contents.
+- Must keep shared workflow logic in one source and render client-specific adapters from it.
 - Must preserve the `deep-idea` to `deep-plan` progression: pre-code product discovery first, then codebase-grounded planning once real code exists.
 - Must preserve planning quality gates that prevent serial todo-list plans for multi-file work.
 - Must be template-oriented enough that users can adapt it without adopting Ammar's entire private setup.
@@ -91,6 +94,7 @@ Open question. Candidate directions:
 - Whether the public command/skill name should be `new-idea`, while the internal source remains `deep-idea`.
 - Whether folder naming should be `school-university/`, `learning/`, or separate `school/` and `university/`.
 - Which RAG/indexing stack should be the default.
+- Whether Claude Desktop support should ship first as docs/templates or later as a `.mcpb` desktop extension.
 - Whether the repo ships scripts, docs-only templates, or both.
 - How much of Ammar's current personal workflow should be generalized versus copied directly.
 - Whether `wrap-up` should be implemented as a portable skill, shell script, prompt pack, or client-specific adapter.
@@ -98,4 +102,6 @@ Open question. Candidate directions:
 
 ## Memory Context Used
 
-Not yet retrieved. Discovery will inspect Ammar's current workflow artifacts and memory systems before the PRD is finalized.
+- `docs/MEMORY_CONTEXT.md`
+- `docs/research/RESEARCH_BRIEF.md`
+- `docs/BUILD_CONTEXT.md`
