@@ -49,3 +49,11 @@
 - Claude Code and Codex support overlapping but different surfaces, so ShahinKit needs shared source files plus thin client adapters.
 - Claude Desktop extension support should be treated separately from Claude Code CLI/IDE support unless official docs verify feature parity.
 - Public templates should default to deny-all export and explicit allowlists for any public or shared output.
+
+## Phase M Refresh For Plug-And-Play Build
+
+- Claude Memory returned ShahinKit-specific session records for the initial PRD, planning pillar, and discovery work on 2026-05-08.
+- Basic Memory was unavailable in this turn, so the build plan must not claim fresh Basic Memory retrieval.
+- Timed-Brain reinforces the key reusable pattern: repo rules are the source of truth, vault state mirrors project state, and startup reads should be ordered and bounded.
+- Timed planning context reinforces that large work should carry the planning prelude, parallel execution model, and ccswarm-style split criteria without requiring the user to re-prompt.
+- Architecture rules from Timed-Brain reinforce a reusable ShahinKit rule: separate entrypoints/adapters from business workflow logic.
