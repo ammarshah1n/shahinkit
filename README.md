@@ -5,9 +5,9 @@
 **The operating system for your AI agent. Stop losing context. Start finishing things.**
 
 <p>
-  <img alt="GitHub stars" src="https://img.shields.io/github/stars/ammarshah1n/shahinkit?style=for-the-badge&color=FFD700&labelColor=000">
-  <img alt="Last commit" src="https://img.shields.io/github/last-commit/ammarshah1n/shahinkit?style=for-the-badge&color=00C9A7&labelColor=000">
-  <img alt="Repo size" src="https://img.shields.io/github/repo-size/ammarshah1n/shahinkit?style=for-the-badge&color=845EC2&labelColor=000">
+  <img alt="Stars: be the first" src="https://img.shields.io/badge/Stars-Be%20The%20First-FFD700?style=for-the-badge&labelColor=000">
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/ammarshah1n/shahinkit?style=for-the-badge&color=00C9A7&labelColor=000&cacheSeconds=60">
+  <img alt="Repo size" src="https://img.shields.io/github/repo-size/ammarshah1n/shahinkit?style=for-the-badge&color=845EC2&labelColor=000&cacheSeconds=60">
   <img alt="Works with Claude Code" src="https://img.shields.io/badge/Works%20With-Claude%20Code-FF6B6B?style=for-the-badge&logo=anthropic&logoColor=white&labelColor=000">
   <img alt="Works with OpenAI Codex" src="https://img.shields.io/badge/Works%20With-OpenAI%20Codex-00A67E?style=for-the-badge&logo=openai&logoColor=white&labelColor=000">
 </p>
