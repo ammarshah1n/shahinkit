@@ -1,0 +1,39 @@
+# Example Codex config fragment. Review before merging into live config.
+
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[profiles.careful]
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+approval_policy = "on-request"
+sandbox_mode = "read-only"
+model_verbosity = "medium"
+
+[profiles.rescue]
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+model_verbosity = "low"
+
+[profiles.fast]
+model = "gpt-5.4-mini"
+model_reasoning_effort = "low"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+model_verbosity = "low"
+
+[projects."{{PROJECT_ROOT}}"]
+trust_level = "trusted"
+
+[projects."{{PROJECT_ROOT}}".env]
+SHAHINKIT_HOME = ".shahinkit"
+SHAHINKIT_COURSE_RAG_INDEX_DIR = ".shahinkit/course-rag/indexes"
+
+# Optional local memory MCP. Enable only after installing and reviewing the server.
+# [mcp_servers.basic-memory]
+# url = "http://127.0.0.1:8000/mcp"
