@@ -20,8 +20,9 @@ Use this when starting work in a project or when the user asks to load context.
 2. Project instructions: `AGENTS.md`, `CLAUDE.md`, or local equivalent.
 3. README and package manifests.
 4. Handoff files: `NEXT.md`, `HANDOFF.md`, `BUILD_STATE.md`, `PARKED.md`.
-5. Memory context files when present.
-6. Recent commits and `git status`.
+5. Memory context files when present, especially Obsidian vault files under `Working-Context/`.
+6. basic-memory MCP results for the current project or task when the server is available.
+7. Recent commits and `git status`.
 
 ## Output
 

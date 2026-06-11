@@ -34,6 +34,8 @@ trust_level = "trusted"
 SHAHINKIT_HOME = ".shahinkit"
 SHAHINKIT_COURSE_RAG_INDEX_DIR = ".shahinkit/course-rag/indexes"
 
-# Optional local memory MCP. Enable only after installing and reviewing the server.
-# [mcp_servers.basic-memory]
-# url = "http://127.0.0.1:8000/mcp"
+# Optional local memory MCP. Start it first:
+# basic-memory mcp --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+[mcp_servers.basic-memory]
+url = "http://127.0.0.1:8000/mcp"
+required = false

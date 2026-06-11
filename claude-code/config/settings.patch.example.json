@@ -3,7 +3,15 @@
   "shahinkit": {
     "home": ".shahinkit",
     "track": "default",
-    "courseRagIndexDir": ".shahinkit/course-rag/indexes"
+    "courseRagIndexDir": ".shahinkit/course-rag/indexes",
+    "memoryVault": "~/Documents/Agent-Memory-Vault",
+    "memoryProject": "agent-memory"
+  },
+  "mcpServers": {
+    "basic-memory": {
+      "command": "basic-memory",
+      "args": ["mcp"]
+    }
   },
   "hooks": {
     "enabled": false

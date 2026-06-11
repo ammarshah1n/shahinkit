@@ -24,6 +24,7 @@ Use:
 - `plans`
 - `deep-idea`
 - `deep-plan`
+- `memory`
 - `course-rag`
 - `wrap-up`
 
@@ -35,8 +36,22 @@ Use:
 4. Use `plans` for a batch of independent changes or ideas.
 5. Use `deep-plan` when codebase mapping is the main risk.
 6. Use `deep-idea` when the repo does not exist or is too immature for codebase mapping.
-7. Use `course-rag` when the user gives a course folder and wants local course search.
-8. Use `wrap-up` before ending meaningful work.
+7. Use `memory` when setting up or using the local Obsidian/basic-memory workflow.
+8. Use `course-rag` when the user gives a course folder and wants local course search.
+9. Use `wrap-up` before ending meaningful work.
+
+## Memory Protocol
+
+Use Obsidian as the document editor for memory files. A normal setup is:
+
+- `~/Documents/Agent-Memory-Vault/Working-Context/PROJECT_STATE.md`
+- `~/Documents/Agent-Memory-Vault/Working-Context/NEXT.md`
+- `~/Documents/Agent-Memory-Vault/Handoffs/`
+- `~/Documents/Agent-Memory-Vault/Notes/`
+
+If basic-memory MCP is available, query it during `prime` for the current repo, task, and recent handoffs. If MCP is unavailable, read the markdown files directly. During `wrap-up`, update the local markdown state first, then write durable facts through basic-memory when the tool is available.
+
+Do not sync, publish, or upload the memory vault unless the user explicitly asks.
 
 ## Planning Rules
 

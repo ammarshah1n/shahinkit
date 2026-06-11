@@ -36,7 +36,7 @@ Do not create handoff files unless the project already uses them or the user ask
 
 ## Phase 3: Memory
 
-Write memory only when the project has an explicit memory target. Store durable facts only:
+Write memory only when the project has an explicit memory target. Prefer the local Obsidian vault first, then basic-memory MCP when available. Store durable facts only:
 
 - decision made;
 - bug fixed;
