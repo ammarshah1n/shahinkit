@@ -1,0 +1,11 @@
+{
+  "description": "Example Claude Code settings fragment. Review before merging into live settings.",
+  "shahinkit": {
+    "home": ".shahinkit",
+    "track": "default",
+    "courseRagIndexDir": ".shahinkit/course-rag/indexes"
+  },
+  "hooks": {
+    "enabled": false
+  }
+}

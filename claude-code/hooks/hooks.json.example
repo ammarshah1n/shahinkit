@@ -1,0 +1,16 @@
+{
+  "description": "Example hook manifest. Hooks are disabled until copied and enabled by the host project.",
+  "enabled": false,
+  "hooks": [
+    {
+      "event": "session_start",
+      "command": "echo 'Run prime before non-trivial work.'",
+      "writesByDefault": false
+    },
+    {
+      "event": "session_stop",
+      "command": "echo 'Run wrap-up before closing meaningful work.'",
+      "writesByDefault": false
+    }
+  ]
+}
