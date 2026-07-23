@@ -2,8 +2,9 @@
 description: ShahinKit independent bounded reviewer.
 mode: subagent
 model: openai/gpt-5.6-terra
-steps: 12
+maxSteps: 12
 permission:
+  doom_loop: ask
   edit: deny
   bash: ask
   task: deny

@@ -2,8 +2,9 @@
 description: ShahinKit controller: owns routing, judgement, synthesis, and acceptance.
 mode: primary
 model: openai/gpt-5.6-sol
-steps: 16
+maxSteps: 16
 permission:
+  doom_loop: ask
   edit: ask
   bash: ask
   task: allow

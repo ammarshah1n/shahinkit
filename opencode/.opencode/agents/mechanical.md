@@ -2,8 +2,9 @@
 description: ShahinKit deterministic mechanical worker.
 mode: subagent
 model: openai/gpt-5.4-mini
-steps: 8
+maxSteps: 8
 permission:
+  doom_loop: ask
   edit: ask
   bash: ask
   task: deny

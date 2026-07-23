@@ -56,3 +56,22 @@ is disabled local-only placeholder. Supply no credentials in this template.
 memory. It never reads environment variables, files, secrets, network, or
 subprocesses; never persists event payloads or transcript text; and logs a
 static warning when hook input is invalid.
+
+`shahinkit-guard.mjs` adds three fail-open runtime guards: a wall-clock clamp
+on every bash call (10 min default, 30 min ceiling — one hung command cannot
+eat hours), a session budget tripwire (past 25 worker dispatches or 4h it
+forces a plain go/no-go checkpoint through the system prompt), and desktop
+notifications (macOS only, best-effort) when a primary session stops, asks
+for a decision, or trips its budget. It stores counters in process memory
+only and spawns no subprocess except the macOS notifier.
+
+## Reflection loop (optional)
+
+`scripts/reflect.mjs` reads finished primary sessions from the local OpenCode
+store, digests them (duration, dispatch counts, stalls, user frustration
+signals), extracts failure candidates with a local `codex exec` pass, and
+appends them to `~/.config/opencode/corrections/pending.md`. A failure class
+recurring on two distinct days is proposed for promotion into `AGENTS.md` —
+promotion is always a human decision; nothing self-installs. Schedule daily
+with your scheduler of choice, or run manually; `--dry` prints digests only
+and calls no model.

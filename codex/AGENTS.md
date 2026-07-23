@@ -49,6 +49,28 @@ and acceptance. Research, implementation, review, and mechanical workers own
 only bounded assigned work. Every worker resolves its own model; never inherit
 controller model or authority. Review worker output before acceptance.
 
+## Delegation and execution doctrine
+
+Wide vs chain, before delegating: wide work (independent parallel units) goes
+to bounded workers with self-contained briefs; chain work (each step needs the
+last step's result — diagnose→fix→test, ordered milestones, debugging) stays
+with the controller. If the brief costs more than the work, do it directly.
+One bounded milestone per brief with an explicit effort budget — never a
+multi-milestone monolith. Out-of-scope surfaces are deferred, never bundled.
+Reviews at milestone acceptance and risk classes only.
+
+On the second same-class failure, sweep the whole defect class before another
+attempt. Three same-class failures → stop and surface a plain-language blocker
+with options; accept any plain continue instruction, never require exact
+phrases, never wait silently. Preflight the FINAL gate's runtime dependencies
+(daemons, containers, credentials) at the start. Secrets install through one
+canonical path with a visible verify. Never claim background progress without
+an active monitor. Every shell command carries an explicit timeout; liveness-
+check daemons before commands that block on them; run long commands detached
+with a polled log. Multi-milestone tasks keep `.exec/<task-slug>/goal.md` +
+`progress.md` on disk, re-read at session start and after compaction; fresh
+session per milestone.
+
 ## Memory
 
 Markdown is source of truth. Optional Basic Memory is local retrieval only.

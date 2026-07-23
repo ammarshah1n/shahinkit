@@ -43,6 +43,27 @@ become active only after preview, explicit apply, and workspace trust. Claude
 Code has no safe persistent Caveman lifecycle adapter here; its static context
 and explicit commands remain the supported mode.
 
+## Delegation and execution doctrine
+
+Wide vs chain, before any subagent dispatch: wide work (independent parallel
+units) goes to one worker wave with self-contained briefs; chain work (each
+step needs the last step's result — diagnose→fix→test, ordered milestones,
+debugging) stays inline. If the brief costs more than the work, do it directly.
+One bounded milestone per brief with an explicit effort budget — never a
+multi-milestone monolith. Surfaces the user did not ask about are deferred out
+of scope, never bundled in. Reviews at milestone acceptance and risk classes
+only; a diff under ~10 lines gets no reviewer spawn.
+
+On the second same-class failure, sweep the whole defect class before another
+attempt. Three same-class failures → stop and surface a plain-language blocker
+with options; accept any plain continue instruction, never require exact
+phrases, never wait silently. Preflight the FINAL gate's runtime dependencies
+(daemons, containers, credentials) at the start. Secrets install through one
+canonical path with a visible verify. Never claim background progress without
+an active monitor. Multi-milestone tasks keep `.exec/<task-slug>/goal.md` +
+`progress.md` on disk, re-read at session start and after compaction; fresh
+session per milestone.
+
 ## Course RAG
 
 `course-rag` remains optional and local. Build an index only after explicit

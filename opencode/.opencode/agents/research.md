@@ -2,8 +2,9 @@
 description: ShahinKit bounded evidence researcher.
 mode: subagent
 model: openai/gpt-5.6-terra
-steps: 10
+maxSteps: 10
 permission:
+  doom_loop: ask
   edit: deny
   bash: ask
   task: deny

@@ -2,8 +2,9 @@
 description: ShahinKit bounded implementation worker.
 mode: subagent
 model: openai/gpt-5.6-terra
-steps: 14
+maxSteps: 14
 permission:
+  doom_loop: ask
   edit: ask
   bash: ask
   task: deny
