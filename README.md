@@ -1,9 +1,18 @@
 # ShahinKit
 
-ShahinKit is portable working habits for Claude Code, OpenCode, and Codex. It
-helps a new AI session pick up safely without copying private machine state.
+## Install ShahinKit
 
-## Why it exists
+Copy this repository link and paste it into Claude Code, OpenCode, or Codex.
+
+https://github.com/ammarshah1n/shahinkit
+
+```text
+Install ShahinKit from this repository and onboard me. Preview every change before applying it.
+```
+
+Your agent will ask needed setup questions, preview installation, and guide onboarding.
+
+## Why ShahinKit matters
 
 AI sessions are temporary. A new session does not automatically know what a
 previous session changed, decided, verified, blocked, or should do next. Without
