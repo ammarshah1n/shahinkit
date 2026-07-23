@@ -1,0 +1,20 @@
+{
+  "roots": [
+    {
+      "id": "example-project",
+      "label": "Example project",
+      "path": "projects/example-project",
+      "locations": ["README.md", "src"],
+      "extensions": [".md", ".json", ".js", ".mjs", ".ts"]
+    }
+  ],
+  "limits": {
+    "maxDepth": 4,
+    "maxFiles": 100,
+    "maxFileBytes": 131072,
+    "maxTotalBytes": 1048576,
+    "maxMatches": 50,
+    "maxOutputBytes": 32768,
+    "maxSearchMilliseconds": 2000
+  }
+}

@@ -1,0 +1,1 @@
+Install ShahinKit from https://github.com/ammarshah1n/shahinkit.git for OpenCode in project scope. Preview only. Keep Ponytail and Caveman defaults.

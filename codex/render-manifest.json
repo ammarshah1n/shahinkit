@@ -1,0 +1,76 @@
+{
+  "adapter": "codex",
+  "receipt_schema": "school/docs/INSTALL-RECEIPT-SCHEMA.md",
+  "codex_version": "0.144.5",
+  "render_rules": {
+    "copy": "Copy bytes from source to destination. Never symlink.",
+    "activation": "Ponytail and Caveman static context and skills activate only after preview, apply, and host-trust confirmation. No lifecycle hook is rendered.",
+    "scope_roots": {
+      "user": {"instructions": "AGENTS.md", "skills": "$HOME/.agents/skills", "agents": "agents", "config": "config.toml", "data": "{{SHAHINKIT_DATA_DIR}}"},
+      "project": {"instructions": "AGENTS.md", "skills": ".agents/skills", "agents": ".codex/agents", "config": ".codex/config.toml", "data": "{{SHAHINKIT_DATA_DIR}}"}
+    }
+  },
+  "context_renders": [
+    {"source": "school/shared/context/core-policy.block.md", "destination": "AGENTS.md", "marker": "CORE-POLICY"},
+    {"source": "school/shared/context/ponytail-default.block.md", "destination": "AGENTS.md", "marker": "PONYTAIL"},
+    {"source": "school/shared/context/caveman-default.block.md", "destination": "AGENTS.md", "marker": "CAVEMAN"},
+    {"source": "school/shared/context/adapter-references.block.md", "destination": "AGENTS.md", "marker": "ADAPTER-REFERENCES"}
+  ],
+  "shared_skills": ["checkpoint", "context-router", "corrections", "deep-idea", "deep-plan", "delegation-routing", "idea", "memory", "miniwrap", "mission", "plan", "plans", "prime", "reflect", "self-improve", "session-handoff", "study", "wrap-up"],
+  "shared_memory": ["CORRECTIONS.md", "HANDOFF.md", "LEARNINGS.md", "NEXT.md", "PROJECT_STATE.md"],
+  "vendor_skills": {
+    "ponytail": ["ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"],
+    "caveman": ["caveman", "caveman-commit", "caveman-help", "caveman-review"]
+  },
+  "mcp_templates": ["school/shared/mcp/basic-memory/codex.mcp.toml", "school/shared/mcp/basic-memory/local-config.example.json"],
+  "render": {
+    "byte_copy": ["codex/course-rag/indexes/.gitignore", "codex/course-rag/indexes/.gitkeep"],
+    "templates": ["codex/config/config.patch.example.toml", "codex/course-rag/README.md", "codex/course-rag/SKILL.md", "codex/course-rag/scripts/build.py", "codex/course-rag/scripts/search.py", "school/shared/mcp/basic-memory/codex.mcp.toml", "school/shared/mcp/basic-memory/local-config.example.json"],
+    "required_substitutions": ["SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"]
+  },
+  "course_rag": {
+    "data_destination": "{{SHAHINKIT_DATA_DIR}}/course-rag",
+    "skill_destinations": {"user": "$HOME/.agents/skills/course-rag/SKILL.md", "project": ".agents/skills/course-rag/SKILL.md"},
+    "assets": ["course-rag/README.md", "course-rag/SKILL.md", "course-rag/scripts/build.py", "course-rag/scripts/search.py", "course-rag/indexes/.gitignore", "course-rag/indexes/.gitkeep"],
+    "outputs": [
+      {"source": "codex/course-rag/SKILL.md", "destinations": {"user": "$HOME/.agents/skills/course-rag/SKILL.md", "project": ".agents/skills/course-rag/SKILL.md"}},
+      {"source": "codex/course-rag/README.md", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/README.md"},
+      {"source": "codex/course-rag/scripts/build.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py"},
+      {"source": "codex/course-rag/scripts/search.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"},
+      {"source": "codex/course-rag/indexes/.gitignore", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitignore"},
+      {"source": "codex/course-rag/indexes/.gitkeep", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitkeep"}
+    ]
+  },
+  "adapter_assets": [
+    "AGENTS.md", "config/config.patch.example.toml", "config/mcp.optional.disabled.example.toml", "hooks/generic-gates.disabled.example.json",
+    "config/agents/controller.toml", "config/agents/research.toml", "config/agents/implementation.toml", "config/agents/review.toml", "config/agents/mechanical.toml",
+    "course-rag/README.md", "course-rag/SKILL.md", "course-rag/scripts/build.py", "course-rag/scripts/search.py", "course-rag/indexes/.gitignore", "course-rag/indexes/.gitkeep"
+  ],
+  "required_install_assets": ["AGENTS.md", "config/config.patch.example.toml", "config/agents/controller.toml", "course-rag/SKILL.md", "course-rag/scripts/build.py", "course-rag/scripts/search.py"],
+  "scope_install_destinations": {
+    "user": {
+      "AGENTS.md": "AGENTS.md",
+      "config/config.patch.example.toml": "config.toml",
+      "config/agents/controller.toml": "agents/controller.toml",
+      "config/agents/research.toml": "agents/research.toml",
+      "config/agents/implementation.toml": "agents/implementation.toml",
+      "config/agents/review.toml": "agents/review.toml",
+      "config/agents/mechanical.toml": "agents/mechanical.toml",
+      "course-rag/SKILL.md": "$HOME/.agents/skills/course-rag/SKILL.md",
+      "course-rag/scripts/build.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py",
+      "course-rag/scripts/search.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"
+    },
+    "project": {
+      "AGENTS.md": "AGENTS.md",
+      "config/config.patch.example.toml": ".codex/config.toml",
+      "config/agents/controller.toml": ".codex/agents/controller.toml",
+      "config/agents/research.toml": ".codex/agents/research.toml",
+      "config/agents/implementation.toml": ".codex/agents/implementation.toml",
+      "config/agents/review.toml": ".codex/agents/review.toml",
+      "config/agents/mechanical.toml": ".codex/agents/mechanical.toml",
+      "course-rag/SKILL.md": ".agents/skills/course-rag/SKILL.md",
+      "course-rag/scripts/build.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py",
+      "course-rag/scripts/search.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"
+    }
+  }
+}

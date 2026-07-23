@@ -1,0 +1,9 @@
+{
+  "plan": ["ANCHOR", "memory", "research", "IDEA", "CHANGE", "Dependency graph", "parallel-batch", "spec-drift", "delete/merge", "adversarial", "explicit `GO`", "Correctness gate"],
+  "idea": ["IDEA", "DON'T-BUILD", "NOT-NOW", "kill criterion", "explicit GO"],
+  "plans": ["independent", "MISSION", "slate", "dependency graph", "research and plan production only", "second explicit `GO` always", "prior authorization cannot waive", "No implementation starts before"],
+  "mission": ["coupled", "thesis", "cross-pack", "contradiction table", "explicit `GO`", "distilled, redacted evidence", "reject raw transcripts, private paths"],
+  "deep-idea": ["greenfield", "source ledger", "PRD", "build context", "graduation"],
+  "deep-plan": ["mature", "scope manifest", "cross-reference", "codebase map", "map completeness", "explicit GO", "research=none", "prohibited for integrity-critical or route-changing facts"],
+  "delegation-routing": ["controller", "research", "implementation", "review", "mechanical", "CONTROLLER-TIER-JUSTIFIED", "UNVERIFIED"]
+}

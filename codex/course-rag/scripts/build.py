@@ -5,6 +5,7 @@ import json
 import re
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 import zipfile
@@ -13,7 +14,7 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_INDEX_DIR = ROOT / "indexes"
+DEFAULT_INDEX_DIR = Path("{{SHAHINKIT_DATA_DIR}}/course-rag")
 
 TEXT_EXTENSIONS = {
     ".c",
@@ -155,11 +156,20 @@ def chunk_text(text: str, max_words: int = 220, overlap: int = 30) -> list[str]:
 
 def iter_files(source: Path):
     for path in sorted(source.rglob("*")):
-        if not path.is_file():
+        try:
+            info = path.lstat()
+        except OSError:
+            continue
+        if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
             continue
         if any(part in SKIP_DIRS for part in path.parts):
             continue
-        yield path
+        try:
+            resolved = path.resolve(strict=True)
+            resolved.relative_to(source)
+        except (OSError, ValueError):
+            continue
+        yield resolved
 
 
 def reset_db(db_path: Path) -> sqlite3.Connection:

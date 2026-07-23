@@ -1,0 +1,10 @@
+{
+  "contract_version": "b0",
+  "materialization": "test-only",
+  "rule": "Fixture repository contains descriptors, never live symlinks. Tests materialize each case outside the fixture root and expect rejection before access.",
+  "cases": [
+    {"id": "symlinked-ancestor", "path_role": "managed-parent", "target_role": "outside-root", "expected": "reject"},
+    {"id": "symlinked-target", "path_role": "managed-file", "target_role": "outside-root", "expected": "reject"},
+    {"id": "source-walk-symlink", "path_role": "source-entry", "target_role": "outside-root", "expected": "reject"}
+  ]
+}

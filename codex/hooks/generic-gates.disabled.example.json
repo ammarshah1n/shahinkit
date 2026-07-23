@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "kind": "advisory",
+  "purpose": "Generic gates are review guidance, not policy enforcement.",
+  "activation": "Do not render into Codex configuration without separate review."
+}

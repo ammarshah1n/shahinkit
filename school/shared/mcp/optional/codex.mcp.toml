@@ -1,0 +1,18 @@
+# Disabled catalog examples. Copy none into active config without review.
+[mcp_servers.context7]
+enabled = false
+url = "<CONTEXT7_MCP_URL>"
+
+[mcp_servers.timed]
+enabled = false
+url = "<TIMED_MCP_URL>"
+
+[mcp_servers.research]
+enabled = false
+url = "<RESEARCH_MCP_URL>"
+
+[mcp_servers.dev-scope]
+enabled = false
+command = "node"
+args = ["<DEV_SCOPE_ENTRYPOINT>"]
+env = { DEV_SCOPE_CONFIG = "<DEV_SCOPE_CONFIG_FILE>" }

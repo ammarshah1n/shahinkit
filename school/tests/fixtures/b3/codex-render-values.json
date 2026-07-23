@@ -1,0 +1,12 @@
+{
+  "required_substitutions": [
+    "SHAHINKIT_DATA_DIR",
+    "SHAHINKIT_STATE_DIR",
+    "LOCAL_BASIC_MEMORY_CONFIG_DIR",
+    "LOCAL_PROJECT_NAME",
+    "LOCAL_PROJECT_PATH",
+    "LOCAL_PROJECT_ROOT",
+    "PONYTAIL_ENABLED",
+    "CAVEMAN_ENABLED"
+  ]
+}

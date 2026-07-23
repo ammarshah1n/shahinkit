@@ -1,0 +1,17 @@
+{
+  "template_version": 1,
+  "basic_memory_version": "0.22.1",
+  "projects": {
+    "<LOCAL_PROJECT_NAME>": {
+      "path": "<LOCAL_PROJECT_PATH>",
+      "mode": "local",
+      "workspace_id": null
+    }
+  },
+  "default_project": "<LOCAL_PROJECT_NAME>",
+  "project_root": "<LOCAL_PROJECT_ROOT>",
+  "auto_update": false,
+  "logfire_enabled": false,
+  "logfire_send_to_logfire": false,
+  "cloud_promo_opt_out": true
+}

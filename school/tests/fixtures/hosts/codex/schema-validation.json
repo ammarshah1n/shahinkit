@@ -1,0 +1,12 @@
+{
+  "schema_metadata_role": "validation-evidence-only",
+  "auto_detection_input": false,
+  "draft": "Draft-07",
+  "title": "ConfigToml",
+  "published_schema_url": "https://developers.openai.com/codex/config-schema.json",
+  "repository_schema_guide_url": "https://github.com/openai/codex/blob/c10010928075babeebfc65b824db8778f10a1c56/codex-rs/core/src/config/schema.md",
+  "pinned_source_artifact_url": "https://raw.githubusercontent.com/openai/codex/c10010928075babeebfc65b824db8778f10a1c56/codex-rs/core/config.schema.json",
+  "valid_fixture": "valid-config.toml",
+  "invalid_fixture": "invalid-root-schema-key.toml",
+  "invalid_reason": "ConfigToml rejects an unknown root $schema key."
+}

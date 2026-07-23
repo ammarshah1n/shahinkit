@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shahinkit.dev/schemas/roles.schema.json",
+  "title": "ShahinKit role model resolution",
+  "description": "Adapter input. Every role resolves its own explicit model; workers never inherit a controller or peer role model.",
+  "type": "object",
+  "required": ["host", "roles"],
+  "additionalProperties": false,
+  "properties": {
+    "host": {
+      "enum": ["claude-code", "opencode", "codex"]
+    },
+    "roles": {
+      "$ref": "#/$defs/roles"
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"host": {"const": "claude-code"}}},
+      "then": {"properties": {"roles": {"$ref": "#/$defs/claudeRoles"}}}
+    },
+    {
+      "if": {"properties": {"host": {"const": "opencode"}}},
+      "then": {"properties": {"roles": {"$ref": "#/$defs/openCodeRoles"}}}
+    },
+    {
+      "if": {"properties": {"host": {"const": "codex"}}},
+      "then": {"properties": {"roles": {"$ref": "#/$defs/codexRoles"}}}
+    }
+  ],
+  "$defs": {
+    "role": {
+      "type": "object",
+      "required": ["default_model", "resolved_model", "override_setting"],
+      "additionalProperties": false,
+      "properties": {
+        "default_model": {"type": "string", "minLength": 1},
+        "resolved_model": {"type": "string", "minLength": 1},
+        "override_setting": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "not": {
+        "anyOf": [
+          {"required": ["inherits_from"]},
+          {"required": ["inherit"]},
+          {"required": ["model_from_role"]}
+        ]
+      }
+    },
+    "roles": {
+      "type": "object",
+      "required": ["controller", "research", "implementation", "review", "mechanical"],
+      "additionalProperties": false,
+      "properties": {
+        "controller": {"$ref": "#/$defs/controllerRole"},
+        "research": {"$ref": "#/$defs/researchRole"},
+        "implementation": {"$ref": "#/$defs/implementationRole"},
+        "review": {"$ref": "#/$defs/reviewRole"},
+        "mechanical": {"$ref": "#/$defs/mechanicalRole"}
+      }
+    },
+    "controllerRole": {
+      "allOf": [
+        {"$ref": "#/$defs/role"},
+        {"properties": {"override_setting": {"const": "shahinkit.models.controller"}}}
+      ]
+    },
+    "researchRole": {
+      "allOf": [
+        {"$ref": "#/$defs/role"},
+        {"properties": {"override_setting": {"const": "shahinkit.models.research"}}}
+      ]
+    },
+    "implementationRole": {
+      "allOf": [
+        {"$ref": "#/$defs/role"},
+        {"properties": {"override_setting": {"const": "shahinkit.models.implementation"}}}
+      ]
+    },
+    "reviewRole": {
+      "allOf": [
+        {"$ref": "#/$defs/role"},
+        {"properties": {"override_setting": {"const": "shahinkit.models.review"}}}
+      ]
+    },
+    "mechanicalRole": {
+      "allOf": [
+        {"$ref": "#/$defs/role"},
+        {"properties": {"override_setting": {"const": "shahinkit.models.mechanical"}}}
+      ]
+    },
+    "claudeRoles": {
+      "allOf": [
+        {"$ref": "#/$defs/roles"},
+        {"properties": {"controller": {"properties": {"default_model": {"const": "opus"}}}, "research": {"properties": {"default_model": {"const": "sonnet"}}}, "implementation": {"properties": {"default_model": {"const": "sonnet"}}}, "review": {"properties": {"default_model": {"const": "sonnet"}}}, "mechanical": {"properties": {"default_model": {"const": "haiku"}}}}}
+      ]
+    },
+    "openCodeRoles": {
+      "allOf": [
+        {"$ref": "#/$defs/roles"},
+        {"properties": {"controller": {"properties": {"default_model": {"const": "openai/gpt-5.6-sol"}}}, "research": {"properties": {"default_model": {"const": "openai/gpt-5.6-terra"}}}, "implementation": {"properties": {"default_model": {"const": "openai/gpt-5.6-terra"}}}, "review": {"properties": {"default_model": {"const": "openai/gpt-5.6-terra"}}}, "mechanical": {"properties": {"default_model": {"const": "openai/gpt-5.4-mini"}}}}}
+      ]
+    },
+    "codexRoles": {
+      "allOf": [
+        {"$ref": "#/$defs/roles"},
+        {"properties": {"controller": {"properties": {"default_model": {"const": "gpt-5.6-sol"}}}, "research": {"properties": {"default_model": {"const": "gpt-5.6-terra"}}}, "implementation": {"properties": {"default_model": {"const": "gpt-5.6-terra"}}}, "review": {"properties": {"default_model": {"const": "gpt-5.6-terra"}}}, "mechanical": {"properties": {"default_model": {"const": "gpt-5.4-mini"}}}}}
+      ]
+    }
+  },
+  "x-shahinkit": {
+    "render_source": "roles.<role>.resolved_model",
+    "override_rule": "Set each role's shahinkit.models.<role> value before rendering; copy it into that role's resolved_model. Do not use inheritance.",
+    "defaults": {
+      "claude-code": {
+        "controller": "opus",
+        "research": "sonnet",
+        "implementation": "sonnet",
+        "review": "sonnet",
+        "mechanical": "haiku"
+      },
+      "opencode": {
+        "controller": "openai/gpt-5.6-sol",
+        "research": "openai/gpt-5.6-terra",
+        "implementation": "openai/gpt-5.6-terra",
+        "review": "openai/gpt-5.6-terra",
+        "mechanical": "openai/gpt-5.4-mini"
+      },
+      "codex": {
+        "controller": "gpt-5.6-sol",
+        "research": "gpt-5.6-terra",
+        "implementation": "gpt-5.6-terra",
+        "review": "gpt-5.6-terra",
+        "mechanical": "gpt-5.4-mini"
+      }
+    }
+  }
+}

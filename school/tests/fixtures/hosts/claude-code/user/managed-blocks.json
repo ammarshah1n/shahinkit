@@ -1,0 +1,5 @@
+{
+  "instruction_block": "instructions",
+  "config_strategy": "structured-owned-keys-only",
+  "baseline_state": "unmanaged"
+}

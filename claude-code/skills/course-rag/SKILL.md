@@ -19,15 +19,15 @@ Use this when the user wants to drag in course content, point Claude Code at a s
 ## Build
 
 ```bash
-python3 claude-code/course-rag/scripts/build.py --subject "SUBJECT" --source "/path/to/course-folder"
+python3 "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py" --subject "SUBJECT" --source "<SOURCE_FOLDER>"
 ```
 
-The index is written under `claude-code/course-rag/indexes/` by default.
+The index is written under `{{SHAHINKIT_DATA_DIR}}/course-rag/` by default.
 
 ## Search
 
 ```bash
-python3 claude-code/course-rag/scripts/search.py "SUBJECT" "query" --limit 8
+python3 "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py" "SUBJECT" "query" --limit 8
 ```
 
 ## Supported Inputs

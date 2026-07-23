@@ -1,0 +1,21 @@
+{
+  "skills": [
+    "prime",
+    "memory",
+    "context-router",
+    "checkpoint",
+    "session-handoff",
+    "reflect",
+    "wrap-up",
+    "miniwrap",
+    "corrections",
+    "self-improve"
+  ],
+  "templates": [
+    "PROJECT_STATE.md",
+    "NEXT.md",
+    "HANDOFF.md",
+    "LEARNINGS.md",
+    "CORRECTIONS.md"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "claude-code": {
+    "controller": "opus",
+    "research": "sonnet",
+    "implementation": "sonnet",
+    "review": "sonnet",
+    "mechanical": "haiku"
+  },
+  "opencode": {
+    "controller": "openai/gpt-5.6-sol",
+    "research": "openai/gpt-5.6-terra",
+    "implementation": "openai/gpt-5.6-terra",
+    "review": "openai/gpt-5.6-terra",
+    "mechanical": "openai/gpt-5.4-mini"
+  },
+  "codex": {
+    "controller": "gpt-5.6-sol",
+    "research": "gpt-5.6-terra",
+    "implementation": "gpt-5.6-terra",
+    "review": "gpt-5.6-terra",
+    "mechanical": "gpt-5.4-mini"
+  }
+}

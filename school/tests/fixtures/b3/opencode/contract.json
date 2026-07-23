@@ -1,0 +1,13 @@
+{
+  "version": "1.17.20",
+  "roles": {
+    "controller": "openai/gpt-5.6-sol",
+    "research": "openai/gpt-5.6-terra",
+    "implementation": "openai/gpt-5.6-terra",
+    "review": "openai/gpt-5.6-terra",
+    "mechanical": "openai/gpt-5.4-mini"
+  },
+  "skills": ["prime", "memory", "context-router", "checkpoint", "session-handoff", "reflect", "wrap-up", "miniwrap", "corrections", "self-improve", "delegation-routing", "idea", "plan", "plans", "mission", "deep-idea", "deep-plan", "study"],
+  "memory": ["PROJECT_STATE.md", "NEXT.md", "HANDOFF.md", "LEARNINGS.md", "CORRECTIONS.md"],
+  "commands": ["prime", "plan", "study", "wrap-up", "ponytail", "caveman"]
+}

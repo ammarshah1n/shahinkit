@@ -1,0 +1,44 @@
+{
+  "adapter": "opencode",
+  "receipt_schema": "school/docs/INSTALL-RECEIPT-SCHEMA.md",
+  "opencode_version": "1.17.20",
+  "render_rules": {
+    "copy": "Copy bytes from source to destination. Never symlink.",
+    "activation": "Plugin registration and Ponytail/Caveman lifecycle activate only after preview, apply, and host-trust confirmation.",
+    "scope_roots": {
+      "user": {"instructions": "AGENTS.md", "config": "opencode.jsonc", "agents": "agents", "commands": "commands", "skills": "skills", "plugins": "plugins"},
+      "project": {"instructions": "AGENTS.md", "config": "opencode.jsonc", "agents": ".opencode/agents", "commands": ".opencode/commands", "skills": ".opencode/skills", "plugins": ".opencode/plugins"}
+    }
+  },
+  "scope_examples": {"user": "opencode.user.jsonc.example", "project": "opencode.jsonc.example"},
+  "render": {
+    "byte_copy": ["opencode/.opencode/plugins/portable-gates.mjs"],
+    "templates": ["opencode/AGENTS.md", "opencode/.opencode/plugins/portable-gates.features.mjs", "opencode/opencode.user.jsonc.example", "opencode/opencode.jsonc.example"],
+    "scope_templates": {
+      "user": {"config": "opencode/opencode.user.jsonc.example", "config_destination": "opencode.jsonc", "agents": "opencode/AGENTS.md", "plugin_features": "opencode/.opencode/plugins/portable-gates.features.mjs", "plugin_destination": "plugins/portable-gates.features.mjs"},
+      "project": {"config": "opencode/opencode.jsonc.example", "config_destination": "opencode.jsonc", "agents": "opencode/AGENTS.md", "plugin_features": "opencode/.opencode/plugins/portable-gates.features.mjs", "plugin_destination": ".opencode/plugins/portable-gates.features.mjs"}
+    },
+    "required_substitutions": ["SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"],
+    "default_substitutions": {"PONYTAIL_ENABLED": "true", "CAVEMAN_ENABLED": "true"}
+  },
+  "context_renders": [
+    {"source": "school/shared/context/core-policy.block.md", "destination": "AGENTS.md", "marker": "CORE-POLICY"},
+    {"source": "school/shared/context/ponytail-default.block.md", "destination": "AGENTS.md", "marker": "PONYTAIL"},
+    {"source": "school/shared/context/caveman-default.block.md", "destination": "AGENTS.md", "marker": "CAVEMAN"},
+    {"source": "school/shared/context/adapter-references.block.md", "destination": "AGENTS.md", "marker": "ADAPTER-REFERENCES"}
+  ],
+  "shared_skills": ["checkpoint", "context-router", "corrections", "deep-idea", "deep-plan", "delegation-routing", "idea", "memory", "miniwrap", "mission", "plan", "plans", "prime", "reflect", "self-improve", "session-handoff", "study", "wrap-up"],
+  "shared_memory": ["CORRECTIONS.md", "HANDOFF.md", "LEARNINGS.md", "NEXT.md", "PROJECT_STATE.md"],
+  "vendor_skills": {
+    "ponytail": ["ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"],
+    "caveman": ["caveman", "caveman-commit", "caveman-help", "caveman-review"]
+  },
+  "mcp_templates": ["school/shared/mcp/basic-memory/opencode.mcp.json", "school/shared/mcp/basic-memory/local-config.example.json"],
+  "adapter_assets": [
+    "AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs",
+    ".opencode/agents/controller.md", ".opencode/agents/research.md", ".opencode/agents/implementation.md", ".opencode/agents/review.md", ".opencode/agents/mechanical.md",
+    ".opencode/commands/prime.md", ".opencode/commands/plan.md", ".opencode/commands/study.md", ".opencode/commands/wrap-up.md", ".opencode/commands/ponytail.md", ".opencode/commands/caveman.md"
+  ],
+  "required_install_assets": ["AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs", ".opencode/agents/controller.md"]
+  ,"install_destinations": {"AGENTS.md": "AGENTS.md", "opencode.jsonc.example": "opencode.jsonc", "opencode.user.jsonc.example": "opencode.jsonc", ".opencode/plugins/portable-gates.mjs": "plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs": "plugins/portable-gates.features.mjs", ".opencode/agents/controller.md": "agents/controller.md"}
+}

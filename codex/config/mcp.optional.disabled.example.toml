@@ -1,0 +1,17 @@
+# Disabled optional MCP catalog. Values are environment references only.
+
+[mcp_servers.context7]
+enabled = false
+url = "<CONTEXT7_MCP_URL>"
+bearer_token_env_var = "CONTEXT7_MCP_TOKEN"
+
+[mcp_servers.research]
+enabled = false
+url = "<RESEARCH_MCP_URL>"
+bearer_token_env_var = "RESEARCH_MCP_TOKEN"
+
+[mcp_servers.dev-scope]
+enabled = false
+command = "node"
+args = ["<DEV_SCOPE_ENTRYPOINT>"]
+env = { DEV_SCOPE_CONFIG = "<DEV_SCOPE_CONFIG_FILE>" }

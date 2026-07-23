@@ -5,8 +5,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_INDEX_DIR = ROOT / "indexes"
+DEFAULT_INDEX_DIR = Path("{{SHAHINKIT_DATA_DIR}}/course-rag")
 
 
 def slugify(value: str) -> str:

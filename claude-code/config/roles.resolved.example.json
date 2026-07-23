@@ -1,0 +1,30 @@
+{
+  "host": "claude-code",
+  "roles": {
+    "controller": {
+      "default_model": "opus",
+      "resolved_model": "opus",
+      "override_setting": "shahinkit.models.controller"
+    },
+    "research": {
+      "default_model": "sonnet",
+      "resolved_model": "sonnet",
+      "override_setting": "shahinkit.models.research"
+    },
+    "implementation": {
+      "default_model": "sonnet",
+      "resolved_model": "sonnet",
+      "override_setting": "shahinkit.models.implementation"
+    },
+    "review": {
+      "default_model": "sonnet",
+      "resolved_model": "sonnet",
+      "override_setting": "shahinkit.models.review"
+    },
+    "mechanical": {
+      "default_model": "haiku",
+      "resolved_model": "haiku",
+      "override_setting": "shahinkit.models.mechanical"
+    }
+  }
+}

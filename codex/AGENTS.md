@@ -1,110 +1,62 @@
-# AGENTS.md
+# ShahinKit Codex Instructions
 
-Use this file as the project or global instruction layer for OpenAI Codex.
+Use as project `AGENTS.md`. Codex discovers rendered skills from
+`.agents/skills/`. Read target files before edits. Check repository status
+before writing. Keep diffs scoped. Ask before destructive or external actions.
 
-## Operating Contract
+<!-- SHAHINKIT:CORE-POLICY:START -->
+Apply procedural rules before memory and stale state. Verify material claims
+before reporting them complete. Keep external actions approval-gated. Never
+expose secrets, credentials, private paths, transcripts, or personal memory.
+<!-- SHAHINKIT:CORE-POLICY:END -->
 
-- Read the target file before editing it.
-- Check `git status` before writing in a git repo.
-- Edit minimally. Change only what the task requires.
-- Ask before destructive operations such as delete, move, reset, force push, branch deletion, database drops, bulk import, indexing, upload, or public export.
-- Do not store credentials, private transcripts, personal paths, or course material in reusable kit files.
-- Prefer `rg` for file and text search.
-- Commit completed changes with conventional commit messages when the host project requires commits.
+<!-- SHAHINKIT:PONYTAIL:START -->
+Ponytail is active by default at `full` for coding work. Stop at first
+sufficient solution; prefer existing code, standard library, native platform
+features, and smallest correct diff. Do not simplify validation, data-loss
+protection, security, accessibility, or an explicit user requirement. User
+may opt out for current session with `stop ponytail` or `normal mode`.
+<!-- SHAHINKIT:PONYTAIL:END -->
 
-## Skill Invocation
+<!-- SHAHINKIT:CAVEMAN:START -->
+Caveman is active by default at `full`. Preserve technical substance, use terse
+clear prose, and keep code, commits, and PRs normal. Auto-Clarity overrides
+compression for security warnings, irreversible action confirmations, ambiguous
+multi-step instructions, technical ambiguity, or a clarification request.
+Resume `full` after clear section. User may opt out for current session with
+`stop caveman` or `normal mode`.
+<!-- SHAHINKIT:CAVEMAN:END -->
 
-Codex skills are invoked by name in plain text, not with leading slash commands.
+<!-- SHAHINKIT:ADAPTER-REFERENCES:START -->
+Render only host-supported syntax. Preserve approved policy, independent role
+resolution, Ponytail and Caveman defaults, and reviewed local MCP settings.
+Do not infer unsupported lifecycle behavior, copy account configuration, or
+make network, cloud, telemetry, secret-reading, or arbitrary-subprocess claims.
+<!-- SHAHINKIT:ADAPTER-REFERENCES:END -->
 
-Use:
+## Skill Flow
 
-- `prime`
-- `idea`
-- `plan`
-- `plans`
-- `deep-idea`
-- `deep-plan`
-- `memory`
-- `course-rag`
-- `wrap-up`
+Use `prime` before non-trivial work. Route one change through `plan`, coupled
+deliverables through `mission`, and independent asks through `plans`. Use
+`study` for `/study` and schoolwork mapping in an existing Obsidian vault.
+Use `course-rag` only for local course search. Use `wrap-up` for meaningful close.
+Skill text governs its workflow and explicit GO gates.
 
-## Session Flow
+## Roles
 
-1. Use `prime` at the start of non-trivial work.
-2. Use `idea` for a new product, workflow, or feature concept.
-3. Use `plan` for one non-trivial change.
-4. Use `plans` for a batch of independent changes or ideas.
-5. Use `deep-plan` when codebase mapping is the main risk.
-6. Use `deep-idea` when the repo does not exist or is too immature for codebase mapping.
-7. Use `memory` when setting up or using the local Obsidian/basic-memory workflow.
-8. Use `course-rag` when the user gives a course folder and wants local course search.
-9. Use `wrap-up` before ending meaningful work.
+Controller owns architecture, routing, final synthesis, integrity judgement,
+and acceptance. Research, implementation, review, and mechanical workers own
+only bounded assigned work. Every worker resolves its own model; never inherit
+controller model or authority. Review worker output before acceptance.
 
-## Memory Protocol
+## Memory
 
-Use Obsidian as the document editor for memory files. A normal setup is:
+Markdown is source of truth. Optional Basic Memory is local retrieval only.
+Store distilled facts, never raw transcripts or tool output. Do not sync,
+publish, upload, or index memory without explicit user approval.
 
-- `~/Documents/Agent-Memory-Vault/Working-Context/PROJECT_STATE.md`
-- `~/Documents/Agent-Memory-Vault/Working-Context/NEXT.md`
-- `~/Documents/Agent-Memory-Vault/Handoffs/`
-- `~/Documents/Agent-Memory-Vault/Notes/`
+## Lifecycle
 
-If basic-memory MCP is available, query it during `prime` for the current repo, task, and recent handoffs. If MCP is unavailable, read the markdown files directly. During `wrap-up`, update the local markdown state first, then write durable facts through basic-memory when the tool is available.
-
-Do not sync, publish, or upload the memory vault unless the user explicitly asks.
-
-## Planning Rules
-
-- Ground plans in real files and current project state.
-- Plans must include a dependency graph and a parallel batch schedule.
-- Use parallel execution only when tasks are not dependency-blocked.
-- Do not include time estimates.
-- Do not leave vague deferrals. Convert blockers into named human actions or implementation steps.
-- Stop for approval before implementation unless the user explicitly pasted an approved plan and asked for implementation.
-
-## Cost-Aware Routing
-
-The lead agent owns cost discipline. Do not reflexively dispatch high-effort subagents.
-
-### Inline By Default
-
-Do directly in the lead session:
-
-- single-file edits;
-- typo or wording fixes;
-- small README/config updates;
-- targeted `rg`, `sed`, `git status`, `git diff`, `git show`, and manifest reads;
-- simple command output requests;
-- mechanical changes where the target files are already known.
-
-### Cheap Worker
-
-Use a lower-cost worker only when it saves meaningful lead-agent context:
-
-- file inventory;
-- literal search summaries;
-- table extraction;
-- deterministic bulk checks;
-- generated fixtures from an exact spec.
-
-### Strong Worker
-
-Use stronger model effort only when correctness depends on real reasoning:
-
-- architecture decisions;
-- cross-module refactors;
-- auth, payment, migration, privacy, or data-loss risk;
-- ambiguous requirements;
-- plan review;
-- adversarial review of high-impact diffs.
-
-### Subagent Rules
-
-- Subagents are discretionary, not automatic.
-- Do not use strong high-effort workers for small mechanical tasks.
-- Give each subagent exact scope, expected output, files or directories, and verification.
-- The lead agent must review worker output before treating it as done.
-
-## Course RAG
-
-When the user provides a course folder, use `course-rag` to build a local SQLite search index. Never edit the source folder. Search the index before answering course-content questions and cite the source path shown by the search result.
+No lifecycle hook is rendered. Ponytail and Caveman static context plus skills
+become active only after preview, explicit apply, and host-trust confirmation.
+Generic gate examples remain advisory and disabled.

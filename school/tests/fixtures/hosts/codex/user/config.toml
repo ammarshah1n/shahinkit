@@ -1,0 +1,4 @@
+# Fixture configuration baseline.
+
+[features]
+hooks = false

@@ -1,0 +1,37 @@
+{
+  "template_version": 1,
+  "examples": {
+    "context7": {
+      "enabled": false,
+      "transport": "remote",
+      "url": "<CONTEXT7_MCP_URL>",
+      "secret_env": "CONTEXT7_API_KEY",
+      "secret_file": "<CONTEXT7_SECRET_FILE>"
+    },
+    "timed": {
+      "enabled": false,
+      "transport": "remote",
+      "url": "<TIMED_MCP_URL>",
+      "secret_env": "TIMED_API_TOKEN",
+      "secret_file": "<TIMED_SECRET_FILE>"
+    },
+    "research": {
+      "enabled": false,
+      "transport": "remote",
+      "url": "<RESEARCH_MCP_URL>",
+      "secret_env": "RESEARCH_MCP_TOKEN",
+      "secret_file": "<RESEARCH_MCP_SECRET_FILE>"
+    },
+    "dev-scope": {
+      "enabled": false,
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "<DEV_SCOPE_ENTRYPOINT>"
+      ],
+      "config_file": "<DEV_SCOPE_CONFIG_FILE>",
+      "local_only": true,
+      "read_only": true
+    }
+  }
+}

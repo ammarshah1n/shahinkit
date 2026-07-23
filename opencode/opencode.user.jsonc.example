@@ -1,0 +1,37 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "default_agent": "controller",
+  "autoupdate": false,
+  "share": "disabled",
+  "skills": {
+    "paths": ["skills"]
+  },
+  "mcp": {
+    "basic-memory": {
+      "type": "local",
+      "command": ["basic-memory", "mcp", "--transport", "stdio", "--project", "<LOCAL_PROJECT_NAME>"],
+      "enabled": false,
+      "env": {
+        "BASIC_MEMORY_CONFIG_DIR": "<LOCAL_BASIC_MEMORY_CONFIG_DIR>",
+        "BASIC_MEMORY_DEFAULT_PROJECT": "<LOCAL_PROJECT_NAME>",
+        "BASIC_MEMORY_PROJECT_ROOT": "<LOCAL_PROJECT_ROOT>",
+        "BASIC_MEMORY_FORCE_LOCAL": "true",
+        "BASIC_MEMORY_EXPLICIT_ROUTING": "true",
+        "BASIC_MEMORY_AUTO_UPDATE": "false",
+        "BASIC_MEMORY_LOGFIRE_ENABLED": "false",
+        "BASIC_MEMORY_LOGFIRE_SEND_TO_LOGFIRE": "false",
+        "BASIC_MEMORY_CLOUD_PROMO_OPT_OUT": "true"
+      }
+    },
+    "dev-scope": {
+      "type": "local",
+      "command": ["node", "<DEV_SCOPE_ENTRYPOINT>"],
+      "enabled": false,
+      "env": {
+        "DEV_SCOPE_CONFIG": "<DEV_SCOPE_CONFIG_FILE>"
+      }
+    }
+  },
+  "plugin": ["./plugins/portable-gates.mjs"]
+}

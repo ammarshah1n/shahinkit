@@ -1,19 +1,10 @@
 {
-  "description": "Example Claude Code settings fragment. Review before merging into live settings.",
-  "shahinkit": {
-    "home": ".shahinkit",
-    "track": "default",
-    "courseRagIndexDir": ".shahinkit/course-rag/indexes",
-    "memoryVault": "~/Documents/Agent-Memory-Vault",
-    "memoryProject": "agent-memory"
-  },
-  "mcpServers": {
-    "basic-memory": {
-      "command": "basic-memory",
-      "args": ["mcp"]
-    }
-  },
-  "hooks": {
-    "enabled": false
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
+    ]
   }
 }

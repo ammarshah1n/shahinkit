@@ -1,0 +1,108 @@
+{
+  "adapter": "claude-code",
+  "receipt_schema": "school/docs/INSTALL-RECEIPT-SCHEMA.md",
+  "claude_code_version": ">=2.1.209 <2.2.0",
+  "render_rules": {
+    "copy": "Copy bytes from source to destination. Never symlink.",
+    "context": "Render source block unchanged into destination CLAUDE.md markers.",
+    "scope_roots": {
+      "user": {
+        "instructions": "CLAUDE.md",
+        "skills": "skills",
+        "commands": "commands",
+        "agents": "agents",
+        "settings": "settings.json",
+        "mcp": ".claude.json",
+        "data": "{{SHAHINKIT_DATA_DIR}}"
+      },
+      "project": {
+        "instructions": "CLAUDE.md",
+        "skills": ".claude/skills",
+        "commands": ".claude/commands",
+        "agents": ".claude/agents",
+        "settings": ".claude/settings.json",
+        "mcp": ".mcp.json",
+        "data": "{{SHAHINKIT_DATA_DIR}}"
+      }
+    }
+  },
+  "render": {
+    "required_substitutions": ["SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"]
+  },
+  "shared": {
+    "skills": [
+      "prime", "memory", "context-router", "checkpoint", "session-handoff",
+      "reflect", "miniwrap", "corrections", "self-improve", "delegation-routing",
+      "idea", "plan", "plans", "mission", "deep-idea", "deep-plan", "study", "wrap-up"
+    ],
+    "memory": ["HANDOFF.md", "LEARNINGS.md", "PROJECT_STATE.md", "NEXT.md", "CORRECTIONS.md"],
+    "context": [
+      "core-policy.block.md", "ponytail-default.block.md",
+      "caveman-default.block.md", "adapter-references.block.md"
+    ]
+  },
+  "copies": [
+    {"source": "school/shared/skills/prime/SKILL.md", "destination": "skills/prime/SKILL.md"},
+    {"source": "school/shared/skills/memory/SKILL.md", "destination": "skills/memory/SKILL.md"},
+    {"source": "school/shared/skills/context-router/SKILL.md", "destination": "skills/context-router/SKILL.md"},
+    {"source": "school/shared/skills/checkpoint/SKILL.md", "destination": "skills/checkpoint/SKILL.md"},
+    {"source": "school/shared/skills/session-handoff/SKILL.md", "destination": "skills/session-handoff/SKILL.md"},
+    {"source": "school/shared/skills/reflect/SKILL.md", "destination": "skills/reflect/SKILL.md"},
+    {"source": "school/shared/skills/miniwrap/SKILL.md", "destination": "skills/miniwrap/SKILL.md"},
+    {"source": "school/shared/skills/corrections/SKILL.md", "destination": "skills/corrections/SKILL.md"},
+    {"source": "school/shared/skills/self-improve/SKILL.md", "destination": "skills/self-improve/SKILL.md"},
+    {"source": "school/shared/skills/delegation-routing/SKILL.md", "destination": "skills/delegation-routing/SKILL.md"},
+    {"source": "school/shared/skills/idea/SKILL.md", "destination": "skills/idea/SKILL.md"},
+    {"source": "school/shared/skills/plan/SKILL.md", "destination": "skills/plan/SKILL.md"},
+    {"source": "school/shared/skills/plans/SKILL.md", "destination": "skills/plans/SKILL.md"},
+    {"source": "school/shared/skills/mission/SKILL.md", "destination": "skills/mission/SKILL.md"},
+    {"source": "school/shared/skills/deep-idea/SKILL.md", "destination": "skills/deep-idea/SKILL.md"},
+    {"source": "school/shared/skills/deep-plan/SKILL.md", "destination": "skills/deep-plan/SKILL.md"},
+    {"source": "school/shared/skills/study/SKILL.md", "destination": "skills/study/SKILL.md"},
+    {"source": "school/shared/skills/wrap-up/SKILL.md", "destination": "skills/wrap-up/SKILL.md"},
+    {"source": "school/shared/memory/HANDOFF.md", "destination": "memory/templates/HANDOFF.md"},
+    {"source": "school/shared/memory/LEARNINGS.md", "destination": "memory/templates/LEARNINGS.md"},
+    {"source": "school/shared/memory/PROJECT_STATE.md", "destination": "memory/templates/PROJECT_STATE.md"},
+    {"source": "school/shared/memory/NEXT.md", "destination": "memory/templates/NEXT.md"},
+    {"source": "school/shared/memory/CORRECTIONS.md", "destination": "memory/templates/CORRECTIONS.md"},
+    {"source": "school/shared/mcp/basic-memory/claude-code.mcp.json", "destination": "config/mcp.basic-memory.example.json"},
+    {"source": "school/third_party/ponytail/skills/ponytail/SKILL.md", "destination": "skills/ponytail/SKILL.md"},
+    {"source": "school/third_party/ponytail/skills/ponytail-audit/SKILL.md", "destination": "skills/ponytail-audit/SKILL.md"},
+    {"source": "school/third_party/ponytail/skills/ponytail-debt/SKILL.md", "destination": "skills/ponytail-debt/SKILL.md"},
+    {"source": "school/third_party/ponytail/skills/ponytail-gain/SKILL.md", "destination": "skills/ponytail-gain/SKILL.md"},
+    {"source": "school/third_party/ponytail/skills/ponytail-help/SKILL.md", "destination": "skills/ponytail-help/SKILL.md"},
+    {"source": "school/third_party/ponytail/skills/ponytail-review/SKILL.md", "destination": "skills/ponytail-review/SKILL.md"},
+    {"source": "school/third_party/caveman/skills/caveman/SKILL.md", "destination": "skills/caveman/SKILL.md"},
+    {"source": "school/third_party/caveman/skills/caveman-commit/SKILL.md", "destination": "skills/caveman-commit/SKILL.md"},
+    {"source": "school/third_party/caveman/skills/caveman-help/SKILL.md", "destination": "skills/caveman-help/SKILL.md"},
+    {"source": "school/third_party/caveman/skills/caveman-review/SKILL.md", "destination": "skills/caveman-review/SKILL.md"},
+    {"source": "school/shared/mcp/basic-memory/local-config.example.json", "destination": "config/basic-memory.local-config.example.json"}
+  ],
+  "context_renders": [
+    {"source": "school/shared/context/core-policy.block.md", "destination": "CLAUDE.md", "marker": "CORE-POLICY"},
+    {"source": "school/shared/context/ponytail-default.block.md", "destination": "CLAUDE.md", "marker": "PONYTAIL"},
+    {"source": "school/shared/context/caveman-default.block.md", "destination": "CLAUDE.md", "marker": "CAVEMAN"},
+    {"source": "school/shared/context/adapter-references.block.md", "destination": "CLAUDE.md", "marker": "ADAPTER-REFERENCES"}
+  ],
+  "adapter_assets": [
+    {"source": "claude-code/CLAUDE.md", "destination": "CLAUDE.md"},
+    {"source": "claude-code/agents/shahinkit-controller.md", "destination": "agents/shahinkit-controller.md"},
+    {"source": "claude-code/agents/shahinkit-research.md", "destination": "agents/shahinkit-research.md"},
+    {"source": "claude-code/agents/shahinkit-implementation.md", "destination": "agents/shahinkit-implementation.md"},
+    {"source": "claude-code/agents/shahinkit-review.md", "destination": "agents/shahinkit-review.md"},
+    {"source": "claude-code/agents/shahinkit-mechanical.md", "destination": "agents/shahinkit-mechanical.md"},
+    {"source": "claude-code/skills/course-rag/SKILL.md", "destination": "skills/course-rag/SKILL.md"},
+    {"source": "claude-code/course-rag/README.md", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/README.md"},
+    {"source": "claude-code/course-rag/scripts/build.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py"},
+    {"source": "claude-code/course-rag/scripts/search.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"},
+    {"source": "claude-code/course-rag/indexes/.gitignore", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitignore"},
+    {"source": "claude-code/course-rag/indexes/.gitkeep", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitkeep"}
+  ],
+  "settings_patches": {
+    "source": "claude-code/config/settings.patch.example.json",
+    "mode": "managed-block-merge",
+    "destinations": {"user": "settings.json", "project": ".claude/settings.json"}
+  },
+  "install_destinations": {"CLAUDE.md": "CLAUDE.md", "config/mcp.basic-memory.example.json": "mcp", "agents/shahinkit-controller.md": "agents/shahinkit-controller.md", "skills/course-rag/SKILL.md": "skills/course-rag/SKILL.md", "course-rag/scripts/build.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py", "course-rag/scripts/search.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"},
+  "required_install_assets": ["CLAUDE.md", "config/mcp.basic-memory.example.json", "agents/shahinkit-controller.md", "skills/course-rag/SKILL.md", "course-rag/scripts/build.py", "course-rag/scripts/search.py"]
+}

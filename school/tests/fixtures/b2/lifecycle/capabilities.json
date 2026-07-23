@@ -1,0 +1,12 @@
+{
+  "prime": ["Read-only", "do not create, edit, move, delete, install, index, sync, commit"],
+  "memory": ["Markdown files are human-readable source of truth.", "Basic Memory is optional", "Never store or copy raw transcripts", "Do not duplicate current state across files."],
+  "context-router": ["`PROJECT_STATE.md` supplies current status", "`NEXT.md` supplies current restart action", "Do not write same item to multiple state authorities."],
+  "checkpoint": ["PROJECT_STATE.md", "NEXT.md", "HANDOFF.md", "Never store or copy raw transcripts"],
+  "session-handoff": ["`PROJECT_STATE.md` for current status", "`NEXT.md` for restart action", "Never store or copy raw transcripts"],
+  "reflect": ["concrete artifacts", "evidence", "Never store or copy raw transcripts"],
+  "wrap-up": ["Record commands and observed results", "`PROJECT_STATE.md` remains current-state authority", "Never push automatically.", "Never store or copy raw transcripts"],
+  "miniwrap": ["Escalate to `wrap-up`", "Do not update `PROJECT_STATE.md`, `NEXT.md`, or `HANDOFF.md`"],
+  "corrections": ["CORRECTIONS.md", "generic, actionable prevention rule", "Never store or copy raw transcripts"],
+  "self-improve": ["one canonical destination", "Present proposed changes for approval", "Never store or copy raw transcripts"]
+}

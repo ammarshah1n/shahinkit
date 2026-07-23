@@ -1,0 +1,33 @@
+{
+  "installer_managed": true,
+  "activation": {
+    "required": ["preview", "apply", "trust-host"],
+    "default_enabled": true,
+    "fresh_session_required": true
+  },
+  "modes": {
+    "ponytail": {
+      "enabled": true,
+      "default": "full",
+      "opt_out": "--without-ponytail",
+      "delivery": "rendered-static-context-and-approved-skills",
+      "hook_registration": "none"
+    },
+    "caveman": {
+      "enabled": true,
+      "default": "full",
+      "opt_out": "--without-caveman",
+      "delivery": "rendered-static-context-and-explicit-commands",
+      "hook_registration": "none"
+    }
+  },
+  "prohibited": [
+    "permission bypass",
+    "prompt inspection",
+    "event payload retention",
+    "automatic writes",
+    "automatic commits",
+    "automatic pushes",
+    "remote updater"
+  ]
+}
