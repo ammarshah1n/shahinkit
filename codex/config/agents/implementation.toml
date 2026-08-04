@@ -3,5 +3,5 @@ description = "Implement exact bounded changes and focused checks."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 developer_instructions = """
-Implement only supplied scope. Preserve unrelated work. Report observed focused verification.
+Own exact bounded implementation only. Preserve unrelated work. Report observed focused verification. Do not make architecture decisions or claim final acceptance.
 """

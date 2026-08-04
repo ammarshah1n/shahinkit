@@ -1,0 +1,66 @@
+{
+  "contract_version": "b0",
+  "purpose": "Isolated host layout, marker, managed-baseline, and symlink-rejection fixtures.",
+  "hosts": {
+    "claude-code": {
+      "version_marker": "CLAUDE_CODE_VERSION",
+      "accepted_range": ">=2.1.209 <2.2.0",
+      "config": {
+        "format": "json",
+        "schema_id": "https://json.schemastore.org/claude-code-settings.json",
+        "schema_version": "none-published"
+      },
+      "scopes": {
+        "user": ["CLAUDE.md", "skills/", "commands/", "settings.json"],
+        "project": ["CLAUDE.md", ".claude/skills/", ".claude/commands/", ".claude/settings.json"]
+      }
+    },
+    "opencode": {
+      "version_marker": "OPENCODE_VERSION",
+      "accepted_range": ">=1.18.0 <1.19.0",
+      "config": {
+        "format": "jsonc",
+        "schema_id": "https://opencode.ai/config.json",
+        "schema_version": "none-published"
+      },
+      "scopes": {
+        "user": ["AGENTS.md", "skills/", "commands/", "opencode.jsonc"],
+        "project": ["AGENTS.md", ".opencode/skills/", ".opencode/commands/", "opencode.jsonc"]
+      }
+    },
+    "codex": {
+      "version_marker": "CODEX_VERSION",
+      "accepted_range": ">=0.145.0 <0.146.0",
+      "config": {
+        "format": "toml",
+        "validation": {
+          "draft": "Draft-07",
+          "title": "ConfigToml",
+          "published_schema_url": "https://developers.openai.com/codex/config-schema.json",
+          "repository_schema_guide_url": "https://github.com/openai/codex/blob/c10010928075babeebfc65b824db8778f10a1c56/codex-rs/core/src/config/schema.md",
+          "pinned_source_artifact_url": "https://raw.githubusercontent.com/openai/codex/c10010928075babeebfc65b824db8778f10a1c56/codex-rs/core/config.schema.json"
+        },
+        "auto_detection": {
+          "schema_metadata_input": false,
+          "requires": ["executable", "selected-config-path", "toml-parse", "documented-contract"]
+        }
+      },
+      "scopes": {
+        "user": ["AGENTS.md", "~/.agents/skills/", "config.toml"],
+        "project": ["AGENTS.md", ".agents/skills/", ".codex/config.toml"]
+      }
+    }
+  },
+  "required_fixture_assets": [
+    "instruction baseline",
+    "isolated config template",
+    "managed-block baseline",
+    "empty skills directory marker",
+    "empty commands directory marker when mapped",
+    "Codex schema-validation fixtures separate from auto-detection"
+  ],
+  "auto_detection_fixture": "auto-detection.json",
+  "codex_malformed_auto_detection_fixture": "codex/malformed-auto-detection.toml",
+  "codex_schema_validation_fixture": "codex/schema-validation.json",
+  "hostile_symlink_fixture": "hostile-symlink.json"
+}

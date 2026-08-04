@@ -32,6 +32,5 @@
         "DEV_SCOPE_CONFIG": "<DEV_SCOPE_CONFIG_FILE>"
       }
     }
-  },
-  "plugin": ["./plugins/portable-gates.mjs"]
+  }
 }

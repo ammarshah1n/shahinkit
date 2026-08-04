@@ -1,6 +1,6 @@
 {
   "adapter": "opencode",
-  "receipt_schema": "school/docs/INSTALL-RECEIPT-SCHEMA.md",
+  "receipt_schema": "claude-code/core/docs/INSTALL-RECEIPT-SCHEMA.md",
   "opencode_version": "1.17.20",
   "render_rules": {
     "copy": "Copy bytes from source to destination. Never symlink.",
@@ -22,23 +22,35 @@
     "default_substitutions": {"PONYTAIL_ENABLED": "true", "CAVEMAN_ENABLED": "true"}
   },
   "context_renders": [
-    {"source": "school/shared/context/core-policy.block.md", "destination": "AGENTS.md", "marker": "CORE-POLICY"},
-    {"source": "school/shared/context/ponytail-default.block.md", "destination": "AGENTS.md", "marker": "PONYTAIL"},
-    {"source": "school/shared/context/caveman-default.block.md", "destination": "AGENTS.md", "marker": "CAVEMAN"},
-    {"source": "school/shared/context/adapter-references.block.md", "destination": "AGENTS.md", "marker": "ADAPTER-REFERENCES"}
+    {"source": "claude-code/core/shared/context/core-policy.block.md", "destination": "AGENTS.md", "marker": "CORE-POLICY"},
+    {"source": "claude-code/core/shared/context/ponytail-default.block.md", "destination": "AGENTS.md", "marker": "PONYTAIL"},
+    {"source": "claude-code/core/shared/context/caveman-default.block.md", "destination": "AGENTS.md", "marker": "CAVEMAN"},
+    {"source": "claude-code/core/shared/context/adapter-references.block.md", "destination": "AGENTS.md", "marker": "ADAPTER-REFERENCES"}
   ],
-  "shared_skills": ["checkpoint", "context-router", "corrections", "deep-idea", "deep-plan", "delegation-routing", "idea", "memory", "miniwrap", "mission", "plan", "plans", "prime", "reflect", "self-improve", "session-handoff", "study", "wrap-up"],
+  "shared_skills": ["audit-tool", "checkpoint", "collab", "context-router", "corrections", "deep-idea", "deep-plan", "delegation-routing", "graphify", "idea", "memory", "miniwrap", "mission", "output-style", "parallel-worktrees", "plan", "plans", "prime", "reflect", "research", "self-improve", "session-handoff", "skill-builder", "study", "taste-gate", "triage", "watch", "wrap-up"],
   "shared_memory": ["CORRECTIONS.md", "HANDOFF.md", "LEARNINGS.md", "NEXT.md", "PROJECT_STATE.md"],
   "vendor_skills": {
     "ponytail": ["ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"],
     "caveman": ["caveman", "caveman-commit", "caveman-help", "caveman-review"]
   },
-  "mcp_templates": ["school/shared/mcp/basic-memory/opencode.mcp.json", "school/shared/mcp/basic-memory/local-config.example.json"],
+  "mcp_templates": ["claude-code/core/shared/mcp/basic-memory/opencode.mcp.json", "claude-code/core/shared/mcp/basic-memory/local-config.example.json"],
+  "course_rag": {
+    "data_destination": "{{SHAHINKIT_DATA_DIR}}/course-rag",
+    "skill_destinations": {"user": "skills/course-rag/SKILL.md", "project": ".opencode/skills/course-rag/SKILL.md"},
+    "outputs": [
+      {"source": "claude-code/skills/course-rag/SKILL.md", "destinations": {"user": "skills/course-rag/SKILL.md", "project": ".opencode/skills/course-rag/SKILL.md"}},
+      {"source": "claude-code/course-rag/README.md", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/README.md"},
+      {"source": "claude-code/course-rag/scripts/build.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py"},
+      {"source": "claude-code/course-rag/scripts/search.py", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"},
+      {"source": "claude-code/course-rag/indexes/.gitignore", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitignore"},
+      {"source": "claude-code/course-rag/indexes/.gitkeep", "destination": "{{SHAHINKIT_DATA_DIR}}/course-rag/.gitkeep"}
+    ]
+  },
   "adapter_assets": [
-    "AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs",
+    "AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs", ".opencode/plugins/shahinkit-guard.mjs",
     ".opencode/agents/controller.md", ".opencode/agents/research.md", ".opencode/agents/implementation.md", ".opencode/agents/review.md", ".opencode/agents/mechanical.md",
     ".opencode/commands/prime.md", ".opencode/commands/plan.md", ".opencode/commands/study.md", ".opencode/commands/wrap-up.md", ".opencode/commands/ponytail.md", ".opencode/commands/caveman.md"
   ],
-  "required_install_assets": ["AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs", ".opencode/agents/controller.md"]
-  ,"install_destinations": {"AGENTS.md": "AGENTS.md", "opencode.jsonc.example": "opencode.jsonc", "opencode.user.jsonc.example": "opencode.jsonc", ".opencode/plugins/portable-gates.mjs": "plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs": "plugins/portable-gates.features.mjs", ".opencode/agents/controller.md": "agents/controller.md"}
+  "required_install_assets": ["AGENTS.md", "opencode.jsonc.example", "opencode.user.jsonc.example", ".opencode/plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs", ".opencode/plugins/shahinkit-guard.mjs", ".opencode/agents/controller.md"],
+  "install_destinations": {"AGENTS.md": "AGENTS.md", "opencode.jsonc.example": "opencode.jsonc", "opencode.user.jsonc.example": "opencode.jsonc", ".opencode/plugins/portable-gates.mjs": "plugins/portable-gates.mjs", ".opencode/plugins/portable-gates.features.mjs": "plugins/portable-gates.features.mjs", ".opencode/plugins/shahinkit-guard.mjs": "plugins/shahinkit-guard.mjs", ".opencode/agents/controller.md": "agents/controller.md"}
 }

@@ -15,7 +15,7 @@ after preview, `--apply`, and host trust confirmation. No symlinks.
 | agents | `<OPENCODE_HOME>/agents/` | `<DESTINATION>/.opencode/agents/` |
 | commands | `<OPENCODE_HOME>/commands/` | `<DESTINATION>/.opencode/commands/` |
 | rendered skills | `<OPENCODE_HOME>/skills/` | `<DESTINATION>/.opencode/skills/` |
-| plugin | `<OPENCODE_HOME>/plugins/portable-gates.mjs` | `<DESTINATION>/.opencode/plugins/portable-gates.mjs` |
+| plugins | `<OPENCODE_HOME>/plugins/` | `<DESTINATION>/.opencode/plugins/` |
 
 `render-manifest.json` is source-of-truth for copied assets and destinations.
 
@@ -31,9 +31,13 @@ after preview, `--apply`, and host trust confirmation. No symlinks.
 requires an existing Obsidian vault, bundles no course content, copies nothing
 automatically, and does not require Course-RAG.
 
-`plugin` registration is installer-managed and active only in applied trusted
-installations. Preview has no runtime registration. Disable lifecycle modes at
-install with `--without-ponytail` or `--without-caveman`; restart OpenCode for
+Optional `/course-rag` installs from Claude Code's canonical portable source and
+builds only a local SQLite index from folders the user selects.
+
+OpenCode automatically discovers local files in its standard user or project
+plugin directory; config does not list them a second time. Files appear only in
+applied trusted installations. Disable lifecycle modes at install with
+`--without-ponytail` or `--without-caveman`; restart OpenCode once after
 configuration changes.
 
 ## Role overrides
@@ -64,6 +68,10 @@ forces a plain go/no-go checkpoint through the system prompt), and desktop
 notifications (macOS only, best-effort) when a primary session stops, asks
 for a decision, or trips its budget. It stores counters in process memory
 only and spawns no subprocess except the macOS notifier.
+
+It also adds Prime availability guidance once per session and clears that
+in-memory marker when the session is deleted. It reads no prompt text and writes
+no files.
 
 ## Reflection loop (optional)
 

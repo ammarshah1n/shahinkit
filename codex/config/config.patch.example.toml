@@ -1,4 +1,4 @@
-# Project config fragment for Codex CLI 0.144.5. Merge only after review.
+# Project config fragment for Codex CLI 0.145.0. Merge only after review.
 # This fragment deliberately sets no global model, approval, sandbox, network,
 # provider, credential, telemetry, or trust controls.
 

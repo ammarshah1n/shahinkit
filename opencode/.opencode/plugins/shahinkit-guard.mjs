@@ -3,23 +3,40 @@
 // Three protections, all fail-open (a guard error never breaks the session):
 //   1. Bash wall-clock clamp: every bash call gets a timeout (10 min default,
 //      30 min ceiling) so one hung command cannot eat hours.
-//   2. Session budget tripwire: past 25 worker dispatches or 4h wall clock,
-//      a system-prompt directive forces a plain go/no-go checkpoint with the
-//      user before any further dispatch.
+//   2. Context hygiene: measured context use at or above 60% adds one optional
+//      fresh-session recommendation without stopping work.
 //   3. Notifications (macOS best-effort, silently skipped elsewhere): primary
-//      session going idle, permission asks, and tripwire hits surface as
-//      desktop notifications instead of silent stalls.
+//      session going idle and permission asks surface instead of silent stalls.
 
 const BASH_DEFAULT_TIMEOUT_MS = 600_000
 const BASH_MAX_TIMEOUT_MS = 1_800_000
-const DISPATCH_LIMIT = 25
-const WALL_CLOCK_LIMIT_MS = 4 * 60 * 60 * 1000
+const RECOMMEND_AT_PERCENT = 60
 const IDLE_NOTIFY_DEBOUNCE_MS = 300_000
 
-const dispatchCount = new Map()
-const firstSeen = new Map()
-const tripNotified = new Set()
+const contextUse = new Map()
+const contextLimits = new Map()
+const advised = new Set()
 const idleNotifiedAt = new Map()
+const primed = new Set()
+
+async function contextLimit(client, providerID, modelID) {
+  const key = `${providerID}/${modelID}`
+  const cached = contextLimits.get(key)
+  if (cached) return cached
+  try {
+    const response = await client.config.providers()
+    const data = response?.data ?? response
+    const provider = (data?.providers ?? []).find((item) => item?.id === providerID)
+    const models = provider?.models ?? {}
+    const model = models[modelID] ?? Object.values(models).find((item) => item?.id === modelID)
+    const limit = Number(model?.limit?.context)
+    if (Number.isFinite(limit) && limit > 0) {
+      contextLimits.set(key, limit)
+      return limit
+    }
+  } catch {}
+  return 0
+}
 
 function notify(title, body) {
   try {
@@ -34,8 +51,6 @@ function notify(title, body) {
 export const ShahinkitGuard = async ({ client }) => {
   return {
     "tool.execute.before": async (input, output) => {
-      const sid = String(input?.sessionID ?? "")
-      if (sid && !firstSeen.has(sid)) firstSeen.set(sid, Date.now())
       const tool = (input?.tool ?? "").toLowerCase()
       if (tool === "bash") {
         const args = output?.args ?? {}
@@ -45,29 +60,24 @@ export const ShahinkitGuard = async ({ client }) => {
           : BASH_DEFAULT_TIMEOUT_MS
         if (output) output.args = args
       }
-      if (sid && (tool === "task" || tool === "agent")) {
-        dispatchCount.set(sid, (dispatchCount.get(sid) ?? 0) + 1)
-      }
     },
 
     "experimental.chat.system.transform": async (input, output) => {
       const sid = String(input?.sessionID ?? "")
-      if (!sid) return
-      const dispatches = dispatchCount.get(sid) ?? 0
-      const ageMs = Date.now() - (firstSeen.get(sid) ?? Date.now())
-      if (dispatches < DISPATCH_LIMIT && ageMs < WALL_CLOCK_LIMIT_MS) return
-      const why = dispatches >= DISPATCH_LIMIT
-        ? `${dispatches} worker dispatches`
-        : `${Math.round(ageMs / 360000) / 10}h wall clock`
-      output.system.push(
-        `[SESSION BUDGET TRIPWIRE] This session has consumed ${why} — past its budget. ` +
-        `Before ANY further work: update the task progress file, present the user a plain go/no-go checkpoint ` +
-        `(done / left / continue here or fresh session), and wait for their answer. Recommend a fresh session.`,
-      )
-      if (!tripNotified.has(sid)) {
-        tripNotified.add(sid)
-        notify("Session budget hit", `${why} — go/no-go checkpoint forced`)
+      if (sid && !primed.has(sid)) {
+        primed.add(sid)
+        output.system.push(
+          "[PRIME — OPTIONAL] Prime is available; inspect visible PROJECT_STATE/NEXT/HANDOFF for meaningful work. Continue current session; never require a fresh session.",
+        )
       }
+      const percent = contextUse.get(sid) ?? 0
+      if (!sid || percent < RECOMMEND_AT_PERCENT || advised.has(sid)) return
+      advised.add(sid)
+      output.system.push(
+        `[CONTEXT HYGIENE — OPTIONAL] Measured context use is ${percent}%. ` +
+        `At the next natural checkpoint, briefly offer a fresh session as an option. ` +
+        `Continue automatically; never stop, wait, or imply a reset is required unless a real safety, technical, or user-decision blocker exists.`,
+      )
     },
 
     "permission.ask": async (input) => {
@@ -75,6 +85,26 @@ export const ShahinkitGuard = async ({ client }) => {
     },
 
     event: async ({ event }) => {
+      if (event?.type === "session.deleted") {
+        const sid = String(event?.properties?.sessionID ?? "")
+        contextUse.delete(sid)
+        advised.delete(sid)
+        idleNotifiedAt.delete(sid)
+        primed.delete(sid)
+        return
+      }
+      if (event?.type === "message.updated") {
+        const info = event?.properties?.info
+        if (info?.role !== "assistant" || !info?.finish) return
+        const sid = String(info?.sessionID ?? "")
+        const providerID = String(info?.providerID ?? "")
+        const modelID = String(info?.modelID ?? "")
+        const input = Number(info?.tokens?.input)
+        if (!sid || !providerID || !modelID || !Number.isFinite(input) || input <= 0) return
+        const limit = await contextLimit(client, providerID, modelID)
+        if (limit) contextUse.set(sid, Math.min(100, Math.round((input / limit) * 100)))
+        return
+      }
       if (event?.type !== "session.idle") return
       const sid = String(event?.properties?.sessionID ?? "")
       const now = Date.now()

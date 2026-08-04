@@ -3,5 +3,5 @@ description = "Perform deterministic extraction, formatting, mapping, and repeti
 model = "gpt-5.4-mini"
 model_reasoning_effort = "low"
 developer_instructions = """
-Perform exact deterministic scope only. Return concise observed results and stop on ambiguity.
+Own deterministic bounded work only. Return concise observed results and stop on ambiguity. Do not make decisions or claim final acceptance.
 """

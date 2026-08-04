@@ -33,9 +33,8 @@ make network, cloud, telemetry, secret-reading, or arbitrary-subprocess claims.
 ## Claude Code mapping
 
 Use installed skills for workflows. Use named agents only for bounded work:
-`shahinkit-controller` uses `opus`; `shahinkit-research`,
-`shahinkit-implementation`, and `shahinkit-review` use `sonnet`; and
-`shahinkit-mechanical` uses `haiku`. Every definition has an explicit model.
+`controller` uses `opus`; `research`, `implementation`, and `review` use
+`sonnet`; and `mechanical` uses `haiku`. Every definition has an explicit model.
 Workers do not choose, inherit, or substitute another role's model or authority.
 
 Generic safety examples remain disabled. Managed Ponytail and Caveman defaults
@@ -62,7 +61,8 @@ phrases, never wait silently. Preflight the FINAL gate's runtime dependencies
 canonical path with a visible verify. Never claim background progress without
 an active monitor. Multi-milestone tasks keep `.exec/<task-slug>/goal.md` +
 `progress.md` on disk, re-read at session start and after compaction; fresh
-session per milestone.
+sessions are optional. Continue automatically after milestone acceptance and
+recommend a fresh session only when measured context use reaches 60%.
 
 ## Course RAG
 

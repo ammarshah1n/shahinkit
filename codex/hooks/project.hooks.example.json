@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{SHAHINKIT_HOOK_PATH}}",
+            "timeout": 5,
+            "statusMessage": "Loading ShahinKit context..."
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{SHAHINKIT_HOOK_PATH}}",
+            "timeout": 5,
+            "statusMessage": "Loading ShahinKit worker scope..."
+          }
+        ]
+      }
+    ]
+  }
+}

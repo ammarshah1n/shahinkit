@@ -1,6 +1,6 @@
 # Codex CLI Adapter
 
-Target: Codex CLI `0.144.5`. Copy files; never symlink. Review every fragment
+Target: Codex CLI `0.145.0`. Copy files; never symlink. Review every fragment
 before merging. This adapter does not set model, approval, sandbox, network,
 provider, credential, telemetry, or project-trust settings.
 
@@ -12,6 +12,8 @@ provider, credential, telemetry, or project-trust settings.
 | rendered skills | `$HOME/.agents/skills/<name>/SKILL.md` | `<DESTINATION>/.agents/skills/<name>/SKILL.md` |
 | `config/config.patch.example.toml` | `<CODEX_HOME>/config.toml` managed merge | `<DESTINATION>/.codex/config.toml` managed merge |
 | `config/agents/<role>.toml` | `<CODEX_HOME>/agents/<role>.toml` | `<DESTINATION>/.codex/agents/<role>.toml` |
+| hooks config | `<CODEX_HOME>/hooks.json` | `<DESTINATION>/.codex/hooks.json` |
+| canonical hook runner | `<CODEX_HOME>/hooks/shahinkit_hook.py` | `<DESTINATION>/.codex/hooks/shahinkit_hook.py` |
 
 Course RAG script, README, and index files render under
 `{{SHAHINKIT_DATA_DIR}}/course-rag` for either scope. Its rendered skill invokes
@@ -19,17 +21,15 @@ that data destination, never this checkout.
 
 `render-manifest.json` is source-of-truth for copied assets and destinations.
 Skill destinations follow Codex's official loader:
-`https://github.com/openai/codex/blob/rust-v0.144.5/codex-rs/core-skills/src/loader.rs`.
+`https://github.com/openai/codex/blob/main/codex-rs/core-skills/src/loader.rs`.
 The config examples use current separate agent files. They intentionally do not
 use legacy `profiles.*` tables. Configure each role explicitly; workers never
 inherit controller model or authority.
 
 ## Skills
 
-Rendered shared skills: `checkpoint`, `context-router`, `corrections`,
-`deep-idea`, `deep-plan`, `delegation-routing`, `idea`, `memory`, `miniwrap`,
-`mission`, `plan`, `plans`, `prime`, `reflect`, `self-improve`,
-`session-handoff`, and `wrap-up`, plus pinned Ponytail and Caveman skills.
+Rendered shared skills come from `claude-code/core/shared/skills/`, plus pinned
+Ponytail and Caveman skills. Root `SKILLS.html` is the complete searchable list.
 `course-rag` remains adapter-local because it invokes this adapter's local
 index scripts.
 
@@ -39,9 +39,11 @@ automatically, and does not require Course-RAG.
 
 ## Hooks and MCP
 
-Generic gate examples are disabled advisory material, not enforcement. Codex
-receives no lifecycle hook: Ponytail and Caveman static instructions and skills
-become active only after preview, `--apply`, and host-trust confirmation.
+Codex `0.145+` loads native `hooks.json` files. ShahinKit registers only
+`SessionStart` and `SubagentStart`: Prime availability and bounded-worker
+guidance. Hook runner retains no prompts, writes no files, and performs no
+network calls. Ponytail and Caveman remain static instructions and skills.
+Everything activates only after preview, `--apply`, and host-trust confirmation.
 
 Basic Memory template launches preinstalled `basic-memory` through stdio with
 placeholder environment references and local-only policy. Render its local

@@ -1,0 +1,40 @@
+{
+  "codex_version": "0.145.0",
+  "roles": {
+    "controller": "gpt-5.6-sol",
+    "research": "gpt-5.6-terra",
+    "implementation": "gpt-5.6-terra",
+    "review": "gpt-5.6-terra",
+    "mechanical": "gpt-5.4-mini"
+  },
+  "shared_skills": [
+    "audit-tool",
+    "checkpoint",
+    "collab",
+    "context-router",
+    "corrections",
+    "deep-idea",
+    "deep-plan",
+    "delegation-routing",
+    "graphify",
+    "idea",
+    "memory",
+    "miniwrap",
+    "mission",
+    "output-style",
+    "parallel-worktrees",
+    "plan",
+    "plans",
+    "prime",
+    "reflect",
+    "research",
+    "self-improve",
+    "session-handoff",
+    "skill-builder",
+    "study",
+    "taste-gate",
+    "triage",
+    "watch",
+    "wrap-up"
+  ]
+}

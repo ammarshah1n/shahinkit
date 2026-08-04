@@ -1,6 +1,6 @@
 # Install ShahinKit
 
-`school/scripts/manage.py` is Python-stdlib-only. Mutating commands are preview by
+`claude-code/core/scripts/manage.py` is Python-stdlib-only. Mutating commands are preview by
 default and require `--apply --preview-digest <SHA256>` from exact prior preview;
 install and update also require `--trust-host`.
 Trust remains host-controlled: manager never grants it.
@@ -38,9 +38,9 @@ git verify-tag <RELEASE_TAG>
 Preview first. Host is explicit; scope is explicit:
 
 ```sh
-python3 school/scripts/manage.py install --agent claude-code --scope user --preview
-python3 school/scripts/manage.py install --agent opencode --scope project --destination <DESTINATION> --preview
-python3 school/scripts/manage.py install --agent codex --scope user --preview
+python3 claude-code/core/scripts/manage.py install --agent claude-code --scope user --preview
+python3 claude-code/core/scripts/manage.py install --agent opencode --scope project --destination <DESTINATION> --preview
+python3 claude-code/core/scripts/manage.py install --agent codex --scope user --preview
 ```
 
 For this unreleased development checkout, append
@@ -52,15 +52,24 @@ trust requirement, copy its `preview-digest` and repeat same command with
 `--apply --preview-digest` plus explicit host trust:
 
 ```sh
-python3 school/scripts/manage.py install --agent claude-code --scope user --apply --preview-digest <SHA256> --trust-host
+python3 claude-code/core/scripts/manage.py install --agent claude-code --scope user --apply --preview-digest <SHA256> --trust-host
 ```
 
 Ponytail and Caveman default to `full` after preview, `--apply`, and explicit
 host trust. Disable either during installation only when requested:
 
 ```sh
-python3 school/scripts/manage.py install --agent claude-code --scope user --preview --without-ponytail
-python3 school/scripts/manage.py install --agent claude-code --scope user --preview --without-caveman
+python3 claude-code/core/scripts/manage.py install --agent claude-code --scope user --preview --without-ponytail
+python3 claude-code/core/scripts/manage.py install --agent claude-code --scope user --preview --without-caveman
+```
+
+Use `--preserve-existing` when installing beside an established host setup. It
+leaves every unowned file, symlink, and conflicting config value untouched,
+records those destinations as preserved rather than owned, and adds only
+missing safe config tables/list entries. Preview labels each preserved path.
+
+```sh
+python3 claude-code/core/scripts/manage.py install --agent claude-code --scope user --preview --preserve-existing
 ```
 
 Per-session opt-out remains `stop ponytail`, `stop caveman`, or `normal mode`.
@@ -80,7 +89,9 @@ selects a host implicitly.
 `--destination <DESTINATION>` is intended for isolated testing and maps all
 managed roots, including Codex `$HOME` assets, below that directory. Manager must reject
 absolute or escaping manifest paths, symlinked ancestors, and unsupported host
-configuration before mutation.
+configuration before mutation. Explicit `--preserve-existing` may skip a
+symlinked destination without following or changing it; default behavior still
+fails closed.
 
 Receipts and backups address outputs as `root:<relative-path>` or
 `home:<relative-path>`, never absolute paths. In isolated destinations, `root`
@@ -116,31 +127,33 @@ Public-release install must stop unless all checks pass before `--apply`:
 3. `<RELEASE_TAG>` is annotated and `git verify-tag <RELEASE_TAG>` succeeds.
 4. Signing key fingerprint equals documented release maintainer fingerprint.
 5. Preview identifies adapter, scope, changed managed paths, active modes,
-   fresh-session requirement, receipt, and backup effect.
+   host-reload requirement, receipt, and backup effect.
 
 Any unavailable or failed gate stops installation. A development checkout will
 require explicit `--allow-development-checkout`; its provenance is
 development-only and never qualifies as public-release acceptance.
 
-## Apply, trust, and fresh-session verification
+## Apply, trust, and host activation
 
 `--apply` may change only manifest-owned files or delimited managed blocks.
+Preserved destinations are never claimed, replaced, removed, or followed.
 Before mutation it must create an owner-only backup of only changed managed
 content and write destination-local receipt
 `<DESTINATION>/.shahinkit-install-receipt.json`. Receipt contains relative
 owned paths and digests, selected host/scope/features/modes, adapter version,
-receipt and backup IDs, and provenance digests. It contains no credentials,
+preserved relative paths, receipt and backup IDs, and provenance digests. It contains no credentials,
 source labels, or absolute paths.
 
 After apply:
 
-1. Close host completely and start fresh session.
+1. Restart selected host once so it reloads installed instructions, agents, and hooks.
 2. Confirm installed host recognizes managed instructions and selected
    Ponytail/Caveman defaults.
 3. Confirm Basic Memory remains optional; enable only reviewed local stdio
    template with a named project, `mode: local`, `workspace_id: null`,
    `BASIC_MEMORY_FORCE_LOCAL=true`, and `BASIC_MEMORY_EXPLICIT_ROUTING=true`.
-4. Record failed activation as failed; do not claim install complete. Use
+4. Continue existing work normally after activation; milestones do not force
+   session resets. Record failed activation as failed; do not claim install complete. Use
    receipt-backed rollback before retrying.
 
 ## Update, uninstall, and rollback
@@ -150,11 +163,11 @@ receipt-plus-manifest ownership. Preview is mandatory before `--apply`; copy
 the printed digest into each matching mutation:
 
 ```sh
-python3 school/scripts/manage.py update --agent claude-code --scope user --preview
-python3 school/scripts/manage.py update --agent claude-code --scope user --apply --preview-digest <SHA256> --trust-host
-python3 school/scripts/manage.py uninstall --agent claude-code --scope user --apply --preview-digest <SHA256>
-python3 school/scripts/manage.py rollback --receipt <RECEIPT_ID> --preview
-python3 school/scripts/manage.py rollback --receipt <RECEIPT_ID> --apply --preview-digest <SHA256>
+python3 claude-code/core/scripts/manage.py update --agent claude-code --scope user --preview
+python3 claude-code/core/scripts/manage.py update --agent claude-code --scope user --apply --preview-digest <SHA256> --trust-host
+python3 claude-code/core/scripts/manage.py uninstall --agent claude-code --scope user --apply --preview-digest <SHA256>
+python3 claude-code/core/scripts/manage.py rollback --receipt <RECEIPT_ID> --preview
+python3 claude-code/core/scripts/manage.py rollback --receipt <RECEIPT_ID> --apply --preview-digest <SHA256>
 ```
 
 After review, add `--apply` and `--trust-host` to update. Before

@@ -3,7 +3,15 @@
   "activation": {
     "required": ["preview", "apply", "trust-host"],
     "default_enabled": true,
-    "fresh_session_required": true
+    "host_reload_required": true,
+    "fresh_session_required": false
+  },
+  "hooks": {
+    "SessionStart": "Prime guidance only",
+    "SubagentStart": "bounded-worker guidance only",
+    "filesystem_writes": false,
+    "telemetry": false,
+    "prompt_retention": false
   },
   "modes": {
     "ponytail": {

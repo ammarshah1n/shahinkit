@@ -82,8 +82,8 @@ Any task with more than one milestone keeps `.exec/<task-slug>/goal.md`
 (immutable objective, priority order, deferred surfaces) and `progress.md`
 (done / in-flight / blocked / next, updated at every milestone boundary).
 Re-read both at session start and after every compaction. At each milestone
-acceptance, update the state files and start a fresh session for the next
-milestone — long sessions degrade.
+acceptance, update state and continue automatically. Recommend a fresh session
+only when measured context use reaches 60%; it is optional, never a gate.
 
 ## Session flow
 

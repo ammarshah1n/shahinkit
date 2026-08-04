@@ -1,41 +1,4 @@
 {
-  "status": "disabled-example-not-for-settings-merge",
-  "reason": "Advisory examples only; manager never enables these generic gates.",
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear|compact",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Remind user that prime is available for non-trivial work.",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Remind user that wrap-up is available for meaningful sessions.",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "shahinkit-research|shahinkit-implementation|shahinkit-review|shahinkit-mechanical",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Check bounded role instructions before work.",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
+  "status": "retired-example",
+  "reason": "Use user.hooks.example.json or project.hooks.example.json. This file is not a hook configuration."
 }

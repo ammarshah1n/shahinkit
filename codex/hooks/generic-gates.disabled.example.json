@@ -1,6 +1,4 @@
 {
-  "enabled": false,
-  "kind": "advisory",
-  "purpose": "Generic gates are review guidance, not policy enforcement.",
-  "activation": "Do not render into Codex configuration without separate review."
+  "status": "retired-example",
+  "reason": "Codex 0.145+ supports hooks.json. Use user.hooks.example.json or project.hooks.example.json. This file is not a hook configuration."
 }

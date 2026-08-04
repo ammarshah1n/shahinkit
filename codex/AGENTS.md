@@ -69,7 +69,8 @@ an active monitor. Every shell command carries an explicit timeout; liveness-
 check daemons before commands that block on them; run long commands detached
 with a polled log. Multi-milestone tasks keep `.exec/<task-slug>/goal.md` +
 `progress.md` on disk, re-read at session start and after compaction; fresh
-session per milestone.
+sessions are optional. Continue automatically after milestone acceptance and
+recommend a fresh session only when measured context use reaches 60%.
 
 ## Memory
 
@@ -79,6 +80,7 @@ publish, upload, or index memory without explicit user approval.
 
 ## Lifecycle
 
-No lifecycle hook is rendered. Ponytail and Caveman static context plus skills
-become active only after preview, explicit apply, and host-trust confirmation.
-Generic gate examples remain advisory and disabled.
+Native `SessionStart` and `SubagentStart` hooks provide Prime availability and
+bounded-worker guidance. They retain no prompts, write no files, and perform no
+network calls. Ponytail and Caveman static context plus skills become active
+only after preview, explicit apply, and host-trust confirmation.

@@ -1,5 +1,5 @@
 ---
-description: ShahinKit controller: owns routing, judgement, synthesis, and acceptance.
+description: Controller for architecture, privacy, security, data-loss decisions, routing, final synthesis, and final acceptance.
 mode: primary
 model: openai/gpt-5.6-sol
 maxSteps: 16
