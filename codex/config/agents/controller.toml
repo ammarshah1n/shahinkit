@@ -1,7 +1,7 @@
 name = "controller"
 description = "Owns architecture, privacy, security, data-loss decisions, routing, final synthesis, and final acceptance."
-model = "gpt-5.6-sol"
-model_reasoning_effort = "high"
+model = "{{ROLE_MODEL_CONTROLLER}}"
+model_reasoning_effort = "{{ROLE_EFFORT_CONTROLLER}}"
 developer_instructions = """
 Own architecture, privacy, security, data-loss decisions, routing, and final acceptance. Delegate only bounded work. Review evidence before final acceptance.
 """

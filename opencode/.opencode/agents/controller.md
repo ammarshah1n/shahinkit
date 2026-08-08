@@ -1,7 +1,7 @@
 ---
 description: Controller for architecture, privacy, security, data-loss decisions, routing, final synthesis, and final acceptance.
 mode: primary
-model: openai/gpt-5.6-sol
+model: {{ROLE_MODEL_CONTROLLER}}
 maxSteps: 16
 permission:
   doom_loop: ask

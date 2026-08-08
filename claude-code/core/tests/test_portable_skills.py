@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SKILLS_ROOT = ROOT / "claude-code" / "core" / "shared" / "skills"
 EXISTING_SKILLS = {
     "checkpoint", "context-router", "corrections", "deep-idea", "deep-plan",
-    "delegation-routing", "idea", "memory", "miniwrap", "mission", "plan",
+    "delegation-routing", "idea", "memory", "miniwrap", "mission", "onboard", "plan",
     "plans", "prime", "reflect", "self-improve", "session-handoff", "study", "wrap-up",
 }
 PORTABLE_SKILLS = {

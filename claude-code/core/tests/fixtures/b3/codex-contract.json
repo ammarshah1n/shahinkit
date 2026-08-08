@@ -2,8 +2,8 @@
   "codex_version": "0.145.0",
   "roles": {
     "controller": "gpt-5.6-sol",
-    "research": "gpt-5.6-terra",
-    "implementation": "gpt-5.6-terra",
+    "research": "gpt-5.6-luna",
+    "implementation": "gpt-5.6-luna",
     "review": "gpt-5.6-terra",
     "mechanical": "gpt-5.4-mini"
   },
@@ -21,6 +21,7 @@
     "memory",
     "miniwrap",
     "mission",
+    "onboard",
     "output-style",
     "parallel-worktrees",
     "plan",

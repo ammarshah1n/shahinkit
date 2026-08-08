@@ -78,7 +78,7 @@ class B5ManagerTests(unittest.TestCase):
                     if agent == "claude-code":
                         settings = root / ("settings.json" if scope == "user" else ".claude/settings.json")
                         hooks = json.loads(settings.read_text())["hooks"]
-                        self.assertEqual(set(hooks), {"SessionStart", "SubagentStart"})
+                        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit", "SubagentStart"})
                         script = root / ("hooks/shahinkit_hook.py" if scope == "user" else ".claude/hooks/shahinkit_hook.py")
                         self.assertTrue(script.is_file())
                         self.assertIn(str(script), json.dumps(hooks))
@@ -86,7 +86,7 @@ class B5ManagerTests(unittest.TestCase):
                     elif agent == "codex":
                         hooks_path = root / ("hooks.json" if scope == "user" else ".codex/hooks.json")
                         hooks = json.loads(hooks_path.read_text())["hooks"]
-                        self.assertEqual(set(hooks), {"SessionStart", "SubagentStart"})
+                        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit", "SubagentStart"})
                         script = root / ("hooks/shahinkit_hook.py" if scope == "user" else ".codex/hooks/shahinkit_hook.py")
                         self.assertTrue(script.is_file())
                         self.assertIn(str(script), json.dumps(hooks))

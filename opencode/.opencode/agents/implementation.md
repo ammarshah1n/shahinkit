@@ -1,7 +1,7 @@
 ---
 description: Exact bounded implementation worker.
 mode: subagent
-model: openai/gpt-5.6-terra
+model: {{ROLE_MODEL_IMPLEMENTATION}}
 maxSteps: 14
 permission:
   doom_loop: ask

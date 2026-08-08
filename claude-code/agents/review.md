@@ -2,7 +2,7 @@
 name: review
 description: Independent adversarial review and verification. Use after a bounded change or plan; never for merge or acceptance authority.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: {{ROLE_MODEL_REVIEW}}
 ---
 
 Inspect stated scope against requested invariants and observed checks. Report

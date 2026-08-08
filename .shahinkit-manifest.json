@@ -28,15 +28,15 @@
     {
       "path": "README.md",
       "category": "documentation",
-      "source_sha256": "bd66f178370b164e778899fcaec4460568d34283db6040f379502c951bdf3af6",
-      "render_sha256": "bd66f178370b164e778899fcaec4460568d34283db6040f379502c951bdf3af6",
+      "source_sha256": "41b6389905b35a082757a2aa26f56cc1389266f41f301befcdbcaf44665bbea3",
+      "render_sha256": "41b6389905b35a082757a2aa26f56cc1389266f41f301befcdbcaf44665bbea3",
       "ownership": "shared"
     },
     {
       "path": "SKILLS.html",
       "category": "documentation",
-      "source_sha256": "2dd24b9afc77d8a49249b5e81288a1af54a044fd5f33d4c44c8c4136dd25965e",
-      "render_sha256": "2dd24b9afc77d8a49249b5e81288a1af54a044fd5f33d4c44c8c4136dd25965e",
+      "source_sha256": "598da4c25a56c8680e1c755637d85f6d7e5b0787cbe0254994578bb6f1fdda4e",
+      "render_sha256": "598da4c25a56c8680e1c755637d85f6d7e5b0787cbe0254994578bb6f1fdda4e",
       "ownership": "shared"
     },
     {
@@ -91,8 +91,8 @@
     {
       "path": "claude-code/core/hooks/shahinkit_hook.py",
       "category": "hook",
-      "source_sha256": "c1029cc79419df53be5c93eb17673a562ecadc6699910349029fde56540eb76a",
-      "render_sha256": "c1029cc79419df53be5c93eb17673a562ecadc6699910349029fde56540eb76a",
+      "source_sha256": "2f5e29b57fb67c6a895d59071078ad9e94c26d0ed1687b5bb791485118c96b09",
+      "render_sha256": "2f5e29b57fb67c6a895d59071078ad9e94c26d0ed1687b5bb791485118c96b09",
       "ownership": "shared"
     },
     {
@@ -168,8 +168,8 @@
     {
       "path": "claude-code/core/scripts/manage.py",
       "category": "manager-tool",
-      "source_sha256": "868fdf8ddfad1bedd2e69546d9f50770b9f6af4188dd90a72f21e7822e0c6f8a",
-      "render_sha256": "868fdf8ddfad1bedd2e69546d9f50770b9f6af4188dd90a72f21e7822e0c6f8a",
+      "source_sha256": "771c3940beadf67bf1bf7cdfa7d1052439ad68cebcddb7dc2c26df7248c04cab",
+      "render_sha256": "771c3940beadf67bf1bf7cdfa7d1052439ad68cebcddb7dc2c26df7248c04cab",
       "ownership": "shared"
     },
     {
@@ -201,10 +201,24 @@
       "ownership": "shared"
     },
     {
+      "path": "claude-code/core/shared/context/delegation-budget.block.md",
+      "category": "context-block",
+      "source_sha256": "a4b386cd86e7135630a3180525947f4d4eaf9ba3bc3705b8df14350c580d6861",
+      "render_sha256": "a4b386cd86e7135630a3180525947f4d4eaf9ba3bc3705b8df14350c580d6861",
+      "ownership": "shared"
+    },
+    {
       "path": "claude-code/core/shared/context/ponytail-default.block.md",
       "category": "context-block",
       "source_sha256": "3de020815c204cc14a79fa429f08683ededfc0bdc85cec994e735de52336bdfb",
       "render_sha256": "3de020815c204cc14a79fa429f08683ededfc0bdc85cec994e735de52336bdfb",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/hooks/hook-config.template.json",
+      "category": "hook",
+      "source_sha256": "3097c65f9f365a185968edae6f84f52936ca116e41463da5b05a889efe8734f9",
+      "render_sha256": "3097c65f9f365a185968edae6f84f52936ca116e41463da5b05a889efe8734f9",
       "ownership": "shared"
     },
     {
@@ -306,10 +320,38 @@
       "ownership": "shared"
     },
     {
+      "path": "claude-code/core/shared/models/TIERS.md",
+      "category": "model-schema",
+      "source_sha256": "ac0e830c547374f63deb2525be56f88cdf15ec3add7cf12ac0967dfb0db36514",
+      "render_sha256": "ac0e830c547374f63deb2525be56f88cdf15ec3add7cf12ac0967dfb0db36514",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/models/budget.schema.json",
+      "category": "model-schema",
+      "source_sha256": "cc88e60a5ad47aae09c4b975224e5208201d89dfeb099bf552b1232cd5e0f80c",
+      "render_sha256": "cc88e60a5ad47aae09c4b975224e5208201d89dfeb099bf552b1232cd5e0f80c",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/models/presets.json",
+      "category": "model-schema",
+      "source_sha256": "5986cebadd632b8d9a6ab8b406bad9ff08f3336d6e43353b009081d71c3e279d",
+      "render_sha256": "5986cebadd632b8d9a6ab8b406bad9ff08f3336d6e43353b009081d71c3e279d",
+      "ownership": "shared"
+    },
+    {
       "path": "claude-code/core/shared/models/roles.schema.json",
       "category": "model-schema",
-      "source_sha256": "1776da043e4cbff74abc62ee118d354a8f917fb90df616be167c1d985923081f",
-      "render_sha256": "1776da043e4cbff74abc62ee118d354a8f917fb90df616be167c1d985923081f",
+      "source_sha256": "19dde3c1a8c687c7255ef513e42c8877c6df1dc6bd65c480db5210962dde2482",
+      "render_sha256": "19dde3c1a8c687c7255ef513e42c8877c6df1dc6bd65c480db5210962dde2482",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/onboard/picker.html",
+      "category": "core",
+      "source_sha256": "b97a5a6ad709c6da04779e82856eb3ba693f08f3911ce858d5a01004582a9395",
+      "render_sha256": "b97a5a6ad709c6da04779e82856eb3ba693f08f3911ce858d5a01004582a9395",
       "ownership": "shared"
     },
     {
@@ -436,6 +478,13 @@
       "category": "skill",
       "source_sha256": "281897c3a25d24f71799b4711451dc1745e9dd573eff40592a23e8335e67399c",
       "render_sha256": "281897c3a25d24f71799b4711451dc1745e9dd573eff40592a23e8335e67399c",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/skills/onboard/SKILL.md",
+      "category": "skill",
+      "source_sha256": "04bb8cb08f35a991f7e46116a42bfc015b433e638e6cbf455c7f8b7bccc7c0b5",
+      "render_sha256": "04bb8cb08f35a991f7e46116a42bfc015b433e638e6cbf455c7f8b7bccc7c0b5",
       "ownership": "shared"
     },
     {
@@ -868,13 +917,13 @@
   ],
   "adapter_inputs": {
     "claude-code": {
-      "CLAUDE.md": "cd4b5224c6b48a81e1d04ec182b4d38e5ef56a531dccb899983b897b02eede83",
+      "CLAUDE.md": "c2a5b40fe7c037096b485297cf649c5679a20e78bbbd8e792d9dda9fc52d7c7a",
       "README.md": "20d8f0fdd901894aa8e061bf554b9f6e83d18c3a6473fee17b60e8b8253e6711",
-      "agents/controller.md": "578840ec43cbd9ee0cb8751d43260646ec055251b8f0bdac662c19505aa19273",
-      "agents/implementation.md": "68ec77a2e1bcb55533d26232ddbc029110c11298e34744cfbc2c248f196e8f77",
-      "agents/mechanical.md": "14ea730021df065b22aa0ed081a29a68613482ae39258bdf0b403b39eafe6e5a",
-      "agents/research.md": "f1d6f3976430bbdf0e29c3e09ca7dd188553cd05156c6c547bf7c57c9c17f96e",
-      "agents/review.md": "3690098fdd9fc7dadc64c0960610eec631c8410b92f23aa255d3f08375cd1597",
+      "agents/controller.md": "1f83f3aa0c527d3c8429eeb831b0c6d363fce0da6430d711635c37dde7347dc9",
+      "agents/implementation.md": "6435ba87e01e0bf8657d89b3165a1769d52c007b6cd73b47ec7024ef96335d57",
+      "agents/mechanical.md": "720312d51c0aa1777e24faaf726af3039cf31409c2fdfb6f95c3f2dfbc57e43c",
+      "agents/research.md": "033264326cab990f0fd69bfbe08e7ab3fd4a46e0c28a6a58aeab7423efa3abab",
+      "agents/review.md": "ced5c6bcb101d2beddd0eae87a5f574a158806b90d27283b102052455b517c10",
       "config/mcp.basic-memory.example.json": "df096f720a8528e9058c10ef516c6e063b1136f6e6531d880fb9ce102b11d002",
       "config/roles.resolved.example.json": "42ae70d680f6349da117cb3cb721ec954c6d6cb68fbf35d969247f4f7b7846f7",
       "config/settings.patch.example.json": "43e9464c455ab1ff15abd70cb2744da0b16254a43c9cbbf3862e3f0a6ac15f2d",
@@ -884,21 +933,21 @@
       "course-rag/scripts/build.py": "07abfa6bdd3f40733662191cd31d352f68e18b7e7d551b1631b45b89257c4fe0",
       "course-rag/scripts/search.py": "851ea2280e47d3eb76c76baed40e6062aefcaf0a1abe515afb5c6f76aa7650db",
       "hooks/generic.disabled.example.json": "1a92c9db1decd9aff78faf2dd2bc08ff549b4fa788347ed4357c6d30aedfdbe1",
-      "hooks/managed-lifecycle.after-trust.json": "ffc0bcfc2c6166771d7d81067070bd716a0117d85ba99716a94fcbcd18b6e2f5",
-      "hooks/project.hooks.example.json": "bc9057fa1847638aa89f8d75decf9c6cfd6fc5fa890493a4afa6ed173c0c20f7",
-      "hooks/user.hooks.example.json": "bc9057fa1847638aa89f8d75decf9c6cfd6fc5fa890493a4afa6ed173c0c20f7",
+      "hooks/managed-lifecycle.after-trust.json": "1c311b526293771dbe31282088fe3bfe9425d2f2b8071f3ff61f57ef7920ab65",
+      "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
+      "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "55fd77f14f98e5f2a0a26eaa14f79db18d1fc15238518f1d789891b2a9c3c7f3",
-      "render-manifest.json": "236f2b1274f557d7705512392faf53954f227b225da8d5a6dea8d03c523e8af1",
+      "render-manifest.json": "00dc16b06513fa898dd6c1786f668d96ca0679e21befcc7806d54af9d6910bff",
       "skills/course-rag/SKILL.md": "338bfac7022dc6f1deb411d480f8a6058e18c9923c9d5f585de3bd638595ce49"
     },
     "codex": {
-      "AGENTS.md": "f07b1f53ba2ae2c02d0a7ac19b021049c65254f3c2484fb948bcf8b803464193",
+      "AGENTS.md": "b80681079a784e5f74398551c7944d3f3817d52c5236b7e12418fc57093ae19c",
       "README.md": "a6dbc03757ccf2a9b25285daed71ae58a427dca429ba92b01dfc18a615b45d28",
-      "config/agents/controller.toml": "ecf02dbaa895b3c147505e2967cfc002ab37faae6197500e0d44c12659746c16",
-      "config/agents/implementation.toml": "ce872882fb7c46467f00550c92fd047253671a4ef1a4f07f8fef4bf731a904e2",
-      "config/agents/mechanical.toml": "d6f24df84ccbdba37e619c953eff41e62256433ff4d3ecf8ca6d2c9ca6d23dd3",
-      "config/agents/research.toml": "7284cb1e12d8021eda92aee065b0a5d33723fdcabbd3c46eb05fc95d3b6238f5",
-      "config/agents/review.toml": "a6428e5a526771045211124738de4b662132671bd366578f2ca4d379e2e1248d",
+      "config/agents/controller.toml": "0bab7759283e704ea43a9b106e3c2282d0ab031ff8a4d0d6d4d73dd703603eff",
+      "config/agents/implementation.toml": "0e4bc262c865540027fe2b0131e86e954e862de3778d21230789e6cf60a6f0e8",
+      "config/agents/mechanical.toml": "8a8a179932f86da758e30d4a977b5b68c9f98b27e0fd7f2431ed2de355c09780",
+      "config/agents/research.toml": "3c850ee17b8243f7b32626ab8fa681eee9a04424003ee025dd58fedbeb6984b2",
+      "config/agents/review.toml": "8c147e9349a01ee23453b62b71ba96440777d96c8bc062b5f7539fcfcbb3d03d",
       "config/config.patch.example.toml": "403cadfd0e015d6e58e5cba69bda6d85f20bde27f4e36ca803e68c3025ebff0c",
       "config/mcp.optional.disabled.example.toml": "b227562c75dcd3b0011db68a6ae04d3b91eafcf235c7de46dbb20f8efec19b06",
       "course-rag/README.md": "564fd3e4351bb8aeb256cd58563e549790fd29913ce7cf5fbcf1af3e8b94e008",
@@ -908,17 +957,17 @@
       "course-rag/scripts/build.py": "07abfa6bdd3f40733662191cd31d352f68e18b7e7d551b1631b45b89257c4fe0",
       "course-rag/scripts/search.py": "851ea2280e47d3eb76c76baed40e6062aefcaf0a1abe515afb5c6f76aa7650db",
       "hooks/generic-gates.disabled.example.json": "54db19fc7991aeaf839fc8e7690fd1423bb9f20799582391237b82ed69f980fd",
-      "hooks/project.hooks.example.json": "bc9057fa1847638aa89f8d75decf9c6cfd6fc5fa890493a4afa6ed173c0c20f7",
-      "hooks/user.hooks.example.json": "bc9057fa1847638aa89f8d75decf9c6cfd6fc5fa890493a4afa6ed173c0c20f7",
+      "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
+      "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "249398b5b4657283632b878814746fc001c59c379f308055bf37e149f24690e4",
-      "render-manifest.json": "62b4503de7b99bc74f0b1a8999348dbc26aaec7a0ba32eeca0d6551e60573d25"
+      "render-manifest.json": "03c7d5375b80d40bf7bec3be812ce14abc8ab74d4591f9062690cd4bb671c07a"
     },
     "opencode": {
-      ".opencode/agents/controller.md": "0ed9df0ebbf0cf545c4e8f30eb0c5dda87f9ba0db2b0aa3693d841f6442c4485",
-      ".opencode/agents/implementation.md": "1d5a496ca0a772b6c6fba0cbbf0f4648d5cc1f58532de5d73baee0a28c7d228c",
-      ".opencode/agents/mechanical.md": "33d0a3d40c5ba9108fa57acd8d242a218fa0915568817192bd4ea2c09c5925a7",
-      ".opencode/agents/research.md": "6138ca86fd56623f9405be935b5c16f5e7220ae93867acaad82dc81a6a53037d",
-      ".opencode/agents/review.md": "aba1bfe9be24e3e4f2c96dbc9df3700f5f7c87e1925e357274371060c7d6c549",
+      ".opencode/agents/controller.md": "2e6af7d36bbb6d41246a64ce223642f6cd1d3bdbc7e38658deb9722bd9716b94",
+      ".opencode/agents/implementation.md": "364efb6e00b1ba59c1d5acdeb2f234404685ee288d1d2b50e7296cf009559105",
+      ".opencode/agents/mechanical.md": "8118ba37502c7052541aa60b508a0b627f89d2598a0f0cc2436a2961f49e6719",
+      ".opencode/agents/research.md": "e1c071829e562ec743e0be6a6486319639c9c8d189a2e33824d26faff0a1951e",
+      ".opencode/agents/review.md": "d860ece50eff912e6fbac27714d200f51b350ea6d60831fa723989f082cc8555",
       ".opencode/commands/caveman.md": "f4a4c8b885e6d7df572a9fbf044ec23795387e348ed45c72784fd38f72b624a1",
       ".opencode/commands/plan.md": "cfc88a747b995b5625df5e09166e4a9f1a22f8c54f277a2a35be6c99f60e012f",
       ".opencode/commands/ponytail.md": "308af09036aaee31000b710373d1ad2d4605e447e33bffe0367501656c4479c5",
@@ -927,12 +976,12 @@
       ".opencode/commands/wrap-up.md": "b3568af61180ace34c410332e68e0cf8d43503d80d688485207393b133433505",
       ".opencode/plugins/portable-gates.features.mjs": "53180aa1f759ee87110b9d99465d805709ba31fa1a080391e242065a898e2965",
       ".opencode/plugins/portable-gates.mjs": "4c4531078345404a21fcc2a7bc71fd994f7cbb75aee52c774bbec5d060edd2e3",
-      ".opencode/plugins/shahinkit-guard.mjs": "a6ceda01d19d51cce69ea7008aadc9962315b5bed68c0090a89103c648b175e1",
-      "AGENTS.md": "778a4eec715673b2dc951236ec729dde7707bccde8fe181e35c93bb027d8a381",
+      ".opencode/plugins/shahinkit-guard.mjs": "f1608f9e247e6bbb605cb6cc4f21ce1e8be132e0540d545d60352fcdf9324990",
+      "AGENTS.md": "9b2548540c18acff690dd70fa3a4fc0d29f505e439f230bda3ccdf39ffaa739f",
       "README.md": "d75b5d94dc1571f8136ce659fede3924a266204cb4482ed489e8b1fd571b628b",
       "opencode.jsonc.example": "d61382f71e9b023b6fb1950d7bb7bbc7921c096df50d35f12024c6f72591a57f",
       "opencode.user.jsonc.example": "223e2b04194b95a444ace2e5d3be977605f420d533ce9d00945ba719b7b284d2",
-      "render-manifest.json": "36d6d26d2a2ea486a7404ba3524a225744ac977b9d26e315e1fc525271221200",
+      "render-manifest.json": "73f6a6b3004832d2f031fc1656e72e05679a96f4e963a47b2e50b000df3237a5",
       "scripts/reflect.mjs": "d45d73d128a1b8a0233301553f37d9fc4fd884e05842e0e20778c92a935d441a"
     }
   }

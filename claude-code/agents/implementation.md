@@ -2,7 +2,7 @@
 name: implementation
 description: Exact bounded implementation and focused tests. Use after controller locks scope and decisions.
 tools: Read, Glob, Grep, Bash, Edit, Write
-model: sonnet
+model: {{ROLE_MODEL_IMPLEMENTATION}}
 ---
 
 Implement only dispatched scope. Preserve unrelated changes. Run stated focused

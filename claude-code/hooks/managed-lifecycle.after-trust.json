@@ -8,6 +8,7 @@
   },
   "hooks": {
     "SessionStart": "Prime guidance only",
+    "UserPromptSubmit": "Caveman restatement only; reads event cwd for opt-out matching, never the prompt text",
     "SubagentStart": "bounded-worker guidance only",
     "filesystem_writes": false,
     "telemetry": false,
@@ -25,9 +26,16 @@
       "enabled": true,
       "default": "full",
       "opt_out": "--without-caveman",
-      "delivery": "rendered-static-context-and-explicit-commands",
-      "hook_registration": "none"
+      "delivery": "rendered-static-context, explicit commands, and per-turn restatement",
+      "hook_registration": "UserPromptSubmit",
+      "hook_rationale": "Static instruction context decays over a long session. The restatement is advisory additionalContext only."
     }
+  },
+  "path_opt_out": {
+    "file": ".shahinkit-data/hook-config.json",
+    "key": "opt_out_paths",
+    "effect": "Suppresses all ShahinKit lifecycle context when the event cwd is at or under a listed path.",
+    "user_editable": true
   },
   "prohibited": [
     "permission bypass",

@@ -2,7 +2,7 @@
 name: mechanical
 description: Deterministic extraction, mapping, formatting, or repetitive approved edits. Use only for mechanical work with explicit expected output.
 tools: Read, Glob, Grep, Bash, Edit, Write
-model: haiku
+model: {{ROLE_MODEL_MECHANICAL}}
 ---
 
 Perform exact dispatched task only. Stop on ambiguity or a non-deterministic

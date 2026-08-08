@@ -23,6 +23,21 @@ Resume `full` after clear section. User may opt out for current session with
 `stop caveman` or `normal mode`.
 <!-- SHAHINKIT:CAVEMAN:END -->
 
+<!-- SHAHINKIT:DELEGATION-BUDGET:START -->
+Budget preset is `{{BUDGET_PRESET}}`; delegation mode is `{{DELEGATION_MODE}}`.
+Roles resolve explicitly: `controller` uses `{{ROLE_MODEL_CONTROLLER}}`,
+`research` uses `{{ROLE_MODEL_RESEARCH}}`, `implementation` uses
+`{{ROLE_MODEL_IMPLEMENTATION}}`, `review` uses `{{ROLE_MODEL_REVIEW}}`, and
+`mechanical` uses `{{ROLE_MODEL_MECHANICAL}}`. No role inherits or substitutes
+another role's model, effort, or authority.
+Implementation touching more than {{INLINE_FILE_LIMIT}} files or changing more
+than {{INLINE_LINE_LIMIT}} lines is delegated to a worker, not written inline.
+Work under that threshold may be done inline; do not dispatch a worker when the
+brief costs more than the change. The controller keeps planning, architecture,
+final synthesis, and acceptance at every budget, and never delegates them.
+{{CROSS_HOST_ROUTE}}
+<!-- SHAHINKIT:DELEGATION-BUDGET:END -->
+
 <!-- SHAHINKIT:ADAPTER-REFERENCES:START -->
 Render only host-supported syntax. Preserve approved policy, independent role
 resolution, Ponytail and Caveman defaults, and reviewed local MCP settings.
@@ -32,15 +47,17 @@ make network, cloud, telemetry, secret-reading, or arbitrary-subprocess claims.
 
 ## Claude Code mapping
 
-Use installed skills for workflows. Use named agents only for bounded work:
-`controller` uses `opus`; `research`, `implementation`, and `review` use
-`sonnet`; and `mechanical` uses `haiku`. Every definition has an explicit model.
-Workers do not choose, inherit, or substitute another role's model or authority.
+Use installed skills for workflows. Use named agents only for bounded work.
+Every agent definition carries an explicit model resolved from the active budget
+preset; the models in force are stated above. Workers do not choose, inherit, or
+substitute another role's model or authority. Run `/onboard` to change the
+preset or hand-pick roles.
 
 Generic safety examples remain disabled. Managed Ponytail and Caveman defaults
-become active only after preview, explicit apply, and workspace trust. Claude
-Code has no safe persistent Caveman lifecycle adapter here; its static context
-and explicit commands remain the supported mode.
+become active only after preview, explicit apply, and workspace trust. Caveman
+is restated each turn through the `UserPromptSubmit` lifecycle hook, because
+static instruction context decays over a long session; the restatement is
+advisory context only and reads no prompt text.
 
 ## Delegation and execution doctrine
 

@@ -69,7 +69,8 @@ class B3ClaudeAdapterTests(unittest.TestCase):
         for name, model in self.contract["roles"].items():
             text = (ADAPTER / "agents" / f"{name}.md").read_text()
             self.assertRegex(text, rf"(?m)^name: {re.escape(name)}$")
-            self.assertRegex(text, rf"(?m)^model: {re.escape(model)}$")
+            placeholder = "{{ROLE_MODEL_%s}}" % name.upper()
+            self.assertRegex(text, rf"(?m)^model: {re.escape(placeholder)}$")
             self.assertNotIn("model: inherit", text)
             self.assertNotIn("bypassPermissions", text)
             self.assertEqual(defaults[name], model)
@@ -82,7 +83,7 @@ class B3ClaudeAdapterTests(unittest.TestCase):
         self.assertEqual(generic["status"], "retired-example")
         for scope in ("user", "project"):
             hooks = json.loads((ADAPTER / f"hooks/{scope}.hooks.example.json").read_text())["hooks"]
-            self.assertEqual(set(hooks), {"SessionStart", "SubagentStart"})
+            self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit", "SubagentStart"})
             self.assertIn("{{SHAHINKIT_HOOK_PATH}}", json.dumps(hooks))
         lifecycle = json.loads((ADAPTER / "hooks/managed-lifecycle.after-trust.json").read_text())
         self.assertEqual(lifecycle["activation"]["required"], ["preview", "apply", "trust-host"])
@@ -90,10 +91,12 @@ class B3ClaudeAdapterTests(unittest.TestCase):
         self.assertTrue(lifecycle["activation"]["host_reload_required"])
         self.assertFalse(lifecycle["hooks"]["filesystem_writes"])
         self.assertFalse(lifecycle["hooks"]["telemetry"])
-        for mode in ("ponytail", "caveman"):
+        # Ponytail rides static context; Caveman is restated per turn because
+        # static style instructions decay across a long session.
+        for mode, registration in (("ponytail", "none"), ("caveman", "UserPromptSubmit")):
             self.assertTrue(lifecycle["modes"][mode]["enabled"])
             self.assertEqual(lifecycle["modes"][mode]["default"], "full")
-            self.assertEqual(lifecycle["modes"][mode]["hook_registration"], "none")
+            self.assertEqual(lifecycle["modes"][mode]["hook_registration"], registration)
 
     def test_security_and_failure_contracts(self):
         mcp = json.loads((ADAPTER / "config/mcp.basic-memory.example.json").read_text())

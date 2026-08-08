@@ -1,6 +1,7 @@
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -38,9 +39,18 @@ class HookParityTests(unittest.TestCase):
         self.assertEqual(self.run_hook("not-json"), {})
 
     def test_canonical_hook_has_no_host_or_machine_side_effects(self):
+        # The hook reads exactly one file: its own install-time config, resolved
+        # relative to itself. It never writes, spawns, or reaches the network.
         source = HOOK.read_text()
-        for forbidden in ("import subprocess", "from subprocess", "import pathlib", "from pathlib", "open(", "Popen", "system("):
+        for forbidden in (
+            "import subprocess", "from subprocess", "Popen", "system(",
+            "import socket", "import urllib", "import http",
+            "write_text", "open(", "os.remove", "shutil",
+        ):
             self.assertNotIn(forbidden, source)
+        self.assertEqual(source.count("read_text"), 2)  # hook-config.json and opt-out
+        self.assertIn('"hook-config.json"', source)
+        self.assertIn('"opt-out"', source)
 
     def test_claude_and_codex_examples_register_only_safe_lifecycle_events(self):
         examples = (
@@ -52,11 +62,70 @@ class HookParityTests(unittest.TestCase):
         for path in examples:
             config = json.loads(path.read_text())
             self.assertEqual(set(config), {"hooks"})
-            self.assertEqual(set(config["hooks"]), {"SessionStart", "SubagentStart"})
+            self.assertEqual(
+                set(config["hooks"]),
+                {"SessionStart", "UserPromptSubmit", "SubagentStart"},
+            )
             for registrations in config["hooks"].values():
                 hook = registrations[0]["hooks"][0]
                 self.assertEqual(hook["type"], "command")
                 self.assertEqual(hook["command"], "python3 {{SHAHINKIT_HOOK_PATH}}")
+
+    def staged_hook(self, tmp, config, opt_out=None):
+        """Reproduce an install layout: <root>/hooks/shahinkit_hook.py, the
+        install-owned <root>/.shahinkit-data/hook-config.json, and the unowned
+        opt-out list beside it."""
+        root = Path(tmp)
+        (root / "hooks").mkdir()
+        staged = root / "hooks" / "shahinkit_hook.py"
+        staged.write_bytes(HOOK.read_bytes())
+        data = root / ".shahinkit-data"
+        data.mkdir()
+        (data / "hook-config.json").write_text(json.dumps(config))
+        if opt_out is not None:
+            (data / "opt-out").write_text("# ShahinKit path opt-out\n" + "\n".join(opt_out) + "\n")
+        return staged
+
+    def run_staged(self, staged, payload):
+        result = subprocess.run(
+            [sys.executable, str(staged)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stderr, "")
+        return json.loads(result.stdout)
+
+    def test_caveman_restates_per_prompt_only_when_enabled(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            staged = self.staged_hook(tmp, {"caveman": True})
+            output = self.run_staged(staged, {"hook_event_name": "UserPromptSubmit"})
+            self.assertIn("Caveman is active", output["hookSpecificOutput"]["additionalContext"])
+        with tempfile.TemporaryDirectory() as tmp:
+            staged = self.staged_hook(tmp, {"caveman": False})
+            self.assertEqual(self.run_staged(staged, {"hook_event_name": "UserPromptSubmit"}), {})
+        # No config at all: silent, never a crash.
+        self.assertEqual(self.run_hook(json.dumps({"hook_event_name": "UserPromptSubmit"})), {})
+
+    def test_opt_out_path_suppresses_every_event(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            quiet = Path(tmp) / "quiet"
+            (quiet / "nested").mkdir(parents=True)
+            staged = self.staged_hook(tmp, {"caveman": True}, opt_out=[str(quiet)])
+            for event in ("SessionStart", "SubagentStart", "UserPromptSubmit"):
+                self.assertEqual(self.run_staged(staged, {"hook_event_name": event, "cwd": str(quiet)}), {})
+                self.assertEqual(
+                    self.run_staged(staged, {"hook_event_name": event, "cwd": str(quiet / "nested")}),
+                    {},
+                    "opt-out must cover subdirectories",
+                )
+                self.assertIn(
+                    "hookSpecificOutput",
+                    self.run_staged(staged, {"hook_event_name": event, "cwd": tmp}),
+                    "opt-out must not leak to sibling paths",
+                )
 
     def test_opencode_prime_is_once_per_session_and_cleanup_is_present(self):
         plugin = ROOT / "opencode/.opencode/plugins/shahinkit-guard.mjs"

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShahinKit — budget picker</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --panel: #fff; --ink: #1b1b19; --muted: #6b6b66;
+    --line: #e3e3df; --accent: #2f6f4f; --accent-soft: #eaf3ee; --code: #f4f4f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16171a; --panel: #1e2024; --ink: #e8e8e4; --muted: #9a9a94;
+      --line: #32353b; --accent: #7fc4a0; --accent-soft: #24312a; --code: #26282d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171a; --panel: #1e2024; --ink: #e8e8e4; --muted: #9a9a94;
+    --line: #32353b; --accent: #7fc4a0; --accent-soft: #24312a; --code: #26282d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1.25rem 4rem; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 60rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
+  h2 { font-size: 1rem; margin: 2.25rem 0 .75rem; text-transform: uppercase;
+       letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  p.lede { color: var(--muted); margin: 0 0 1rem; }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  .hosts { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .hosts label {
+    display: inline-flex; align-items: center; gap: .45rem; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 999px; padding: .35rem .85rem;
+    background: var(--panel);
+  }
+  .hosts input:checked + span { font-weight: 600; color: var(--accent); }
+  .presets { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .preset {
+    text-align: left; cursor: pointer; background: var(--panel); color: inherit;
+    border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1rem; font: inherit;
+  }
+  .preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .preset b { display: block; font-size: 1.05rem; margin-bottom: .2rem; }
+  .preset small { color: var(--muted); display: block; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; background: var(--panel); }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  td.role { font-weight: 600; }
+  select { font: inherit; padding: .2rem .3rem; background: var(--bg); color: var(--ink);
+           border: 1px solid var(--line); border-radius: 5px; max-width: 100%; }
+  .note { color: var(--muted); font-size: .9rem; }
+  .bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: 1rem; }
+  button.copy {
+    font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: 8px;
+    padding: .6rem 1.1rem; background: var(--accent); color: var(--bg);
+  }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px;
+        padding: .9rem; overflow-x: auto; font-size: .82rem; margin: .75rem 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ShahinKit budget picker</h1>
+  <p class="lede">Pick the hosts you actually pay for and how much headroom you have.
+  Copy the result and paste it back to the agent — nothing here is saved or sent anywhere.</p>
+
+  <h2>Hosts you use</h2>
+  <fieldset class="hosts" id="hosts"></fieldset>
+
+  <h2>Budget</h2>
+  <div class="presets" id="presets"></div>
+
+  <h2>Roles</h2>
+  <p class="note" id="delegation"></p>
+  <div class="scroll"><table>
+    <thead><tr id="head"></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <p class="note">Change any dropdown to hand-pick a role; the preset switches to <code>custom</code>.</p>
+
+  <h2>Result</h2>
+  <div class="bar">
+    <button class="copy" id="copy" type="button">Copy profile</button>
+    <span class="note" id="status"></span>
+  </div>
+  <pre id="out"></pre>
+</main>
+
+<script>
+const DATA = {{PRESETS_JSON}};
+const ROLES = ["controller", "research", "implementation", "review", "mechanical"];
+const EFFORTS = ["low", "medium", "high", "xhigh", "max", "ultra"];
+const HOST_LABELS = { "claude-code": "Claude Code", "codex": "Codex", "opencode": "OpenCode" };
+const ALL_HOSTS = Object.keys(HOST_LABELS);
+
+// Every model any preset names, per host — the menu of legal choices.
+const CATALOG = {};
+for (const host of ALL_HOSTS) {
+  const seen = new Set();
+  for (const preset of Object.values(DATA.presets)) {
+    for (const role of ROLES) seen.add(preset.hosts[host][role].model);
+  }
+  CATALOG[host] = [...seen].sort();
+}
+
+const state = {
+  hosts: new Set(["claude-code"]),
+  preset: "default",
+  custom: null, // { host: { role: {model, effort} } } once hand-edited
+};
+
+function roles(host) {
+  if (state.custom && state.custom[host]) return state.custom[host];
+  return DATA.presets[state.preset === "custom" ? "default" : state.preset].hosts[host];
+}
+
+function delegation() {
+  const preset = DATA.presets[state.preset === "custom" ? "default" : state.preset];
+  return preset.delegation;
+}
+
+function profile() {
+  const chosen = ALL_HOSTS.filter((h) => state.hosts.has(h));
+  const out = {
+    schema_version: 1,
+    hosts: chosen,
+    preset: state.custom ? "custom" : state.preset,
+    roles: {},
+    delegation: delegation(),
+  };
+  for (const host of chosen) {
+    out.roles[host] = {};
+    for (const role of ROLES) out.roles[host][role] = { ...roles(host)[role] };
+  }
+  return out;
+}
+
+function edit(host, role, key, value) {
+  state.custom ??= {};
+  for (const h of ALL_HOSTS) {
+    state.custom[h] ??= {};
+    for (const r of ROLES) state.custom[h][r] ??= { ...roles(h)[r] };
+  }
+  state.custom[host][role][key] = value;
+  render();
+}
+
+function dropdown(host, role, key, options) {
+  const select = document.createElement("select");
+  const current = roles(host)[role][key];
+  for (const option of options) {
+    const node = document.createElement("option");
+    node.value = node.textContent = option;
+    if (option === current) node.selected = true;
+    select.append(node);
+  }
+  select.addEventListener("change", () => edit(host, role, key, select.value));
+  return select;
+}
+
+function render() {
+  const chosen = ALL_HOSTS.filter((h) => state.hosts.has(h));
+
+  document.querySelectorAll(".preset").forEach((button) => {
+    button.setAttribute("aria-pressed", String(!state.custom && button.dataset.name === state.preset));
+  });
+
+  const d = delegation();
+  document.getElementById("delegation").textContent =
+    `Delegation ${d.mode}: implementation touching more than ${d.inline_file_limit} files ` +
+    `or changing more than ${d.inline_line_limit} lines goes to a worker. ${d.rationale}`;
+
+  const head = document.getElementById("head");
+  head.replaceChildren();
+  head.append(Object.assign(document.createElement("th"), { textContent: "Role" }));
+  for (const host of chosen) {
+    head.append(Object.assign(document.createElement("th"), { textContent: HOST_LABELS[host] }));
+  }
+
+  const rows = document.getElementById("rows");
+  rows.replaceChildren();
+  for (const role of ROLES) {
+    const tr = document.createElement("tr");
+    tr.append(Object.assign(document.createElement("td"), { className: "role", textContent: role }));
+    for (const host of chosen) {
+      const td = document.createElement("td");
+      td.append(dropdown(host, role, "model", CATALOG[host]), " ", dropdown(host, role, "effort", EFFORTS));
+      tr.append(td);
+    }
+    rows.append(tr);
+  }
+
+  document.getElementById("out").textContent = JSON.stringify(profile(), null, 2);
+}
+
+// Hosts
+const hostBox = document.getElementById("hosts");
+for (const host of ALL_HOSTS) {
+  const label = document.createElement("label");
+  const input = Object.assign(document.createElement("input"), { type: "checkbox", checked: state.hosts.has(host) });
+  input.addEventListener("change", () => {
+    input.checked ? state.hosts.add(host) : state.hosts.delete(host);
+    if (state.hosts.size === 0) { state.hosts.add(host); input.checked = true; }
+    render();
+  });
+  label.append(input, Object.assign(document.createElement("span"), { textContent: HOST_LABELS[host] }));
+  hostBox.append(label);
+}
+
+// Presets
+const presetBox = document.getElementById("presets");
+for (const [name, preset] of Object.entries(DATA.presets)) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "preset";
+  button.dataset.name = name;
+  button.append(
+    Object.assign(document.createElement("b"), { textContent: preset.label }),
+    Object.assign(document.createElement("small"), { textContent: preset.when }),
+    Object.assign(document.createElement("small"), { textContent: preset.summary }),
+  );
+  button.addEventListener("click", () => { state.preset = name; state.custom = null; render(); });
+  presetBox.append(button);
+}
+
+// Copy. execCommand fallback because file:// is not a secure context in Chrome.
+document.getElementById("copy").addEventListener("click", async () => {
+  const text = document.getElementById("out").textContent;
+  const status = document.getElementById("status");
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    document.body.append(area);
+    area.select();
+    try { document.execCommand("copy"); } catch { status.textContent = "Copy failed — select the JSON below."; return; }
+    area.remove();
+  }
+  status.textContent = "Copied. Paste it back to the agent.";
+});
+
+render();
+</script>
+</body>
+</html>

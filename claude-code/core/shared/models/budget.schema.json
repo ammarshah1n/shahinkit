@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shahinkit.dev/schemas/budget.schema.json",
+  "title": "ShahinKit budget profile",
+  "description": "Produced by /onboard. Declares which hosts are in use, which budget preset applies, and the resolved (model, effort) pair for every role on every declared host.",
+  "type": "object",
+  "required": ["schema_version", "hosts", "preset", "roles", "delegation"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "hosts": {
+      "description": "Hosts the user declared. Asked, never auto-detected.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["claude-code", "codex", "opencode"]}
+    },
+    "preset": {
+      "description": "Named preset, or 'custom' when roles were hand-picked.",
+      "enum": ["default", "plus", "max", "custom"]
+    },
+    "roles": {
+      "description": "Resolved roles per declared host. Keys must match `hosts`.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "claude-code": {"$ref": "#/$defs/hostRoles"},
+        "codex": {"$ref": "#/$defs/hostRoles"},
+        "opencode": {"$ref": "#/$defs/hostRoles"}
+      }
+    },
+    "delegation": {"$ref": "#/$defs/delegation"},
+    "opt_out_paths": {
+      "description": "Absolute path prefixes where ShahinKit lifecycle context is suppressed.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^/", "minLength": 2}
+    }
+  },
+  "$defs": {
+    "assignment": {
+      "type": "object",
+      "required": ["model", "effort"],
+      "additionalProperties": false,
+      "properties": {
+        "model": {"type": "string", "minLength": 1},
+        "effort": {"enum": ["low", "medium", "high", "xhigh", "max", "ultra"]}
+      },
+      "not": {
+        "anyOf": [
+          {"required": ["inherits_from"]},
+          {"required": ["inherit"]},
+          {"required": ["model_from_role"]}
+        ]
+      }
+    },
+    "hostRoles": {
+      "type": "object",
+      "required": ["controller", "research", "implementation", "review", "mechanical"],
+      "additionalProperties": false,
+      "properties": {
+        "controller": {"$ref": "#/$defs/assignment"},
+        "research": {"$ref": "#/$defs/assignment"},
+        "implementation": {"$ref": "#/$defs/assignment"},
+        "review": {"$ref": "#/$defs/assignment"},
+        "mechanical": {"$ref": "#/$defs/assignment"}
+      }
+    },
+    "delegation": {
+      "type": "object",
+      "required": ["mode", "inline_file_limit", "inline_line_limit"],
+      "additionalProperties": true,
+      "properties": {
+        "mode": {"enum": ["strict", "moderate", "relaxed"]},
+        "inline_file_limit": {
+          "description": "Implementation touching more files than this must be delegated.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "inline_line_limit": {
+          "description": "Implementation changing more lines than this must be delegated.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "rationale": {"type": "string"}
+      }
+    }
+  },
+  "x-shahinkit": {
+    "render_source": "roles.<host>.<role>.model and .effort",
+    "consumers": [
+      "claude-code/agents/*.md frontmatter model",
+      "codex/config/agents/*.toml model and model_reasoning_effort",
+      "core/shared/context/delegation-budget.block.md"
+    ],
+    "override_rule": "Roles resolve explicitly. No role inherits a controller or peer value.",
+    "host_note": "Claude Code plans gate quota, not model access; the preset changes controller inline latitude there. Codex plans gate model access; the preset changes which model tier each role names."
+  }
+}

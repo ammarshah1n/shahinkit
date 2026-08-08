@@ -1,7 +1,7 @@
 ---
 description: Bounded source research worker.
 mode: subagent
-model: openai/gpt-5.6-terra
+model: {{ROLE_MODEL_RESEARCH}}
 maxSteps: 10
 permission:
   doom_loop: ask

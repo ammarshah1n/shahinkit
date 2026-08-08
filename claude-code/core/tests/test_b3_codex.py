@@ -59,7 +59,9 @@ class B3CodexTests(unittest.TestCase):
         for role, model in self.contract["roles"].items():
             agent = tomllib.loads(self.read(f"config/agents/{role}.toml"))
             self.assertEqual(agent["name"], role)
-            self.assertEqual(agent["model"], model)
+            self.assertEqual(agent["model"], "{{ROLE_MODEL_%s}}" % role.upper())
+            presets = json.loads((ROOT / "claude-code/core/shared/models/presets.json").read_text())["presets"]
+            self.assertEqual(model, presets["default"]["hosts"]["codex"][role]["model"])
             self.assertNotIn("inherit", json.dumps(agent).lower())
             self.assertTrue(agent["description"])
             self.assertTrue(agent["developer_instructions"].strip())
@@ -124,7 +126,7 @@ class B3CodexTests(unittest.TestCase):
         self.assertEqual(generic["status"], "retired-example")
         for scope in ("user", "project"):
             hooks = json.loads(self.read(f"hooks/{scope}.hooks.example.json"))["hooks"]
-            self.assertEqual(set(hooks), {"SessionStart", "SubagentStart"})
+            self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit", "SubagentStart"})
             self.assertIn("{{SHAHINKIT_HOOK_PATH}}", json.dumps(hooks))
         agents = self.read("AGENTS.md")
         self.assertIn("Native `SessionStart` and `SubagentStart` hooks", agents)

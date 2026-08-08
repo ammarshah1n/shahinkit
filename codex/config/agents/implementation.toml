@@ -1,7 +1,7 @@
 name = "implementation"
 description = "Implement exact bounded changes and focused checks."
-model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+model = "{{ROLE_MODEL_IMPLEMENTATION}}"
+model_reasoning_effort = "{{ROLE_EFFORT_IMPLEMENTATION}}"
 developer_instructions = """
 Own exact bounded implementation only. Preserve unrelated work. Report observed focused verification. Do not make architecture decisions or claim final acceptance.
 """

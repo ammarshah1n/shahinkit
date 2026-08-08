@@ -94,7 +94,7 @@ class B3OpenCodeTests(unittest.TestCase):
     def test_agents_are_explicit_independent_and_use_permissions_and_step_caps(self):
         for role, model in CONTRACT["roles"].items():
             content = self.read(f".opencode/agents/{role}.md")
-            self.assertIn(f"model: {model}", content)
+            self.assertIn("model: {{ROLE_MODEL_%s}}" % role.upper(), content)
             self.assertIn("maxSteps:", content)
             self.assertIn("permission:", content)
             self.assertNotRegex(content, r"(?m)^steps:")

@@ -28,10 +28,12 @@ file integrity before changing your host configuration.
 
 Your coding agent gains:
 
-- **39 documented skills** for planning, research, study, review, memory, and
+- **40 documented skills** for planning, research, study, review, memory, and
   session handoff;
 - **five specialist agents**: controller, research, implementation, review, and
-  mechanical;
+  mechanical, each on a model chosen by your budget;
+- **`/onboard`**, which asks what you pay for and tunes model choice and
+  delegation to match;
 - **safe lifecycle hooks** that point the agent toward Prime and keep worker
   authority bounded;
 - **Ponytail**, which prefers the smallest correct solution;
@@ -52,7 +54,21 @@ Prime reads the smallest useful set of project instructions, current state,
 recent work, and optional local memory. It does not edit anything. Its job is to
 stop the agent guessing.
 
-### 2. Work normally
+### 2. Set your budget once with `/onboard`
+
+`/onboard` asks which hosts you use and roughly what you pay for, then picks the
+model and reasoning effort for each specialist agent and decides how eagerly work
+is delegated. On an entry subscription the controller plans and hands the
+building to cheaper workers. On a top subscription it delegates for parallelism
+rather than thrift.
+
+Run it again whenever your subscriptions change. It previews every change and
+waits for your approval.
+
+If the lifecycle prompts get in the way somewhere, list that folder in
+`.shahinkit-data/opt-out` (one path per line) and ShahinKit stays silent under it.
+
+### 3. Work normally
 
 Describe what you need in ordinary language. ShahinKit can select a skill, or
 you can name one directly:
@@ -67,7 +83,7 @@ you can name one directly:
 Specialist agents do bounded work. Controller keeps architecture, privacy,
 security, data-loss decisions, synthesis, and final acceptance.
 
-### 3. Finish with Miniwrap or Wrap Up
+### 4. Finish with Miniwrap or Wrap Up
 
 Use `/miniwrap` after a tiny task. Use `/wrap-up` after meaningful work.
 

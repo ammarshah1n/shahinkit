@@ -1,7 +1,7 @@
 ---
 description: Deterministic mechanical worker.
 mode: subagent
-model: openai/gpt-5.4-mini
+model: {{ROLE_MODEL_MECHANICAL}}
 maxSteps: 8
 permission:
   doom_loop: ask

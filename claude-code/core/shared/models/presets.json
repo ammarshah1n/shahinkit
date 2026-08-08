@@ -1,0 +1,112 @@
+{
+  "$schema": "./budget.schema.json",
+  "presets": {
+    "default": {
+      "label": "Default",
+      "when": "Entry subscription on one or both hosts, or you are unsure.",
+      "summary": "Controller plans and accepts. Everything buildable is delegated down.",
+      "delegation": {
+        "mode": "strict",
+        "inline_file_limit": 2,
+        "inline_line_limit": 60,
+        "rationale": "Entry quota is the binding constraint. Keep frontier tokens for judgement."
+      },
+      "hosts": {
+        "claude-code": {
+          "controller": {"model": "opus", "effort": "high"},
+          "research": {"model": "sonnet", "effort": "medium"},
+          "implementation": {"model": "sonnet", "effort": "high"},
+          "review": {"model": "sonnet", "effort": "high"},
+          "mechanical": {"model": "haiku", "effort": "low"}
+        },
+        "codex": {
+          "controller": {"model": "gpt-5.6-sol", "effort": "high"},
+          "research": {"model": "gpt-5.6-luna", "effort": "medium"},
+          "implementation": {"model": "gpt-5.6-luna", "effort": "high"},
+          "review": {"model": "gpt-5.6-terra", "effort": "high"},
+          "mechanical": {"model": "gpt-5.4-mini", "effort": "low"}
+        },
+        "opencode": {
+          "controller": {"model": "openai/gpt-5.6-sol", "effort": "high"},
+          "research": {"model": "openai/gpt-5.6-luna", "effort": "medium"},
+          "implementation": {"model": "openai/gpt-5.6-luna", "effort": "high"},
+          "review": {"model": "openai/gpt-5.6-terra", "effort": "high"},
+          "mechanical": {"model": "openai/gpt-5.4-mini", "effort": "low"}
+        }
+      }
+    },
+    "plus": {
+      "label": "Plus",
+      "when": "Mid subscription on at least one host.",
+      "summary": "Balanced workers throughout. Controller may finish small changes inline.",
+      "delegation": {
+        "mode": "moderate",
+        "inline_file_limit": 3,
+        "inline_line_limit": 120,
+        "rationale": "Quota allows the controller to absorb small work without a dispatch round trip."
+      },
+      "hosts": {
+        "claude-code": {
+          "controller": {"model": "opus", "effort": "high"},
+          "research": {"model": "sonnet", "effort": "medium"},
+          "implementation": {"model": "sonnet", "effort": "high"},
+          "review": {"model": "sonnet", "effort": "high"},
+          "mechanical": {"model": "haiku", "effort": "low"}
+        },
+        "codex": {
+          "controller": {"model": "gpt-5.6-sol", "effort": "high"},
+          "research": {"model": "gpt-5.6-terra", "effort": "medium"},
+          "implementation": {"model": "gpt-5.6-terra", "effort": "high"},
+          "review": {"model": "gpt-5.6-terra", "effort": "xhigh"},
+          "mechanical": {"model": "gpt-5.4-mini", "effort": "low"}
+        },
+        "opencode": {
+          "controller": {"model": "openai/gpt-5.6-sol", "effort": "high"},
+          "research": {"model": "openai/gpt-5.6-terra", "effort": "medium"},
+          "implementation": {"model": "openai/gpt-5.6-terra", "effort": "high"},
+          "review": {"model": "openai/gpt-5.6-terra", "effort": "xhigh"},
+          "mechanical": {"model": "openai/gpt-5.4-mini", "effort": "low"}
+        }
+      }
+    },
+    "max": {
+      "label": "Max",
+      "when": "Top subscription on both hosts.",
+      "summary": "Delegate for parallelism, not for thrift. Frontier review.",
+      "delegation": {
+        "mode": "relaxed",
+        "inline_file_limit": 5,
+        "inline_line_limit": 300,
+        "rationale": "Quota is not the constraint. Delegate to run work in parallel or to isolate context."
+      },
+      "hosts": {
+        "claude-code": {
+          "controller": {"model": "opus", "effort": "high"},
+          "research": {"model": "sonnet", "effort": "high"},
+          "implementation": {"model": "sonnet", "effort": "high"},
+          "review": {"model": "opus", "effort": "high"},
+          "mechanical": {"model": "haiku", "effort": "low"}
+        },
+        "codex": {
+          "controller": {"model": "gpt-5.6-sol", "effort": "xhigh"},
+          "research": {"model": "gpt-5.6-terra", "effort": "high"},
+          "implementation": {"model": "gpt-5.6-sol", "effort": "high"},
+          "review": {"model": "gpt-5.6-sol", "effort": "high"},
+          "mechanical": {"model": "gpt-5.4-mini", "effort": "medium"}
+        },
+        "opencode": {
+          "controller": {"model": "openai/gpt-5.6-sol", "effort": "xhigh"},
+          "research": {"model": "openai/gpt-5.6-terra", "effort": "high"},
+          "implementation": {"model": "openai/gpt-5.6-sol", "effort": "high"},
+          "review": {"model": "openai/gpt-5.6-sol", "effort": "high"},
+          "mechanical": {"model": "openai/gpt-5.4-mini", "effort": "medium"}
+        }
+      }
+    }
+  },
+  "cross_host": {
+    "rule": "When both Claude Code and Codex are installed, the controller may dispatch implementation and review to the other host's worker route.",
+    "fallback_chain": ["codex", "claude-code"],
+    "exhaustion": "On a worker-route quota error, fall back to the next host in the chain at the same role tier. Report the fallback; never silently downgrade."
+  }
+}

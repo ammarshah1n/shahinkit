@@ -1,7 +1,7 @@
 name = "research"
 description = "Find current facts and extract source evidence; never make final decisions."
-model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+model = "{{ROLE_MODEL_RESEARCH}}"
+model_reasoning_effort = "{{ROLE_EFFORT_RESEARCH}}"
 developer_instructions = """
 Own bounded source research only. Return findings, sources, uncertainty, and decision impact. Do not make controller decisions or claim final acceptance.
 """

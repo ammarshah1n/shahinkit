@@ -304,6 +304,103 @@ def add_composed_json_output(outputs: list[dict], sources: list[str], destinatio
     })
 
 
+ROLES = ("controller", "research", "implementation", "review", "mechanical")
+EFFORTS = ("low", "medium", "high", "xhigh", "max", "ultra")
+PRESETS_SOURCE = "claude-code/core/shared/models/presets.json"
+
+
+def budget_values(agent: str, root: Path) -> dict[str, str]:
+    """Resolve per-role (model, effort) and delegation thresholds for this host.
+
+    Reads the user profile written by /onboard when present, otherwise the
+    `default` preset. The profile is a user-owned input, never a manifest-owned
+    output, so it is validated here rather than trusted."""
+    presets = load_json(safe_child(ROOT, PRESETS_SOURCE, required=True))["presets"]
+    profile = None
+    profile_path = safe_child(root, ".shahinkit-data/budget.json")
+    if profile_path.is_file():
+        profile = load_json(profile_path)
+        if not isinstance(profile, dict):
+            fail("budget profile must be a JSON object")
+
+    if profile and isinstance(profile.get("roles"), dict) and agent in profile["roles"]:
+        name = profile.get("preset", "custom")
+        roles = profile["roles"][agent]
+        delegation = profile.get("delegation") or presets["default"]["delegation"]
+        hosts = profile.get("hosts") or [agent]
+    else:
+        name = "default"
+        roles = presets[name]["hosts"][agent]
+        delegation = presets[name]["delegation"]
+        hosts = [agent]
+
+    if not isinstance(roles, dict) or set(roles) != set(ROLES):
+        fail(f"budget profile must resolve exactly {len(ROLES)} roles for {agent}")
+    values = {"BUDGET_PRESET": str(name), "DELEGATION_MODE": str(delegation.get("mode", "moderate"))}
+    for role in ROLES:
+        assignment = roles[role]
+        if not isinstance(assignment, dict):
+            fail(f"budget role {role} must be an object")
+        model, effort = assignment.get("model"), assignment.get("effort")
+        if not isinstance(model, str) or not model.strip():
+            fail(f"budget role {role} needs a model")
+        if effort not in EFFORTS:
+            fail(f"budget role {role} effort must be one of {', '.join(EFFORTS)}")
+        values[f"ROLE_MODEL_{role.upper()}"] = model
+        values[f"ROLE_EFFORT_{role.upper()}"] = effort
+    for key, setting in (("INLINE_FILE_LIMIT", "inline_file_limit"), ("INLINE_LINE_LIMIT", "inline_line_limit")):
+        limit = delegation.get(setting)
+        if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
+            fail(f"budget delegation {setting} must be a positive integer")
+        values[key] = str(limit)
+
+    # The picker page is offline and self-contained, so the preset catalogue is
+    # inlined at render time rather than fetched.
+    values["PRESETS_JSON"] = json.dumps({"presets": presets}, indent=2)
+
+    others = [host for host in hosts if host != agent]
+    values["CROSS_HOST_ROUTE"] = (
+        "A worker route on "
+        + " or ".join(f"`{host}`" for host in others)
+        + " is available; on a quota error there, fall back to the next host at the"
+        " same role tier and report the fallback rather than silently downgrading."
+        if others
+        else "No second host is configured; keep every route on this host."
+    )
+    return values
+
+
+def add_local_data(outputs: list[dict], root: Path, home: Path, values: dict[str, str], path_values: dict[str, str], features: dict[str, bool], preserve_existing: bool) -> None:
+    """Install-owned runtime config for the copied lifecycle hook. Authoritative
+    and rewritten every render. The companion path opt-out list lives in an
+    unowned `.shahinkit-data/opt-out` text file so hand edits are never
+    clobbered; the hook treats a missing list as "no opt-outs"."""
+    add_output(
+        outputs,
+        "claude-code/core/shared/hooks/hook-config.template.json",
+        ".shahinkit-data/hook-config.json",
+        root,
+        home,
+        values,
+        path_values,
+        features,
+        "file",
+        preserve_existing,
+    )
+    add_output(
+        outputs,
+        "claude-code/core/shared/onboard/picker.html",
+        ".shahinkit-data/picker.html",
+        root,
+        home,
+        values,
+        path_values,
+        features,
+        "file",
+        preserve_existing,
+    )
+
+
 def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[str, bool], preserve_existing: bool = False) -> list[dict]:
     render = load_json(safe_child(ROOT, f"{agent}/render-manifest.json", required=True))
     if render.get("adapter") != agent:
@@ -323,6 +420,7 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
         "CAVEMAN_ENABLED": str(features["caveman"]).lower(),
         "DEV_SCOPE_ENTRYPOINT": "disabled",
         "DEV_SCOPE_CONFIG_FILE": "disabled",
+        **budget_values(agent, root),
     }
     if agent in ("claude-code", "codex"):
         hook_relative = {
@@ -420,6 +518,7 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
             for item in render["course_rag"]["outputs"]:
                 destination = item.get("destination", item.get("destinations", {}).get(scope))
                 add_output(outputs, item["source"], destination, root, home, values, path_values, features, preserve_existing=preserve_existing)
+    add_local_data(outputs, root, home, values, path_values, features, preserve_existing)
     if features["basic-memory"]:
         add_output(outputs, "claude-code/core/shared/mcp/basic-memory/local-config.example.json", ".shahinkit-state/basic-memory/config.json", root, home, values, path_values, features, preserve_existing=preserve_existing)
     unique: dict[Path, dict] = {}

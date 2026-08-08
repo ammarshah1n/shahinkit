@@ -19,6 +19,34 @@ const advised = new Set()
 const idleNotifiedAt = new Map()
 const primed = new Set()
 
+// Path opt-out, parity with the Python lifecycle hook: when the working
+// directory sits at or under a listed prefix, ShahinKit stays silent here.
+function optedOut() {
+  try {
+    const { readFileSync } = require("node:fs")
+    const { resolve, dirname, join, sep } = require("node:path")
+    const here = dirname(new URL(import.meta.url).pathname)
+    for (const base of [dirname(here), dirname(dirname(here)), here]) {
+      let raw
+      try {
+        raw = readFileSync(join(base, ".shahinkit-data", "opt-out"), "utf8")
+      } catch {
+        continue
+      }
+      const cwd = resolve(process.cwd())
+      return raw
+        .split("\n")
+        .map((line) => line.split("#")[0].trim())
+        .filter(Boolean)
+        .some((entry) => {
+          const prefix = resolve(entry)
+          return cwd === prefix || cwd.startsWith(prefix + sep)
+        })
+    }
+  } catch {}
+  return false
+}
+
 async function contextLimit(client, providerID, modelID) {
   const key = `${providerID}/${modelID}`
   const cached = contextLimits.get(key)
@@ -63,6 +91,7 @@ export const ShahinkitGuard = async ({ client }) => {
     },
 
     "experimental.chat.system.transform": async (input, output) => {
+      if (optedOut()) return
       const sid = String(input?.sessionID ?? "")
       if (sid && !primed.has(sid)) {
         primed.add(sid)

@@ -24,10 +24,30 @@ def destination_path(scope_root, home_root, destination, data_root):
     return scope_root / destination
 
 
+BUDGET_SUBSTITUTIONS = {
+    "BUDGET_PRESET": "default",
+    "DELEGATION_MODE": "strict",
+    "INLINE_FILE_LIMIT": "2",
+    "INLINE_LINE_LIMIT": "60",
+    "CROSS_HOST_ROUTE": "No second host is configured; keep every route on this host.",
+    **{
+        f"ROLE_MODEL_{role.upper()}": model
+        for role, model in {
+            r: a["model"]
+            for r, a in json.loads(
+                (ROOT / "claude-code/core/shared/models/presets.json").read_text()
+            )["presets"]["default"]["hosts"]["opencode"].items()
+        }.items()
+    },
+}
+
+
 def render_feature_template(content, values):
     for mode in ("PONYTAIL_ENABLED", "CAVEMAN_ENABLED"):
         content = re.sub(rf"\{{\{{#{mode}\}}\}}(.*?)\{{\{{/{mode}\}}\}}", lambda match: match.group(1) if values[mode] == "true" else "", content, flags=re.S)
         content = content.replace(f"{{{{{mode}}}}}", values[mode])
+    for name, value in BUDGET_SUBSTITUTIONS.items():
+        content = content.replace(f"{{{{{name}}}}}", value)
     return content
 
 
@@ -223,11 +243,11 @@ class B3CrossAdapterTests(unittest.TestCase):
         for role in ROLES:
             claude = (ROOT / "claude-code/agents" / f"{role}.md").read_text()
             self.assertRegex(claude, rf"(?m)^name: {role}$")
-            self.assertIn(f"model: {claude_roles[role]}", claude)
+            self.assertIn("model: {{ROLE_MODEL_%s}}" % role.upper(), claude)
             codex = tomllib.loads((ROOT / "codex/config/agents" / f"{role}.toml").read_text())
-            self.assertEqual(codex["model"], codex_roles[role])
+            self.assertEqual(codex["model"], "{{ROLE_MODEL_%s}}" % role.upper())
             opencode = (ROOT / "opencode/.opencode/agents" / f"{role}.md").read_text()
-            self.assertIn(f"model: {opencode_roles[role]}", opencode)
+            self.assertIn("model: {{ROLE_MODEL_%s}}" % role.upper(), opencode)
         corpus = "\n".join(path.read_text(errors="ignore") for host in ("claude-code", "codex", "opencode") for path in (ROOT / host).rglob("*") if path.is_file())
         self.assertNotRegex(corpus, r"(?im)^\s*(inherit|inherits_from|model_from_role)\s*[:=]")
 
@@ -309,9 +329,9 @@ if (output.system.length !== {expected}) process.exit(1);'''], text=True, captur
 
     def test_render_manifest_defaults_enable_supported_features(self):
         expected = {
-            "claude-code": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "SHAHINKIT_HOOK_PATH", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"}, "defaults": {}},
-            "codex": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "SHAHINKIT_HOOK_PATH", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"}, "defaults": {}},
-            "opencode": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED"}, "defaults": {"PONYTAIL_ENABLED": "true", "CAVEMAN_ENABLED": "true"}},
+            "claude-code": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "SHAHINKIT_HOOK_PATH", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED", "BUDGET_PRESET", "DELEGATION_MODE", "INLINE_FILE_LIMIT", "INLINE_LINE_LIMIT", "CROSS_HOST_ROUTE", "ROLE_MODEL_CONTROLLER", "ROLE_MODEL_RESEARCH", "ROLE_MODEL_IMPLEMENTATION", "ROLE_MODEL_REVIEW", "ROLE_MODEL_MECHANICAL"}, "defaults": {}},
+            "codex": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "SHAHINKIT_HOOK_PATH", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED", "BUDGET_PRESET", "DELEGATION_MODE", "INLINE_FILE_LIMIT", "INLINE_LINE_LIMIT", "CROSS_HOST_ROUTE", "ROLE_MODEL_CONTROLLER", "ROLE_MODEL_RESEARCH", "ROLE_MODEL_IMPLEMENTATION", "ROLE_MODEL_REVIEW", "ROLE_MODEL_MECHANICAL"}, "defaults": {}},
+            "opencode": {"required": {"SHAHINKIT_DATA_DIR", "SHAHINKIT_STATE_DIR", "LOCAL_BASIC_MEMORY_CONFIG_DIR", "LOCAL_PROJECT_NAME", "LOCAL_PROJECT_PATH", "LOCAL_PROJECT_ROOT", "PONYTAIL_ENABLED", "CAVEMAN_ENABLED", "BUDGET_PRESET", "DELEGATION_MODE", "INLINE_FILE_LIMIT", "INLINE_LINE_LIMIT", "CROSS_HOST_ROUTE", "ROLE_MODEL_CONTROLLER", "ROLE_MODEL_RESEARCH", "ROLE_MODEL_IMPLEMENTATION", "ROLE_MODEL_REVIEW", "ROLE_MODEL_MECHANICAL"}, "defaults": {"PONYTAIL_ENABLED": "true", "CAVEMAN_ENABLED": "true"}},
         }
         for host, render in (("claude-code", self.claude), ("codex", self.codex), ("opencode", self.opencode)):
             substitutions = render.get("render", {})
