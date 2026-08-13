@@ -162,7 +162,7 @@ class B1ContractTests(unittest.TestCase):
             self.assertEqual(entry["source_sha256"], digest)
             self.assertEqual(entry["render_sha256"], digest)
 
-    def test_published_root_has_exactly_three_user_facing_directories(self):
+    def test_published_root_has_exactly_four_user_facing_directories(self):
         result = subprocess.run(
             ["git", "-C", str(ROOT), "ls-files", "-co", "--exclude-standard"],
             text=True,
@@ -177,7 +177,7 @@ class B1ContractTests(unittest.TestCase):
             and (ROOT / relative).exists()
             and len(relative.parts) > 1
         }
-        self.assertEqual(directories, {"claude-code", "codex", "opencode"})
+        self.assertEqual(directories, {"claude-code", "codex", "opencode", "Pi"})
 
     def test_generated_catalog_and_integrity_manifest_are_current(self):
         for script in ("build_catalog.py", "build_manifest.py"):

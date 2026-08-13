@@ -2,7 +2,8 @@
 
 ShahinKit gives **Claude Code, Codex, and OpenCode** the same practical way to
 start work, plan it, use specialist agents, remember decisions, and hand work to
-the next session.
+the next session. It also includes a standalone **Pi** resource snapshot for
+users who want the Pi setup.
 
 You do not need to understand its files before using it.
 
@@ -23,6 +24,12 @@ Install ShahinKit from this repository and onboard me. Preview every change befo
 ShahinKit shows exactly what it intends to add. Nothing is installed until you
 approve that preview. Public releases also verify repository, release tag, and
 file integrity before changing your host configuration.
+
+## Pi setup
+
+Pi is intentionally not part of the receipt-backed host installer. Review and
+copy the standalone resources in [`Pi/README.md`](Pi/README.md); it includes
+only the six skills and resources already loaded by this Pi setup.
 
 ## What changes after installation
 
@@ -139,19 +146,22 @@ paths shown in the installation preview.
 
 Markdown remains source of truth even when Basic Memory is enabled.
 
-## Why there are three folders
+## Why there are four folders
 
-Repository has exactly three user-facing roots:
+Repository has four user-facing roots:
 
 ```text
 claude-code/
 codex/
 opencode/
+Pi/
 ```
 
 Claude Code owns canonical portable instructions, skills, hooks, policy, and
-memory templates under `claude-code/core/`. Codex and OpenCode contain only
-their host-native adaptations. Automated tests stop adapter drift.
+memory templates under `claude-code/core/`. Codex and OpenCode contain the
+receipt-backed host adaptations. `Pi/` is a standalone Pi resource snapshot,
+kept outside the three-host installer manifest. Automated tests stop drift in
+the managed adapters.
 
 ## Safety and privacy
 
