@@ -17,20 +17,22 @@ Symlinked source skills were materialized as regular files. This folder contains
 no credentials, auth files, sessions, caches, package installs, or personal
 memory.
 
-## Install globally
+## Install safely
 
-Review the files, then copy them into Pi's standard user resource directories:
+Do not blindly overlay this adapter onto an existing personalized
+`~/.pi/agent`: that can replace your instructions, prompts, extensions, or
+skills. Keep credentials, settings, sessions, and other user-owned state in
+place. The safest install is a separate Pi config directory:
 
 ```sh
-mkdir -p ~/.pi/agent/{agents,extensions,prompts,skills}
-cp Pi/AGENTS.md ~/.pi/agent/AGENTS.md
-cp -R Pi/agents/. ~/.pi/agent/agents/
-cp -R Pi/extensions/. ~/.pi/agent/extensions/
-cp -R Pi/prompts/. ~/.pi/agent/prompts/
-cp -R Pi/skills/. ~/.pi/agent/skills/
+mkdir -p ~/.pi/shahinkit-pi
+cp -R Pi/. ~/.pi/shahinkit-pi/
+PI_CODING_AGENT_DIR="$HOME/.pi/shahinkit-pi" pi
 ```
 
-Restart Pi or run `/reload`.
+To merge resources into `~/.pi/agent`, back it up, review `diff -ru` first, and
+copy only the files you explicitly approve. Restart Pi or run `/reload` after
+an approved change.
 
 ## Install for one project
 
