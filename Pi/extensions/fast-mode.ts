@@ -2,9 +2,9 @@
 // Wraps the built-in provider so requests carry service_tier: "priority"
 // (faster processing, higher usage burn — same dial as Codex's Fast mode).
 // Toggle with /fast, /fast on, /fast off, /fast status. State persists.
-// Use Pi's exported provider entrypoint; do not depend on a machine-specific
-// global install path.
-import { openaiCodexProvider } from "@earendil-works/pi-ai/providers/openai-codex";
+// Use Pi's supported aggregate provider entrypoint; the extension loader maps
+// this path across Pi's bundled and Node runtimes.
+import { builtinProviders } from "@earendil-works/pi-ai/providers/all";
 import { readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -23,7 +23,8 @@ function loadState(): boolean {
 let fast = loadState();
 
 export default function (pi: ExtensionAPI) {
-  const provider = openaiCodexProvider();
+  const provider = builtinProviders().find((candidate) => candidate.id === "openai-codex");
+  if (!provider) throw new Error("OpenAI Codex provider is unavailable in this Pi build");
   const api = provider.api;
   const inject = (options: any) => (fast ? { ...options, serviceTier: "priority" } : options);
   provider.api = {
