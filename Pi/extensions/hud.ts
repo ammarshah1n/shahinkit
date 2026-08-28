@@ -273,7 +273,8 @@ export default function (pi: ExtensionAPI) {
 					const right2 = cost > 0 ? theme.fg("warning", `$${cost.toFixed(3)}`) : "";
 
 					// ---- line 3: tool tally ------------------------------------
-					const toolNames = [...new Set([...toolOk.keys(), ...toolErr.keys()])].sort(
+					// subagent_status is polling noise — the running-subagent block shows live state.
+					const toolNames = [...new Set([...toolOk.keys(), ...toolErr.keys()])].filter((n) => n !== "subagent_status").sort(
 						(a, b) => (toolOk.get(b) ?? 0) + (toolErr.get(b) ?? 0) - ((toolOk.get(a) ?? 0) + (toolErr.get(a) ?? 0)),
 					);
 					const l3 = toolNames
