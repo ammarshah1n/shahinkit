@@ -53,6 +53,16 @@ function finalReply(id: string): string {
 export default function (pi: ExtensionAPI) {
 	const tracked = new Map<string, number>(); // id -> startedAt
 	let timer: NodeJS.Timeout | undefined;
+	let ui: { setStatus(key: string, text: string | undefined): void } | undefined;
+	const fmtSecs = (ms: number) => (ms < 60_000 ? `${Math.round(ms / 1000)}s` : `${Math.floor(ms / 60_000)}m${String(Math.round((ms % 60_000) / 1000)).padStart(2, "0")}s`);
+	// HUD line 5 renders extension statuses; show pi-bg jobs only while they run.
+	const publish = () => {
+		if (!ui) return;
+		if (tracked.size === 0) return ui.setStatus("pi-bg", undefined);
+		const now = Date.now();
+		const parts = [...tracked].map(([id, t]) => `${id.replace(/-\d{6}-\d+$/, "")} ${fmtSecs(now - t)}`);
+		ui.setStatus("pi-bg", `◐ pi-bg ${parts.length}: ${parts.join(" · ")}`);
+	};
 
 	const tick = () => {
 		for (const [id, started] of tracked) {
@@ -80,13 +90,14 @@ export default function (pi: ExtensionAPI) {
 				{ triggerTurn: true, deliverAs: "followUp" },
 			);
 		}
+		publish();
 		if (tracked.size === 0 && timer) {
 			clearInterval(timer);
 			timer = undefined;
 		}
 	};
 
-	pi.on("tool_result", async (event) => {
+	pi.on("tool_result", async (event, ctx) => {
 		if (event.toolName !== "bash") return;
 		const cmd = String((event.input as any)?.command ?? "");
 		if (!cmd.includes("pi-bg run")) return;
@@ -97,6 +108,7 @@ export default function (pi: ExtensionAPI) {
 			.filter((l) => ID_RE.test(l) && existsSync(join(BG, `${l}.pid`)) && !tracked.has(l));
 		if (ids.length === 0) return;
 		for (const id of ids) tracked.set(id, Date.now());
+		ui = ctx.ui; publish();
 		log(`tracking ${ids.join(",")}`);
 		if (!timer) timer = setInterval(tick, 5000);
 		return {

@@ -510,12 +510,46 @@ function newBgJob(agent: string, task: string): BgJob {
 	bgJobs.set(id, job);
 	return job;
 }
+// HUD line 5 shows extension statuses; publish only while something runs.
+const fmtSecs = (ms: number) => (ms < 60_000 ? `${Math.round(ms / 1000)}s` : `${Math.floor(ms / 60_000)}m${String(Math.round((ms % 60_000) / 1000)).padStart(2, "0")}s`);
+let statusUi: { setStatus(key: string, text: string | undefined): void } | undefined;
+let statusTimer: NodeJS.Timeout | undefined;
+const fgRunning = new Map<string, { agent: string; startedAt: number }>(); // blocking calls
+function publishStatus() {
+	if (!statusUi) return;
+	const now = Date.now();
+	const parts = [
+		...Array.from(bgJobs.values()).filter((j) => j.status === "running").map((j) => `${j.id} ${j.agent} ${fmtSecs(now - j.startedAt)}`),
+		...Array.from(fgRunning.values()).map((f) => `${f.agent} ${fmtSecs(now - f.startedAt)}`),
+	];
+	if (parts.length === 0) {
+		statusUi.setStatus("subagents", undefined);
+		if (statusTimer) { clearInterval(statusTimer); statusTimer = undefined; }
+		return;
+	}
+	statusUi.setStatus("subagents", `◐ ${parts.length} running: ${parts.join(" · ")}`);
+	if (!statusTimer) statusTimer = setInterval(publishStatus, 5000);
+}
 function fmtJob(j: BgJob): string {
 	const secs = Math.round(((j.finishedAt ?? Date.now()) - j.startedAt) / 1000);
 	return `${j.id}  ${j.status.padEnd(7)} ${j.agent}  ${secs}s  ${j.task.slice(0, 70).replace(/\s+/g, " ")}`;
 }
 
 export default function (pi: ExtensionAPI) {
+	// Foreground (blocking) subagent calls: show them on the HUD too.
+	pi.on("tool_call", async (event, ctx) => {
+		if (event.toolName !== "subagent") return;
+		const inp = event.input as any;
+		if (inp?.background) return;
+		const agent = inp?.agent ?? (inp?.tasks ?? inp?.chain ?? []).map((t: any) => t.agent).join("+") ?? "subagent";
+		fgRunning.set(event.toolCallId, { agent, startedAt: Date.now() });
+		statusUi = ctx.ui; publishStatus();
+	});
+	pi.on("tool_result", async (event) => {
+		if (event.toolName !== "subagent") return;
+		if (fgRunning.delete(event.toolCallId)) publishStatus();
+	});
+
 	pi.registerTool({
 		name: "subagent_status",
 		label: "Subagent status",
@@ -617,6 +651,7 @@ export default function (pi: ExtensionAPI) {
 						isError: true,
 					};
 				const jobs = items.map((t) => newBgJob(t.agent, t.task));
+				statusUi = ctx.ui; publishStatus();
 				const defaultCwd = ctx.cwd;
 				const mode = hasTasks ? "parallel" : "single";
 				// Not awaited: the tool returns now, the results come back as follow-up messages.
@@ -639,6 +674,7 @@ export default function (pi: ExtensionAPI) {
 					job.status = failed ? "failed" : "done";
 					job.finishedAt = Date.now();
 					job.output = getResultOutput(result);
+					publishStatus();
 					const secs = Math.round((job.finishedAt - job.startedAt) / 1000);
 					pi.sendMessage(
 						{
