@@ -60,8 +60,11 @@ export default function (pi: ExtensionAPI) {
 		if (!ui) return;
 		if (tracked.size === 0) return ui.setStatus("pi-bg", undefined);
 		const now = Date.now();
-		const parts = [...tracked].map(([id, t]) => `${id.replace(/-\d{6}-\d+$/, "")} ${fmtSecs(now - t)}`);
-		ui.setStatus("pi-bg", `◐ pi-bg ${parts.length}: ${parts.join(" · ")}`);
+		const task = (id: string) => {
+			try { return readFileSync(join(BG, `${id}.task`), "utf8").replace(/\s+/g, " ").trim().slice(0, 70); } catch { return ""; }
+		};
+		// newline-separated rows → hud.ts renders a vertical block (agent\telapsed\ttask)
+		ui.setStatus("pi-bg", [...tracked].map(([id, t]) => `${id.replace(/-\d{6}-\d+$/, "")} ⇢\t${fmtSecs(now - t)}\t${task(id)}`).join("\n"));
 	};
 
 	const tick = () => {

@@ -41,7 +41,7 @@ run)
   [ -n "$model" ] || model=$(field model "$f")
   [ -n "$model" ] || { echo "no model for $agent — pass -m" >&2; exit 1; }
   id="$agent-$(date +%H%M%S)-$RANDOM"
-  body "$f" > "$D/$id.sys"
+  body "$f" > "$D/$id.sys"; printf '%s\n' "$*" > "$D/$id.task"   # task text for the HUD row (pi-bg-notify)
   args=(--mode json -p --no-session --model "$model")
   t=$(field tools "$f"); [ -n "$t" ] && args+=(--tools "${t// /}")
 
@@ -118,6 +118,6 @@ clean) for w in "$D"/wt/*/; do [ -d "$w" ] || continue
   ssh -o BatchMode=yes -o ConnectTimeout=5 fedora \
     'for w in ~/.pi/bg/wt/*/; do [ -d "$w" ] || continue
        git -C "$w" worktree remove --force "$w" 2>/dev/null || rm -rf "$w"; done' </dev/null 2>/dev/null || true
-  rm -f "$D"/*.jsonl "$D"/*.err "$D"/*.sys "$D"/*.pid "$D"/*.meta; echo cleaned ;;
+  rm -f "$D"/*.jsonl "$D"/*.err "$D"/*.sys "$D"/*.pid "$D"/*.meta "$D"/*.task; echo cleaned ;;
 *) sed -n '2,10p' "$0" ;;
 esac

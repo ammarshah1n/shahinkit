@@ -10,7 +10,8 @@ Missing skills are intentional.
 - `agents/` — `planner`, `reviewer`, `scout`, and `worker` profiles.
 - `extensions/` — Abliteration provider, Codex Fast mode, the subagent tool (with
   `background: true`), `fable-mode.ts` (controller-tier doctrine from `FABLE-MODE.md`),
-  and `pi-bg-notify.ts` (completion push for `bin/pi-bg` jobs).
+  `pi-bg-notify.ts` (completion push for `bin/pi-bg` jobs), and `hud.ts` (Claude-Code-style
+  footer: context/usage gauges, tool tally, running-subagent block; `/hud` toggles).
 - `bin/` — `pi-bg` (detached worktree-isolated child) and `luna` (one-shot scout).
   `pi-bg` and `extensions/subagent/remote.ts` can route to a remote host by cwd map;
   edit the map or set `PI_REMOTE_SUBAGENTS=0` / touch `~/.pi/agent/remote-subagents-off`

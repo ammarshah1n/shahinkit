@@ -514,20 +514,22 @@ function newBgJob(agent: string, task: string): BgJob {
 const fmtSecs = (ms: number) => (ms < 60_000 ? `${Math.round(ms / 1000)}s` : `${Math.floor(ms / 60_000)}m${String(Math.round((ms % 60_000) / 1000)).padStart(2, "0")}s`);
 let statusUi: { setStatus(key: string, text: string | undefined): void } | undefined;
 let statusTimer: NodeJS.Timeout | undefined;
-const fgRunning = new Map<string, { agent: string; startedAt: number }>(); // blocking calls
+const fgRunning = new Map<string, { agent: string; task: string; startedAt: number }>(); // blocking calls
 function publishStatus() {
 	if (!statusUi) return;
 	const now = Date.now();
+	const brief = (t: string) => t.replace(/\s+/g, " ").trim().slice(0, 70);
 	const parts = [
-		...Array.from(bgJobs.values()).filter((j) => j.status === "running").map((j) => `${j.id} ${j.agent} ${fmtSecs(now - j.startedAt)}`),
-		...Array.from(fgRunning.values()).map((f) => `${f.agent} ${fmtSecs(now - f.startedAt)}`),
+		...Array.from(bgJobs.values()).filter((j) => j.status === "running").map((j) => `${j.agent} ${j.id}\t${fmtSecs(now - j.startedAt)}\t${brief(j.task)}`),
+		...Array.from(fgRunning.values()).map((f) => `${f.agent}\t${fmtSecs(now - f.startedAt)}\t${brief(f.task)}`),
 	];
 	if (parts.length === 0) {
 		statusUi.setStatus("subagents", undefined);
 		if (statusTimer) { clearInterval(statusTimer); statusTimer = undefined; }
 		return;
 	}
-	statusUi.setStatus("subagents", `◐ ${parts.length} running: ${parts.join(" · ")}`);
+	// newline-separated rows → hud.ts renders a vertical block (agent\telapsed\ttask)
+	statusUi.setStatus("subagents", parts.join("\n"));
 	if (!statusTimer) statusTimer = setInterval(publishStatus, 5000);
 }
 function fmtJob(j: BgJob): string {
@@ -542,7 +544,8 @@ export default function (pi: ExtensionAPI) {
 		const inp = event.input as any;
 		if (inp?.background) return;
 		const agent = inp?.agent ?? (inp?.tasks ?? inp?.chain ?? []).map((t: any) => t.agent).join("+") ?? "subagent";
-		fgRunning.set(event.toolCallId, { agent, startedAt: Date.now() });
+		const task = inp?.task ?? (inp?.tasks ?? inp?.chain ?? []).map((t: any) => t.task).join(" | ") ?? "";
+		fgRunning.set(event.toolCallId, { agent, task, startedAt: Date.now() });
 		statusUi = ctx.ui; publishStatus();
 	});
 	pi.on("tool_result", async (event) => {

@@ -38,8 +38,9 @@ for architecture state if present). Newest handoff beats older notes.
   child — the route for parallel WRITES to one repo. Children run `--no-extensions -e fast-mode.ts`.
   `extensions/pi-bg-notify.ts` pushes `[pi-bg <id> done]` + the final reply as a follow-up turn.
   **Never `sleep`/poll `pi-bg ls`.** Collect with `pi-bg diff <id>`, apply and re-verify locally.
-- Running subagents (both routes) show on the HUD's bottom line via `setStatus` — `◐ N running: …` —
-  only while something is running; cleared when idle.
+- Running subagents (both routes) render as a vertical block under the HUD tool tally —
+  `◐ scout bg1   42s  map repo layout…` one row each — only while running; cleared when idle.
+  Mechanism: a `setStatus` text with newlines and `agent\telapsed\ttask` fields; `extensions/hud.ts` renders it.
 - Controller-tier sessions (Fable, gpt-5.6-sol, Opus) get `FABLE-MODE.md` appended to the system
   prompt by `extensions/fable-mode.ts`: scout first, write units ≤3 files / ≤5 min, never wait on a job.
 - Codex Sites only on an explicit "site(s)" request; "build a page/app in this folder" = local luna workers.
