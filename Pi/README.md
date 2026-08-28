@@ -16,8 +16,8 @@ Missing skills are intentional.
   `pi-bg` and `extensions/subagent/remote.ts` can route to a remote host by cwd map;
   edit the map or set `PI_REMOTE_SUBAGENTS=0` / touch `~/.pi/agent/remote-subagents-off`
   to stay local.
-- `FABLE-MODE.md` + `EFFICIENCY-PLAN-2026-08-28.md` — the fan-out doctrine and the
-  measured efficiency plan (what was changed, why, rollback).
+- `FABLE-MODE.md`, `EFFICIENCY-PLAN-2026-08-28.md`, `2026-08-28-pi-efficiency-and-hud-subagent-block.md`
+  — the fan-out doctrine, the ranked plan, and the full change/verification log with rollback.
 - `prompts/` — `/implement`, `/implement-and-review`, and `/scout-and-plan`.
 - `skills/` — only the six skills present in the Pi setup:
   `delegation-routing`, `plan`, `read`, `session-handoff`, `ship`, and `wrap-up`.
