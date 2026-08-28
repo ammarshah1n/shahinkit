@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# pi-bg — fire-and-forget pi subagent. Main session stays free.
+#   pi-bg run <agent> [-m model] [-C cwd] [--local] [--no-wt] <task...> -> job id
+#   Runs on fedora via ssh (cwd must map). --local overrides.
+#   Git worktree isolation is ON by default (local and fedora). --no-wt disables.
+#   pi-bg ls                                          -> job states
+#   pi-bg get <id>                                    -> final reply only
+#   pi-bg diff <id>                                   -> git diff from the job's worktree
+#   pi-bg log <id>                                    -> stderr + tool trace
+#   pi-bg kill <id> | pi-bg clean
+set -euo pipefail
+D=${PI_BG_DIR:-$HOME/.pi/bg}; AD=$HOME/.pi/agent/agents; RH=/home/ammarshahin; mkdir -p "$D"</dev/null
+RWT=$RH/.pi/bg/wt
+
+field() { awk -v k="$1" '/^---$/{c++; next} c==1 && $0 ~ "^"k": " {sub("^"k": ",""); print; exit}' "$2"; }
+body()  { awk 'f{print} /^---$/{c++; if(c==2) f=1}' "$1"; }
+q()     { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+mapcwd() { case $(cd "$1" && pwd -P) in
+    /Users/integrale/time-manager-desktop*) echo "$RH/repos/time-manager-desktop${1#/Users/integrale/time-manager-desktop}";;
+    /Users/integrale/facilitated*)          echo "$RH/repos/facilitated${1#/Users/integrale/facilitated}";;
+    /Users/integrale/Documents*)            echo "$RH/repos${1#/Users/integrale/Documents}";;
+  esac; }
+isonote() { cat >> "$1" <<'EOF'
+
+## Isolation (injected by pi-bg)
+You are running in a detached git worktree created for this job alone. Your edits
+do not touch the user's working tree and no other job shares this directory.
+Do NOT commit, push, tag, deploy, or run any command against a remote host.
+Leave every change uncommitted in the working tree; the controller collects your
+work with `git diff` and applies it itself.
+EOF
+}
+
+case ${1:-} in
+run)
+  shift; agent=$1; shift; model=""; wd=$PWD; local_only=0; wt=1
+  while [ $# -gt 0 ]; do case $1 in
+    -m) model=$2; shift 2;; -C) wd=$2; shift 2;; --local) local_only=1; shift;;
+    --no-wt) wt=0; shift;; -W) shift;; *) break;; esac; done
+  f="$AD/$agent.md"; [ -f "$f" ] || { echo "unknown agent: $agent" >&2; exit 1; }
+  [ -n "$model" ] || model=$(field model "$f")
+  [ -n "$model" ] || { echo "no model for $agent — pass -m" >&2; exit 1; }
+  id="$agent-$(date +%H%M%S)-$RANDOM"
+  body "$f" > "$D/$id.sys"
+  args=(--mode json -p --no-session --model "$model")
+  t=$(field tools "$f"); [ -n "$t" ] && args+=(--tools "${t// /}")
+
+  rc=""
+  if [ "$local_only" = 0 ] && [ "${PI_REMOTE_SUBAGENTS:-1}" != 0 ] && [ ! -e "$HOME/.pi/agent/remote-subagents-off" ]; then
+    rc=$(mapcwd "$wd")
+    [ -n "$rc" ] || { echo "cwd not mapped to fedora: $wd (use --local, or -C a mapped repo)" >&2; exit 1; }
+    ssh -o BatchMode=yes -o ConnectTimeout=5 fedora "test -d $(q "$rc")" </dev/null || {
+      echo "fedora unreachable or missing $rc" >&2; exit 1; }
+  fi
+
+  # Worktree isolation — default ON, both routes. Never fan out parallel writes
+  # into one checkout: separate processes share a cwd with no mutation queue.
+  iso=0
+  if [ "$wt" = 1 ]; then
+    if [ -n "$rc" ]; then
+      if ssh -o BatchMode=yes fedora "git -C $(q "$rc") rev-parse --git-dir >/dev/null 2>&1 \
+           && mkdir -p $(q "$RWT") && git -C $(q "$rc") worktree add --detach -q $(q "$RWT/$id") HEAD" </dev/null
+      then rc="$RWT/$id"; iso=1
+      else echo "pi-bg: no worktree (not a git repo on fedora): $rc — running in place" >&2; fi
+    elif git -C "$wd" rev-parse --git-dir >/dev/null 2>&1; then
+      mkdir -p "$D/wt"; git -C "$wd" worktree add --detach -q "$D/wt/$id" HEAD
+      wd="$D/wt/$id"; iso=1
+    else
+      echo "pi-bg: no worktree (not a git repo): $wd — running in place" >&2
+    fi
+  fi
+  [ "$iso" = 0 ] || isonote "$D/$id.sys"
+
+  if [ -n "$rc" ]; then
+    cmd="export PATH=\$HOME/.local/bin:\$PATH; cd $(q "$rc") && pi --no-extensions"
+    for a in "${args[@]}" --append-system-prompt "$(cat "$D/$id.sys")" "Task: $*"; do cmd="$cmd $(q "$a")"; done
+    printf '%s\n' "$agent | $model | fedora:$rc" > "$D/$id.meta"
+    nohup ssh -o BatchMode=yes fedora "$cmd" >"$D/$id.jsonl" 2>"$D/$id.err" </dev/null &
+  else
+    printf '%s\n' "$agent | $model | LOCAL:$wd" > "$D/$id.meta"
+    # NOTE: cd in-place, then background a *simple* command. Wrapping this in
+    # `( cd && nohup pi ) &` forks a subshell that keeps the caller's stdout
+    # (a $(...) pipe) open until the job ends, so `E=$(pi-bg run ...)` blocks.
+    cd "$wd"
+    # --no-extensions + fast-mode: same as ~/bin/luna. Without it every child loads
+    # hud/subagent/mcp (≈60 timed tools in its prompt, every turn) and runs on the
+    # normal tier. Measured 2026-08-28: 7.8s → 5.9s cold, far less context per turn.
+    nohup pi --no-extensions -e "$HOME/.pi/agent/extensions/fast-mode.ts" "${args[@]}" --append-system-prompt "$D/$id.sys" "Task: $*" \
+      >"$D/$id.jsonl" 2>"$D/$id.err" </dev/null &
+  fi
+  echo $! >"$D/$id.pid"
+  echo "$id"
+  ;;
+ls)
+  for m in "$D"/*.meta; do [ -e "$m" ] || { echo "(no jobs)"; exit 0; }
+    id=$(basename "$m" .meta); p=$(cat "$D/$id.pid" 2>/dev/null || echo 0)
+    kill -0 "$p" 2>/dev/null && s=RUNNING || s=done
+    echo "$s  $id  $(cat "$m")"
+  done ;;
+get)
+  id=$2; p=$(cat "$D/$id.pid" 2>/dev/null || echo 0)
+  kill -0 "$p" 2>/dev/null && { echo "RUNNING"; exit 2; }
+  jq -rs '[.[]|select(.type=="message_end" and .message.role=="assistant")
+           |.message.content[]?|select(.type=="text")|.text]|last // "(no output)"' \
+     "$D/$id.jsonl" 2>/dev/null || tail -5 "$D/$id.err" ;;
+diff)
+  # add -A -N marks untracked files intent-to-add so NEW files show up in the
+  # diff. Plain `git diff` silently omits them and the worker's work is lost.
+  loc=$(sed 's/.*| //' "$D/${2}.meta")
+  case $loc in
+    fedora:*) ssh -o BatchMode=yes fedora "cd $(q "${loc#fedora:}") && git add -A -N . && git diff" </dev/null ;;
+    LOCAL:*)  git -C "${loc#LOCAL:}" add -A -N . && git -C "${loc#LOCAL:}" diff ;;
+  esac ;;
+log) tail -40 "$D/${2}.err"; jq -rs '.[]|select(.type=="tool_result_end")|.message.content[0].text? // empty' "$D/${2}.jsonl" 2>/dev/null | tail -20 ;;
+kill) kill "$(cat "$D/${2}.pid")" 2>/dev/null && echo killed ;;
+clean) for w in "$D"/wt/*/; do [ -d "$w" ] || continue
+    git -C "$w" worktree remove --force "$w" 2>/dev/null || rm -rf "$w"; done
+  ssh -o BatchMode=yes -o ConnectTimeout=5 fedora \
+    'for w in ~/.pi/bg/wt/*/; do [ -d "$w" ] || continue
+       git -C "$w" worktree remove --force "$w" 2>/dev/null || rm -rf "$w"; done' </dev/null 2>/dev/null || true
+  rm -f "$D"/*.jsonl "$D"/*.err "$D"/*.sys "$D"/*.pid "$D"/*.meta; echo cleaned ;;
+*) sed -n '2,10p' "$0" ;;
+esac

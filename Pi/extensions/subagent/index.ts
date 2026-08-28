@@ -29,9 +29,11 @@ import {
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
+import { resolveRemoteSubagent } from "./remote.ts";
 
-const MAX_PARALLEL_TASKS = 8;
-const MAX_CONCURRENCY = 4;
+const FAST_MODE_EXT = path.join(os.homedir(), ".pi", "agent", "extensions", "fast-mode.ts");
+const MAX_PARALLEL_TASKS = 10;
+const MAX_CONCURRENCY = 6;
 const COLLAPSED_ITEM_COUNT = 10;
 const PER_TASK_OUTPUT_CAP = 50 * 1024;
 
@@ -263,6 +265,7 @@ function getPiInvocation(args: string[]): { command: string; args: string[] } {
 }
 
 type OnUpdateCallback = (partial: AgentToolResult<SubagentDetails>) => void;
+type NotifyCallback = (message: string, level: "info" | "warning") => void;
 
 async function runSingleAgent(
 	defaultCwd: string,
@@ -270,10 +273,12 @@ async function runSingleAgent(
 	agentName: string,
 	task: string,
 	cwd: string | undefined,
+	modelOverride: string | undefined,
 	step: number | undefined,
 	signal: AbortSignal | undefined,
 	onUpdate: OnUpdateCallback | undefined,
 	makeDetails: (results: SingleResult[]) => SubagentDetails,
+	notify: NotifyCallback,
 ): Promise<SingleResult> {
 	const agent = agents.find((a) => a.name === agentName);
 
@@ -291,8 +296,13 @@ async function runSingleAgent(
 		};
 	}
 
-	const args: string[] = ["--mode", "json", "-p", "--no-session"];
-	if (agent.model) args.push("--model", agent.model);
+	const model = modelOverride ?? agent.model;
+
+	// --no-extensions (same as pi-bg): no HUD/MCP/subagent recursion in children, and
+	// a full extension load used to keep -p children alive forever. fast-mode is
+	// re-added explicitly so children get the priority tier (respects /fast state).
+	const args: string[] = ["--mode", "json", "-p", "--no-session", "--no-extensions", "-e", FAST_MODE_EXT];
+	if (model) args.push("--model", model);
 	if (agent.tools && agent.tools.length > 0) args.push("--tools", agent.tools.join(","));
 
 	let tmpPromptDir: string | null = null;
@@ -306,7 +316,7 @@ async function runSingleAgent(
 		messages: [],
 		stderr: "",
 		usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
-		model: agent.model,
+		model,
 		step,
 	};
 
@@ -328,12 +338,20 @@ async function runSingleAgent(
 		}
 
 		args.push(`Task: ${task}`);
+		const effectiveCwd = cwd ?? defaultCwd;
+		// The local temp prompt file is unavailable on Fedora; preserve its contents instead.
+		const remoteArgs = [...args];
+		const remotePromptIndex = tmpPromptPath ? remoteArgs.indexOf(tmpPromptPath) : -1;
+		if (remotePromptIndex >= 0) remoteArgs[remotePromptIndex] = agent.systemPrompt;
+		const remoteDispatch = await resolveRemoteSubagent(agentName, effectiveCwd, remoteArgs);
+		const invocation = remoteDispatch.remote ? remoteDispatch : getPiInvocation(args);
+		if (remoteDispatch.remote) notify(`→ fedora: ${agentName}`, "info");
+		else notify(`⚠ LOCAL subagent '${agentName}' (reason: ${remoteDispatch.reason})`, "warning");
 		let wasAborted = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
-			const invocation = getPiInvocation(args);
 			const proc = spawn(invocation.command, invocation.args, {
-				cwd: cwd ?? defaultCwd,
+				cwd: effectiveCwd,
 				shell: false,
 				stdio: ["ignore", "pipe", "pipe"],
 			});
@@ -428,16 +446,25 @@ async function runSingleAgent(
 	}
 }
 
+const ModelOverride = Type.Optional(
+	Type.String({
+		description:
+			"Model override for this dispatch, provider-prefixed (e.g. openai-codex/gpt-5.6-sol:xhigh). Wins over the agent's frontmatter model.",
+	}),
+);
+
 const TaskItem = Type.Object({
 	agent: Type.String({ description: "Name of the agent to invoke" }),
 	task: Type.String({ description: "Task to delegate to the agent" }),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process" })),
+	model: ModelOverride,
 });
 
 const ChainItem = Type.Object({
 	agent: Type.String({ description: "Name of the agent to invoke" }),
 	task: Type.String({ description: "Task with optional {previous} placeholder for prior output" }),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process" })),
+	model: ModelOverride,
 });
 
 const AgentScopeSchema = StringEnum(["user", "project", "both"] as const, {
@@ -455,9 +482,56 @@ const SubagentParams = Type.Object({
 		Type.Boolean({ description: "Prompt before running project-local agents. Default: true.", default: true }),
 	),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process (single mode)" })),
+	model: ModelOverride,
+	background: Type.Optional(
+		Type.Boolean({
+			description:
+				"Return immediately with a job id; keep working. Each result arrives later as a follow-up message ([subagent-bg <id> done]). Single + parallel modes only.",
+			default: false,
+		}),
+	),
 });
 
+// ponytail: in-memory only; jobs die with the session, which is the point.
+interface BgJob {
+	id: string;
+	agent: string;
+	task: string;
+	status: "running" | "done" | "failed";
+	startedAt: number;
+	finishedAt?: number;
+	output?: string;
+}
+const bgJobs = new Map<string, BgJob>();
+let bgSeq = 0;
+function newBgJob(agent: string, task: string): BgJob {
+	const id = `bg${++bgSeq}`;
+	const job: BgJob = { id, agent, task, status: "running", startedAt: Date.now() };
+	bgJobs.set(id, job);
+	return job;
+}
+function fmtJob(j: BgJob): string {
+	const secs = Math.round(((j.finishedAt ?? Date.now()) - j.startedAt) / 1000);
+	return `${j.id}  ${j.status.padEnd(7)} ${j.agent}  ${secs}s  ${j.task.slice(0, 70).replace(/\s+/g, " ")}`;
+}
+
 export default function (pi: ExtensionAPI) {
+	pi.registerTool({
+		name: "subagent_status",
+		label: "Subagent status",
+		description: "List background subagent jobs, or fetch one job's output by id.",
+		parameters: Type.Object({ id: Type.Optional(Type.String({ description: "Job id (bgN) to fetch output for" })) }),
+		async execute(_id, params) {
+			if (params.id) {
+				const j = bgJobs.get(params.id);
+				if (!j) return { content: [{ type: "text", text: `No such job: ${params.id}` }], details: {} };
+				return { content: [{ type: "text", text: `${fmtJob(j)}\n\n${j.output ?? "(still running)"}` }], details: j };
+			}
+			const rows = Array.from(bgJobs.values()).map(fmtJob);
+			return { content: [{ type: "text", text: rows.length ? rows.join("\n") : "No background jobs." }], details: { jobs: rows } };
+		},
+	});
+
 	pi.registerTool({
 		name: "subagent",
 		label: "Subagent",
@@ -474,6 +548,7 @@ export default function (pi: ExtensionAPI) {
 			const discovery = discoverAgents(ctx.cwd, agentScope);
 			const agents = discovery.agents;
 			const confirmProjectAgents = params.confirmProjectAgents ?? true;
+			const notify: NotifyCallback = (message, level) => ctx.ui.notify(message, level);
 
 			const hasChain = (params.chain?.length ?? 0) > 0;
 			const hasTasks = (params.tasks?.length ?? 0) > 0;
@@ -527,6 +602,66 @@ export default function (pi: ExtensionAPI) {
 				}
 			}
 
+			if (params.background) {
+				if (hasChain)
+					return {
+						content: [{ type: "text", text: "background is not supported for chain mode; run the chain inline or background each step." }],
+						details: makeDetails("chain")([]),
+						isError: true,
+					};
+				const items = hasTasks ? params.tasks! : [{ agent: params.agent!, task: params.task!, cwd: params.cwd, model: params.model }];
+				if (items.length > MAX_PARALLEL_TASKS)
+					return {
+						content: [{ type: "text", text: `Too many tasks (${items.length}). Max is ${MAX_PARALLEL_TASKS}.` }],
+						details: makeDetails("parallel")([]),
+						isError: true,
+					};
+				const jobs = items.map((t) => newBgJob(t.agent, t.task));
+				const defaultCwd = ctx.cwd;
+				const mode = hasTasks ? "parallel" : "single";
+				// Not awaited: the tool returns now, the results come back as follow-up messages.
+				void mapWithConcurrencyLimit(items, MAX_CONCURRENCY, async (t, i) => {
+					const job = jobs[i];
+					let result: SingleResult;
+					try {
+						result = await runSingleAgent(
+							defaultCwd, agents, t.agent, t.task, t.cwd, t.model ?? params.model, undefined,
+							undefined, undefined, makeDetails(mode), notify,
+						);
+					} catch (e) {
+						result = {
+							agent: t.agent, agentSource: "unknown", task: t.task, exitCode: 1, messages: [],
+							stderr: e instanceof Error ? e.message : String(e),
+							usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
+						};
+					}
+					const failed = isFailedResult(result);
+					job.status = failed ? "failed" : "done";
+					job.finishedAt = Date.now();
+					job.output = getResultOutput(result);
+					const secs = Math.round((job.finishedAt - job.startedAt) / 1000);
+					pi.sendMessage(
+						{
+							customType: "subagent-bg-result",
+							content: `[subagent-bg ${job.id} ${job.status}] agent=${t.agent} ${secs}s\ntask: ${t.task.slice(0, 200)}\n\n${truncateParallelOutput(job.output)}`,
+							display: true,
+							details: { job, result },
+						},
+						{ triggerTurn: true, deliverAs: "followUp" },
+					);
+				});
+				const lines = jobs.map((j) => `${j.id}: ${j.agent} — ${j.task.slice(0, 80).replace(/\s+/g, " ")}`);
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Backgrounded ${jobs.length} subagent job(s). Keep working; each result arrives as a follow-up message.\n${lines.join("\n")}\nCheck with subagent_status.`,
+						},
+					],
+					details: makeDetails(mode)([]),
+				};
+			}
+
 			if (params.chain && params.chain.length > 0) {
 				const results: SingleResult[] = [];
 				let previousOutput = "";
@@ -556,10 +691,12 @@ export default function (pi: ExtensionAPI) {
 						step.agent,
 						taskWithContext,
 						step.cwd,
+						step.model,
 						i + 1,
 						signal,
 						chainUpdate,
 						makeDetails("chain"),
+						notify,
 					);
 					results.push(result);
 
@@ -628,6 +765,7 @@ export default function (pi: ExtensionAPI) {
 						t.agent,
 						t.task,
 						t.cwd,
+						t.model,
 						undefined,
 						signal,
 						// Per-task update callback
@@ -638,6 +776,7 @@ export default function (pi: ExtensionAPI) {
 							}
 						},
 						makeDetails("parallel"),
+						notify,
 					);
 					allResults[index] = result;
 					emitParallelUpdate();
@@ -670,10 +809,12 @@ export default function (pi: ExtensionAPI) {
 					params.agent,
 					params.task,
 					params.cwd,
+					params.model,
 					undefined,
 					signal,
 					onUpdate,
 					makeDetails("single"),
+					notify,
 				);
 				const isError = isFailedResult(result);
 				if (isError) {

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# luna — one-shot luna:high scout on THIS Mac, for Fable fan-out from Claude Code.
+#   luna [-C <cwd>] [-m <model>] "<task>"     → final reply on stdout
+# Run via Bash with run_in_background=true, one call per scout.
+set -uo pipefail
+model="openai-codex/gpt-5.6-luna:high"  # retuned 2026-08-28: A/B max 142s / high 89s / medium 64s, same output; wd="$PWD"
+while [ $# -gt 0 ]; do case "$1" in
+  -C) wd="$2"; shift 2;; -m) model="$2"; shift 2;; --) shift; break;; *) break;; esac; done
+[ $# -gt 0 ] || { echo "usage: luna [-C cwd] [-m model] \"<task>\"" >&2; exit 2; }
+cd "$wd" || exit 1
+# fast-mode re-added so scouts run on the priority tier (respects /fast state file).
+exec pi -p --no-session --no-extensions -e "$HOME/.pi/agent/extensions/fast-mode.ts" --model "$model" "$*" 2> >(grep -v 'No models match' >&2)
