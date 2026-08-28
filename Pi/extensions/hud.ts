@@ -300,13 +300,13 @@ export default function (pi: ExtensionAPI) {
 					const home = process.env.HOME ?? homedir();
 					const cwd = ctx.sessionManager.getCwd();
 					const shortCwd = cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
-					// A status containing newlines is a vertical block: one row per
-					// running subagent, fields "agent\telapsed\twhat it is doing".
+					// A status with tab-separated fields is a vertical block: one row per
+					// running subagent (newline-separated), "agent\telapsed\twhat it is doing".
 					// Rendered under the tool tally, only while something runs.
 					const allStatuses = [...footerData.getExtensionStatuses().entries()].sort(([a], [b]) => a.localeCompare(b));
 					const agentRows: string[] = [];
 					for (const [, text] of allStatuses) {
-						if (!text.includes("\n")) continue;
+						if (!text.includes("\t")) continue;
 						for (const row of text.split("\n")) {
 							if (!row.trim()) continue;
 							const [agent = "", elapsed = "", task = ""] = row.split("\t");
@@ -320,7 +320,7 @@ export default function (pi: ExtensionAPI) {
 						}
 					}
 					const statuses = allStatuses
-						.filter(([, text]) => !text.includes("\n"))
+						.filter(([, text]) => !text.includes("\t"))
 						.map(([, text]) => text.replace(/[\r\n\t]+/g, " ").trim())
 						.join(" ");
 					const l5 = join2(theme.fg("dim", shortCwd), statuses, width);
