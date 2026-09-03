@@ -29,13 +29,34 @@ import {
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
-import { resolveRemoteSubagent } from "./remote.ts";
+import { sanitizeTerminalText } from "../lib/sanitize.ts";
+import { composeRemoteCommand, removeRemotePromptFiles, resolveRemoteSubagent, stageRemotePromptFiles } from "./remote.ts";
 
-const FAST_MODE_EXT = path.join(os.homedir(), ".pi", "agent", "extensions", "fast-mode.ts");
+const AGENT_DIR = getAgentDir();
+const FAST_MODE_EXT = path.join(AGENT_DIR, "extensions", "fast-mode.ts");
 const MAX_PARALLEL_TASKS = 10;
 const MAX_CONCURRENCY = 6;
 const COLLAPSED_ITEM_COUNT = 10;
 const PER_TASK_OUTPUT_CAP = 50 * 1024;
+const safeText = (value: unknown, max = 200_000) => sanitizeTerminalText(value, max);
+
+function sanitizeMessage(message: Message): Message {
+	const copy: any = { ...(message as any) };
+	if (Array.isArray(copy.content)) copy.content = copy.content.map((part: any) => {
+		if (part?.type === "text") return { ...part, text: safeText(part.text) };
+		if (part?.type === "toolCall") return { ...part, name: safeText(part.name, 200), arguments: sanitizeToolArgs(part.arguments) };
+		return part;
+	});
+	if (typeof copy.errorMessage === "string") copy.errorMessage = safeText(copy.errorMessage);
+	return copy as Message;
+}
+
+function sanitizeToolArgs(value: unknown, depth = 0): any {
+	if (typeof value === "string") return safeText(value);
+	if (depth > 8 || value == null || typeof value !== "object") return value;
+	if (Array.isArray(value)) return value.map((item) => sanitizeToolArgs(item, depth + 1));
+	return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [safeText(key, 200), sanitizeToolArgs(item, depth + 1)]));
+}
 
 function formatTokens(count: number): string {
 	if (count < 1000) return count.toString();
@@ -66,7 +87,7 @@ function formatUsageStats(
 	if (usage.contextTokens && usage.contextTokens > 0) {
 		parts.push(`ctx:${formatTokens(usage.contextTokens)}`);
 	}
-	if (model) parts.push(model);
+	if (model) parts.push(safeText(model, 200));
 	return parts.join(" ");
 }
 
@@ -75,6 +96,8 @@ function formatToolCall(
 	args: Record<string, unknown>,
 	themeFg: (color: any, text: string) => string,
 ): string {
+	toolName = safeText(toolName, 200);
+	args = sanitizeToolArgs(args);
 	const shortenPath = (p: string) => {
 		const home = os.homedir();
 		return p.startsWith(home) ? `~${p.slice(home.length)}` : p;
@@ -174,7 +197,7 @@ function getFinalOutput(messages: Message[]): string {
 		const msg = messages[i];
 		if (msg.role === "assistant") {
 			for (const part of msg.content) {
-				if (part.type === "text") return part.text;
+				if (part.type === "text") return safeText(part.text);
 			}
 		}
 	}
@@ -187,7 +210,7 @@ function isFailedResult(result: SingleResult): boolean {
 
 function getResultOutput(result: SingleResult): string {
 	if (isFailedResult(result)) {
-		return result.errorMessage || result.stderr || getFinalOutput(result.messages) || "(no output)";
+		return safeText(result.errorMessage || result.stderr || getFinalOutput(result.messages) || "(no output)");
 	}
 	return getFinalOutput(result.messages) || "(no output)";
 }
@@ -210,8 +233,8 @@ function getDisplayItems(messages: Message[]): DisplayItem[] {
 	for (const msg of messages) {
 		if (msg.role === "assistant") {
 			for (const part of msg.content) {
-				if (part.type === "text") items.push({ type: "text", text: part.text });
-				else if (part.type === "toolCall") items.push({ type: "toolCall", name: part.name, args: part.arguments });
+				if (part.type === "text") items.push({ type: "text", text: safeText(part.text) });
+				else if (part.type === "toolCall") items.push({ type: "toolCall", name: safeText(part.name, 200), args: sanitizeToolArgs(part.arguments) });
 			}
 		}
 	}
@@ -238,14 +261,14 @@ async function mapWithConcurrencyLimit<TIn, TOut>(
 	return results;
 }
 
-async function writePromptToTempFile(agentName: string, prompt: string): Promise<{ dir: string; filePath: string }> {
-	const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "pi-subagent-"));
+async function writePromptFiles(agentName: string, systemPrompt: string, task: string): Promise<{ dir: string; systemPath: string | null; taskPath: string }> {
+	const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "pi-subagent-"));
 	const safeName = agentName.replace(/[^\w.-]+/g, "_");
-	const filePath = path.join(tmpDir, `prompt-${safeName}.md`);
-	await withFileMutationQueue(filePath, async () => {
-		await fs.promises.writeFile(filePath, prompt, { encoding: "utf-8", mode: 0o600 });
-	});
-	return { dir: tmpDir, filePath };
+	const systemPath = systemPrompt.trim() ? path.join(dir, `system-${safeName}.md`) : null;
+	const taskPath = path.join(dir, `task-${safeName}.md`);
+	if (systemPath) await withFileMutationQueue(systemPath, () => fs.promises.writeFile(systemPath, systemPrompt, { encoding: "utf-8", mode: 0o600 }));
+	await withFileMutationQueue(taskPath, () => fs.promises.writeFile(taskPath, `Task: ${task}\n`, { encoding: "utf-8", mode: 0o600 }));
+	return { dir, systemPath, taskPath };
 }
 
 function getPiInvocation(args: string[]): { command: string; args: string[] } {
@@ -283,14 +306,14 @@ async function runSingleAgent(
 	const agent = agents.find((a) => a.name === agentName);
 
 	if (!agent) {
-		const available = agents.map((a) => `"${a.name}"`).join(", ") || "none";
+		const available = safeText(agents.map((a) => `"${a.name}"`).join(", ") || "none", 5000);
 		return {
-			agent: agentName,
+			agent: safeText(agentName, 200),
 			agentSource: "unknown",
-			task,
+			task: safeText(task),
 			exitCode: 1,
 			messages: [],
-			stderr: `Unknown agent: "${agentName}". Available agents: ${available}.`,
+			stderr: safeText(`Unknown agent: "${agentName}". Available agents: ${available}.`),
 			usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
 			step,
 		};
@@ -298,20 +321,22 @@ async function runSingleAgent(
 
 	const model = modelOverride ?? agent.model;
 
-	// --no-extensions (same as pi-bg): no HUD/MCP/subagent recursion in children, and
-	// a full extension load used to keep -p children alive forever. fast-mode is
-	// re-added explicitly so children get the priority tier (respects /fast state).
-	const args: string[] = ["--mode", "json", "-p", "--no-session", "--no-extensions", "-e", FAST_MODE_EXT];
+	// --no-extensions (same as pi-bg): no HUD/MCP/subagent recursion in children.
+	// Re-add Fast Mode only when it exists in the active Pi config.
+	const args: string[] = ["--mode", "json", "-p", "--no-session", "--no-extensions"];
+	if (fs.existsSync(FAST_MODE_EXT)) args.push("-e", FAST_MODE_EXT);
 	if (model) args.push("--model", model);
 	if (agent.tools && agent.tools.length > 0) args.push("--tools", agent.tools.join(","));
 
 	let tmpPromptDir: string | null = null;
 	let tmpPromptPath: string | null = null;
+	let tmpTaskPath: string | null = null;
+	let remotePromptDir: string | null = null;
 
 	const currentResult: SingleResult = {
-		agent: agentName,
+		agent: safeText(agentName, 200),
 		agentSource: agent.source,
-		task,
+		task: safeText(task),
 		exitCode: 0,
 		messages: [],
 		stderr: "",
@@ -330,32 +355,46 @@ async function runSingleAgent(
 	};
 
 	try {
-		if (agent.systemPrompt.trim()) {
-			const tmp = await writePromptToTempFile(agent.name, agent.systemPrompt);
-			tmpPromptDir = tmp.dir;
-			tmpPromptPath = tmp.filePath;
-			args.push("--append-system-prompt", tmpPromptPath);
-		}
+		const tmp = await writePromptFiles(agent.name, agent.systemPrompt, task);
+		tmpPromptDir = tmp.dir;
+		tmpPromptPath = tmp.systemPath;
+		tmpTaskPath = tmp.taskPath;
+		if (tmpPromptPath) args.push("--append-system-prompt", tmpPromptPath);
+		args.push(`@${tmpTaskPath}`);
 
-		args.push(`Task: ${task}`);
 		const effectiveCwd = cwd ?? defaultCwd;
-		// The local temp prompt file is unavailable on Fedora; preserve its contents instead.
-		const remoteArgs = [...args];
-		const remotePromptIndex = tmpPromptPath ? remoteArgs.indexOf(tmpPromptPath) : -1;
-		if (remotePromptIndex >= 0) remoteArgs[remotePromptIndex] = agent.systemPrompt;
-		const remoteDispatch = await resolveRemoteSubagent(agentName, effectiveCwd, remoteArgs);
-		const invocation = remoteDispatch.remote ? remoteDispatch : getPiInvocation(args);
-		if (remoteDispatch.remote) notify(`→ fedora: ${agentName}`, "info");
-		else notify(`⚠ LOCAL subagent '${agentName}' (reason: ${remoteDispatch.reason})`, "warning");
+		const remoteDispatch = await resolveRemoteSubagent(agentName, effectiveCwd, args);
+		let invocation = remoteDispatch.remote ? remoteDispatch : getPiInvocation(args);
+		if (remoteDispatch.remote) {
+			const staged = await stageRemotePromptFiles(agent.systemPrompt, task);
+			remotePromptDir = staged.dir;
+			const remoteArgs = args.map((arg) => arg === tmpPromptPath ? staged.system : arg === `@${tmpTaskPath}` ? `@${staged.task}` : arg);
+			invocation = {
+				command: "ssh",
+				args: [...remoteDispatch.args.slice(0, -1), composeRemoteCommand(remoteDispatch.mappedCwd, remoteArgs)],
+			};
+		}
+		if (remoteDispatch.remote) notify(`→ remote: ${safeText(agentName, 200)}`, "info");
+		else if (remoteDispatch.reason !== "unconfigured")
+			notify(`⚠ LOCAL subagent '${safeText(agentName, 200)}' (reason: ${remoteDispatch.reason})`, "warning");
 		let wasAborted = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
+			const detached = process.platform !== "win32";
 			const proc = spawn(invocation.command, invocation.args, {
 				cwd: effectiveCwd,
 				shell: false,
+				detached,
 				stdio: ["ignore", "pipe", "pipe"],
 			});
 			let buffer = "";
+			let closed = false;
+			let killTimer: NodeJS.Timeout | undefined;
+			let abortListener: (() => void) | undefined;
+			const removeAbortListener = () => {
+				if (signal && abortListener) signal.removeEventListener("abort", abortListener);
+				abortListener = undefined;
+			};
 
 			const processLine = (line: string) => {
 				if (!line.trim()) return;
@@ -367,7 +406,7 @@ async function runSingleAgent(
 				}
 
 				if (event.type === "message_end" && event.message) {
-					const msg = event.message as Message;
+					const msg = sanitizeMessage(event.message as Message);
 					currentResult.messages.push(msg);
 
 					if (msg.role === "assistant") {
@@ -381,15 +420,15 @@ async function runSingleAgent(
 							currentResult.usage.cost += usage.cost?.total || 0;
 							currentResult.usage.contextTokens = usage.totalTokens || 0;
 						}
-						if (!currentResult.model && msg.model) currentResult.model = msg.model;
-						if (msg.stopReason) currentResult.stopReason = msg.stopReason;
-						if (msg.errorMessage) currentResult.errorMessage = msg.errorMessage;
+						if (!currentResult.model && msg.model) currentResult.model = safeText(msg.model, 200);
+						if (msg.stopReason) currentResult.stopReason = safeText(msg.stopReason, 100);
+						if (msg.errorMessage) currentResult.errorMessage = safeText(msg.errorMessage);
 					}
 					emitUpdate();
 				}
 
 				if (event.type === "tool_result_end" && event.message) {
-					currentResult.messages.push(event.message as Message);
+					currentResult.messages.push(sanitizeMessage(event.message as Message));
 					emitUpdate();
 				}
 			};
@@ -402,28 +441,39 @@ async function runSingleAgent(
 			});
 
 			proc.stderr.on("data", (data) => {
-				currentResult.stderr += data.toString();
+				currentResult.stderr = safeText(currentResult.stderr + data.toString());
 			});
 
 			proc.on("close", (code) => {
+				closed = true;
+				if (killTimer) clearTimeout(killTimer);
+				removeAbortListener();
 				if (buffer.trim()) processLine(buffer);
 				resolve(code ?? 0);
 			});
 
 			proc.on("error", () => {
+				closed = true;
+				if (killTimer) clearTimeout(killTimer);
+				removeAbortListener();
 				resolve(1);
 			});
 
 			if (signal) {
 				const killProc = () => {
 					wasAborted = true;
-					proc.kill("SIGTERM");
-					setTimeout(() => {
-						if (!proc.killed) proc.kill("SIGKILL");
-					}, 5000);
+					const signalTree = (sig: NodeJS.Signals) => {
+						try { detached && proc.pid ? process.kill(-proc.pid, sig) : proc.kill(sig); } catch { /* already exited */ }
+					};
+					signalTree("SIGTERM");
+					killTimer = setTimeout(() => { if (!closed) signalTree("SIGKILL"); }, 5000);
+					killTimer.unref();
 				};
 				if (signal.aborted) killProc();
-				else signal.addEventListener("abort", killProc, { once: true });
+				else {
+					abortListener = killProc;
+					signal.addEventListener("abort", abortListener, { once: true });
+				}
 			}
 		});
 
@@ -431,18 +481,20 @@ async function runSingleAgent(
 		if (wasAborted) throw new Error("Subagent was aborted");
 		return currentResult;
 	} finally {
-		if (tmpPromptPath)
-			try {
-				fs.unlinkSync(tmpPromptPath);
-			} catch {
-				/* ignore */
-			}
-		if (tmpPromptDir)
-			try {
-				fs.rmdirSync(tmpPromptDir);
-			} catch {
-				/* ignore */
-			}
+		try {
+			if (remotePromptDir) await removeRemotePromptFiles(remotePromptDir);
+		} catch (error) {
+			const warning = safeText(error instanceof Error ? error.message : String(error));
+			currentResult.stderr = safeText(`${currentResult.stderr}\nRemote prompt cleanup warning: ${warning}`.trim());
+			notify(`⚠ remote prompt cleanup failed; remove ${safeText(remotePromptDir, 1000)} manually`, "warning");
+		} finally {
+			if (tmpPromptDir)
+				try {
+					fs.rmSync(tmpPromptDir, { recursive: true, force: true });
+				} catch {
+					/* ignore */
+				}
+		}
 	}
 }
 
@@ -503,10 +555,12 @@ interface BgJob {
 	output?: string;
 }
 const bgJobs = new Map<string, BgJob>();
+const bgControllers = new Map<string, AbortController>();
+let shuttingDown = false;
 let bgSeq = 0;
 function newBgJob(agent: string, task: string): BgJob {
 	const id = `bg${++bgSeq}`;
-	const job: BgJob = { id, agent, task, status: "running", startedAt: Date.now() };
+	const job: BgJob = { id, agent: safeText(agent, 200), task: safeText(task), status: "running", startedAt: Date.now() };
 	bgJobs.set(id, job);
 	return job;
 }
@@ -518,7 +572,7 @@ const fgRunning = new Map<string, { agent: string; task: string; startedAt: numb
 function publishStatus() {
 	if (!statusUi) return;
 	const now = Date.now();
-	const brief = (t: string) => t.replace(/\s+/g, " ").trim().slice(0, 70);
+	const brief = (t: string) => safeText(t, 1000).replace(/\s+/g, " ").trim().slice(0, 70);
 	const parts = [
 		...Array.from(bgJobs.values()).filter((j) => j.status === "running").map((j) => `${j.agent} ${j.id}\t${fmtSecs(now - j.startedAt)}\t${brief(j.task)}`),
 		...Array.from(fgRunning.values()).map((f) => `${f.agent}\t${fmtSecs(now - f.startedAt)}\t${brief(f.task)}`),
@@ -534,7 +588,7 @@ function publishStatus() {
 }
 function fmtJob(j: BgJob): string {
 	const secs = Math.round(((j.finishedAt ?? Date.now()) - j.startedAt) / 1000);
-	return `${j.id}  ${j.status.padEnd(7)} ${j.agent}  ${secs}s  ${j.task.slice(0, 70).replace(/\s+/g, " ")}`;
+	return safeText(`${j.id}  ${j.status.padEnd(7)} ${j.agent}  ${secs}s  ${j.task.slice(0, 70).replace(/\s+/g, " ")}`, 1000);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -582,7 +636,15 @@ export default function (pi: ExtensionAPI) {
 
 		async execute(_toolCallId, params, signal, onUpdate, ctx) {
 			const agentScope: AgentScope = params.agentScope ?? "user";
-			const discovery = discoverAgents(ctx.cwd, agentScope);
+			const usesProjectAgents = agentScope === "project" || agentScope === "both";
+			const projectTrusted = ctx.isProjectTrusted();
+			if (usesProjectAgents && !projectTrusted) {
+				return {
+					content: [{ type: "text", text: "Project-local agents are blocked until Pi project trust is approved." }],
+					details: { agentScope, projectAgentsDir: null, results: [] },
+				};
+			}
+			const discovery = discoverAgents(ctx.cwd, agentScope, projectTrusted);
 			const agents = discovery.agents;
 			const confirmProjectAgents = params.confirmProjectAgents ?? true;
 			const notify: NotifyCallback = (message, level) => ctx.ui.notify(message, level);
@@ -602,7 +664,7 @@ export default function (pi: ExtensionAPI) {
 				});
 
 			if (modeCount !== 1) {
-				const available = agents.map((a) => `${a.name} (${a.source})`).join(", ") || "none";
+				const available = safeText(agents.map((a) => `${a.name} (${a.source})`).join(", ") || "none", 5000);
 				return {
 					content: [
 						{
@@ -625,8 +687,8 @@ export default function (pi: ExtensionAPI) {
 					.filter((a): a is AgentConfig => a?.source === "project");
 
 				if (projectAgentsRequested.length > 0) {
-					const names = projectAgentsRequested.map((a) => a.name).join(", ");
-					const dir = discovery.projectAgentsDir ?? "(unknown)";
+					const names = safeText(projectAgentsRequested.map((a) => a.name).join(", "), 1000);
+					const dir = safeText(discovery.projectAgentsDir ?? "(unknown)", 1000);
 					const ok = await ctx.ui.confirm(
 						"Run project-local agents?",
 						`Agents: ${names}\nSource: ${dir}\n\nProject agents are repo-controlled. Only continue for trusted repositories.`,
@@ -660,16 +722,18 @@ export default function (pi: ExtensionAPI) {
 				// Not awaited: the tool returns now, the results come back as follow-up messages.
 				void mapWithConcurrencyLimit(items, MAX_CONCURRENCY, async (t, i) => {
 					const job = jobs[i];
+					const controller = new AbortController();
+					bgControllers.set(job.id, controller);
 					let result: SingleResult;
 					try {
 						result = await runSingleAgent(
 							defaultCwd, agents, t.agent, t.task, t.cwd, t.model ?? params.model, undefined,
-							undefined, undefined, makeDetails(mode), notify,
+							controller.signal, undefined, makeDetails(mode), notify,
 						);
 					} catch (e) {
 						result = {
-							agent: t.agent, agentSource: "unknown", task: t.task, exitCode: 1, messages: [],
-							stderr: e instanceof Error ? e.message : String(e),
+							agent: safeText(t.agent, 200), agentSource: "unknown", task: safeText(t.task), exitCode: 1, messages: [],
+							stderr: safeText(e instanceof Error ? e.message : String(e)),
 							usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
 						};
 					}
@@ -679,15 +743,17 @@ export default function (pi: ExtensionAPI) {
 					job.output = getResultOutput(result);
 					publishStatus();
 					const secs = Math.round((job.finishedAt - job.startedAt) / 1000);
+					if (shuttingDown) { bgControllers.delete(job.id); return; }
 					pi.sendMessage(
 						{
 							customType: "subagent-bg-result",
-							content: `[subagent-bg ${job.id} ${job.status}] agent=${t.agent} ${secs}s\ntask: ${t.task.slice(0, 200)}\n\n${truncateParallelOutput(job.output)}`,
+							content: `[subagent-bg ${job.id} ${job.status}] agent=${job.agent} ${secs}s\ntask: ${job.task.slice(0, 200)}\n\n${truncateParallelOutput(job.output)}`,
 							display: true,
 							details: { job, result },
 						},
 						{ triggerTurn: true, deliverAs: "followUp" },
 					);
+					bgControllers.delete(job.id);
 				});
 				const lines = jobs.map((j) => `${j.id}: ${j.agent} — ${j.task.slice(0, 80).replace(/\s+/g, " ")}`);
 				return {
@@ -774,9 +840,9 @@ export default function (pi: ExtensionAPI) {
 				// Initialize placeholder results
 				for (let i = 0; i < params.tasks.length; i++) {
 					allResults[i] = {
-						agent: params.tasks[i].agent,
+						agent: safeText(params.tasks[i].agent, 200),
 						agentSource: "unknown",
-						task: params.tasks[i].task,
+						task: safeText(params.tasks[i].task),
 						exitCode: -1, // -1 = still running
 						messages: [],
 						stderr: "",
@@ -870,7 +936,7 @@ export default function (pi: ExtensionAPI) {
 				};
 			}
 
-			const available = agents.map((a) => `${a.name} (${a.source})`).join(", ") || "none";
+			const available = safeText(agents.map((a) => `${a.name} (${a.source})`).join(", ") || "none", 5000);
 			return {
 				content: [{ type: "text", text: `Invalid parameters. Available agents: ${available}` }],
 				details: makeDetails("single")([]),
@@ -887,13 +953,13 @@ export default function (pi: ExtensionAPI) {
 				for (let i = 0; i < Math.min(args.chain.length, 3); i++) {
 					const step = args.chain[i];
 					// Clean up {previous} placeholder for display
-					const cleanTask = step.task.replace(/\{previous\}/g, "").trim();
+					const cleanTask = safeText(step.task, 1000).replace(/\{previous\}/g, "").trim();
 					const preview = cleanTask.length > 40 ? `${cleanTask.slice(0, 40)}...` : cleanTask;
 					text +=
 						"\n  " +
 						theme.fg("muted", `${i + 1}.`) +
 						" " +
-						theme.fg("accent", step.agent) +
+						theme.fg("accent", safeText(step.agent, 200)) +
 						theme.fg("dim", ` ${preview}`);
 				}
 				if (args.chain.length > 3) text += `\n  ${theme.fg("muted", `... +${args.chain.length - 3} more`)}`;
@@ -905,14 +971,16 @@ export default function (pi: ExtensionAPI) {
 					theme.fg("accent", `parallel (${args.tasks.length} tasks)`) +
 					theme.fg("muted", ` [${scope}]`);
 				for (const t of args.tasks.slice(0, 3)) {
-					const preview = t.task.length > 40 ? `${t.task.slice(0, 40)}...` : t.task;
-					text += `\n  ${theme.fg("accent", t.agent)}${theme.fg("dim", ` ${preview}`)}`;
+					const safeTask = safeText(t.task, 1000);
+					const preview = safeTask.length > 40 ? `${safeTask.slice(0, 40)}...` : safeTask;
+					text += `\n  ${theme.fg("accent", safeText(t.agent, 200))}${theme.fg("dim", ` ${preview}`)}`;
 				}
 				if (args.tasks.length > 3) text += `\n  ${theme.fg("muted", `... +${args.tasks.length - 3} more`)}`;
 				return new Text(text, 0, 0);
 			}
-			const agentName = args.agent || "...";
-			const preview = args.task ? (args.task.length > 60 ? `${args.task.slice(0, 60)}...` : args.task) : "...";
+			const agentName = safeText(args.agent || "...", 200);
+			const safeTask = safeText(args.task || "...", 1000);
+			const preview = safeTask.length > 60 ? `${safeTask.slice(0, 60)}...` : safeTask;
 			let text =
 				theme.fg("toolTitle", theme.bold("subagent ")) +
 				theme.fg("accent", agentName) +
@@ -1191,5 +1259,12 @@ export default function (pi: ExtensionAPI) {
 			const text = result.content[0];
 			return new Text(text?.type === "text" ? text.text : "(no output)", 0, 0);
 		},
+	});
+
+	pi.on("session_shutdown", async () => {
+		shuttingDown = true;
+		for (const controller of bgControllers.values()) controller.abort();
+		bgControllers.clear();
+		if (statusTimer) clearInterval(statusTimer);
 	});
 }

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "vendor": "swift-testing-pro",
+  "source": {
+    "repository": "https://github.com/twostraws/Swift-Testing-Agent-Skill.git",
+    "tag": "1.0.0",
+    "version": "1.0",
+    "commit": "29921fb187f1165cb8975791c7e11fbb23d03398",
+    "tree": "6e46bd7a966ba2e832af3ab7a702800eec7476b4"
+  },
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc"
+  },
+  "vendored_on": "2026-09-03",
+  "local_installation_verification": {
+    "status": "pass",
+    "completed_before_adaptation": true,
+    "method": "recursive SHA-256 comparison of all nine installed payload files against the locked upstream checkout",
+    "matched_files": 9
+  },
+  "upstream_selected_files": {
+    "LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "swift-testing-pro/SKILL.md": "ad4f1bff44b5b7fce20b282481e651876efce024d13b16cb969bc433036ac059",
+    "swift-testing-pro/references/async-tests.md": "52892a8f7014c11c132013f87f271c1becd76776fffc087e8086b8cb2d888201",
+    "swift-testing-pro/references/core-rules.md": "2271efdca6c2b7b3365501172147884b6e786bcee7bef680fb4f4718929d6180",
+    "swift-testing-pro/references/migrating-from-xctest.md": "35b64812402ad1d15b496993e1721daaf4e80672bf9cce47078f772fd271f93f",
+    "swift-testing-pro/references/new-features.md": "988df5cb556893c789f9aecdc4c8773fdbbda787ab1dad766bf1182a7b9a4819",
+    "swift-testing-pro/references/writing-better-tests.md": "25da3455f6cec4f10d3dff0bf3e8e1372568c75691916541b4d517f451cb8bf1"
+  },
+  "reconciliation": {
+    "frontmatter": "SKILL.md retains only name and description.",
+    "capability_handling": "Project configuration and installed toolchain are authoritative; unavailable Swift Testing capabilities are reported without changing toolchains, dependencies, or project configuration.",
+    "safety": "Exact portable safety sentence retained; no automatic install, commit, push, or external mutation.",
+    "removed": [
+      "host-specific agent metadata and presentation assets",
+      "companion-skill references",
+      "live-network examples",
+      "persistent user-settings examples",
+      "automatic attachment output",
+      "UI-test creation and GUI automation"
+    ]
+  },
+  "static_audit": {
+    "status": "pass",
+    "completed_before_tests": true,
+    "excluded": [
+      "installers and package lifecycle",
+      "network and package fetch",
+      "environment and private config reads",
+      "subprocess execution",
+      "telemetry and persistent runtime state",
+      "live-network examples, GUI automation, and implicit external writes"
+    ]
+  },
+  "self_hash_exclusion": "LOCK.json is excluded because a manifest cannot stably hash itself.",
+  "files": {
+    "LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "PROVENANCE.md": "c958578df031129ae2deb8c6e2b1dfc86d837151656d6ed81e8fcfee66ab44b7",
+    "skills/swift-testing-pro/LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "skills/swift-testing-pro/SKILL.md": "9baed9ec4258949fe850e1e84200d2e9007972dcd43297b4e03a8a494e7d5206",
+    "skills/swift-testing-pro/references/async-tests.md": "1bddcca965422dd6fff8a18d3c86e7ebd9d977c6a1e4a7fd3681f7a9a0a9fc01",
+    "skills/swift-testing-pro/references/core-rules.md": "692216173090da6665a79051eabf51a568931f250bec510454dad39a1770e595",
+    "skills/swift-testing-pro/references/migrating-from-xctest.md": "35b64812402ad1d15b496993e1721daaf4e80672bf9cce47078f772fd271f93f",
+    "skills/swift-testing-pro/references/new-features.md": "9ef3a146447cc08ea4226797493fc2a74b4909f27b5fc676a20402a9482b73a4",
+    "skills/swift-testing-pro/references/writing-better-tests.md": "133796132f0f4c4a193b65b389187a56a84088a6e38af1c975fe5ebdffbce917",
+    "tests/test_vendor.py": "b4a973f7781005b014cf30dfa45da86a651fe569e97c2dbd9f004855dfd22419"
+  }
+}

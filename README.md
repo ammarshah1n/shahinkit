@@ -28,14 +28,15 @@ file integrity before changing your host configuration.
 ## Pi setup
 
 Pi is intentionally not part of the receipt-backed host installer. Review and
-copy the standalone resources in [`Pi/README.md`](Pi/README.md); it includes
-only the six skills and resources already loaded by this Pi setup.
+copy the standalone resources in [`Pi/README.md`](Pi/README.md). It contains a
+2026-09-03 audit of the portable live Pi resources, with credentials, sessions,
+private infrastructure, GUI automation, and machine-specific runtime state excluded.
 
 ## What changes after installation
 
 Your coding agent gains:
 
-- **40 documented skills** for planning, research, study, review, memory, and
+- **43 documented skills** for planning, research, study, review, memory, and
   session handoff;
 - **five specialist agents**: controller, research, implementation, review, and
   mechanical, each on a model chosen by your budget;
@@ -173,7 +174,8 @@ the managed adapters.
   ship in this repository.
 - No hidden telemetry or transcript capture.
 - No automatic package installation, publication, commit, or push.
-- Every installed file is receipt-backed and rollbackable.
+- Every file installed by the three-host managed installer is receipt-backed and
+  rollbackable. Pi remains a separately reviewed manual copy.
 
 ## Advanced: run installer yourself
 

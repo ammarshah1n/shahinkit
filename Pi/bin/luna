@@ -1,12 +1,41 @@
 #!/usr/bin/env bash
-# luna — one-shot luna:high scout on THIS Mac, for Fable fan-out from Claude Code.
-#   luna [-C <cwd>] [-m <model>] "<task>"     → final reply on stdout
+# luna — one-shot luna:high scout for controller read fan-out.
+#   luna [-C <cwd>] [-m <model>] [--task-file path] < task -> final reply on stdout
 # Run via Bash with run_in_background=true, one call per scout.
 set -uo pipefail
-model="openai-codex/gpt-5.6-luna:high"  # retuned 2026-08-28: A/B max 142s / high 89s / medium 64s, same output; wd="$PWD"
+sanitize_stream() {
+  python3 -c 'import re,sys
+s=sys.stdin.buffer.read().decode("utf-8", "replace")
+s=re.sub(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\\\|$)", "", s)
+s=re.sub(r"\x1b[P_^][\s\S]*?(?:\x1b\\\\|$)", "", s)
+s=re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", s)
+s=s.replace("\x1b", "")
+s=re.sub(r"[\x00-\x08\x0b-\x1f\x7f-\x9f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]", "", s)
+sys.stdout.write(s)'
+}
+model="openai-codex/gpt-5.6-luna:high"  # retuned 2026-08-28: A/B max 142s / high 89s / medium 64s, same output
+wd="$PWD"; task_file=""
 while [ $# -gt 0 ]; do case "$1" in
-  -C) wd="$2"; shift 2;; -m) model="$2"; shift 2;; --) shift; break;; *) break;; esac; done
-[ $# -gt 0 ] || { echo "usage: luna [-C cwd] [-m model] \"<task>\"" >&2; exit 2; }
-cd "$wd" || exit 1
-# fast-mode re-added so scouts run on the priority tier (respects /fast state file).
-exec pi -p --no-session --no-extensions -e "$HOME/.pi/agent/extensions/fast-mode.ts" --model "$model" "$*" 2> >(grep -v 'No models match' >&2)
+  -C) wd="$2"; shift 2;; -m) model="$2"; shift 2;; --task-file) task_file=$2; shift 2;;
+  *) echo "task arguments are disabled; pipe task text on stdin or use --task-file" >&2; exit 2;; esac; done
+if [ -n "$task_file" ]; then
+  [ -f "$task_file" ] && [ ! -L "$task_file" ] || { echo "task file must be a regular non-symlink" >&2; exit 2; }
+  task=$(cat "$task_file")
+else
+  [ ! -t 0 ] || { echo "pipe task text on stdin or use --task-file" >&2; exit 2; }
+  task=$(cat)
+fi
+[ -n "${task//[[:space:]]/}" ] || { echo "task must not be empty" >&2; exit 2; }
+cd "$wd" 2> >(sanitize_stream >&2) || exit 1
+# Fast mode follows the active Pi config and respects its /fast state file.
+agent_dir=${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}
+case "$agent_dir" in '~') agent_dir=$HOME;; '~/'*) agent_dir="$HOME/${agent_dir:2}";; esac
+umask 077
+prompt=$(mktemp "${TMPDIR:-/tmp}/pi-luna-prompt.XXXXXX") || exit 1
+trap 'rm -f "$prompt"' EXIT INT TERM
+printf 'Task: %s\n' "$task" > "$prompt"
+pi -p --no-session --no-extensions -e "$agent_dir/extensions/fast-mode.ts" --model "$model" "@$prompt" \
+  2> >(grep -v 'No models match' | sanitize_stream >&2) | sanitize_stream
+status=$?
+rm -f "$prompt"; trap - EXIT INT TERM
+exit "$status"

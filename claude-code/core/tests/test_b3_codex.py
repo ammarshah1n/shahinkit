@@ -72,6 +72,7 @@ class B3CodexTests(unittest.TestCase):
         self.assertEqual(render["shared_memory"], ["CORRECTIONS.md", "HANDOFF.md", "LEARNINGS.md", "NEXT.md", "PROJECT_STATE.md"])
         self.assertEqual(render["vendor_skills"]["ponytail"][0], "ponytail")
         self.assertEqual(render["vendor_skills"]["caveman"][0], "caveman")
+        self.assertEqual(render["vendor_file_mappings"], json.loads((ROOT / "claude-code/core/tests/fixtures/vendor-file-mappings.json").read_text()))
         self.assertFalse(any((CODEX / ".agents").rglob("SKILL.md")))
         self.assertFalse(any((CODEX / "memory/templates").glob("*.md")))
         self.assertRegex(self.read("course-rag/SKILL.md"), r"(?m)^name: course-rag$")

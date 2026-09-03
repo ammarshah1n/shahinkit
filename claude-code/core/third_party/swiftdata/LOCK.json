@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "vendor": "swiftdata",
+  "repository": "https://github.com/twostraws/SwiftData-Agent-Skill.git",
+  "skill": "swiftdata-pro",
+  "version": "1.0",
+  "commit": "be7db1864a3a27f0fc1fa7a21d55536370f37818",
+  "tree": "d2d5ad0172937c0ccb43fa8f6e76218e33258c19",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc"
+  },
+  "vendored_on": "2026-09-03",
+  "static_audit": {
+    "status": "pass",
+    "completed_before_tests": true,
+    "excluded": [
+      "repository documentation and branding assets",
+      "agent configuration",
+      "installers, package lifecycle, and dependency installation",
+      "network and external-resource mutation",
+      "machine-specific paths, personal project content, credentials, and configuration reads",
+      "GUI automation, telemetry, and persistent state"
+    ]
+  },
+  "self_hash_exclusion": "LOCK.json is excluded because a manifest cannot stably hash itself.",
+  "upstream_selected_files": {
+    "LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "swiftdata-pro/SKILL.md": "79164f3bc4942b8ca384057cbe951ca7715aecee4970bea38781d91ddb1c442e",
+    "swiftdata-pro/references/class-inheritance.md": "05b22c87e9864a47517ba095c9a870dc320f0e6f4cd85ff9f0b54c5ca356a41d",
+    "swiftdata-pro/references/cloudkit.md": "52a549b1713d55be183b79af595d37729426af0abea36ed05f932b718d8ee11f",
+    "swiftdata-pro/references/core-rules.md": "8bf45a2af28bfb0648303bb520d3d317d2794b56fcfabe599c4785ccdf02f80a",
+    "swiftdata-pro/references/indexing.md": "909167e538461bf517f8fc6b00bfe70d1c8ea19b12a4749088823c275de52a82",
+    "swiftdata-pro/references/predicates.md": "623c3195fccdec0ec95c0291223ced7491025b04e59c0b4f4fe5ffd23eb1019b"
+  },
+  "files": {
+    "LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "PROVENANCE.md": "a7970718cb28bd33208389f851aadf92884583c9adbcbbbda6385ec00b834570",
+    "skills/swiftdata-pro/LICENSE": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+    "skills/swiftdata-pro/SKILL.md": "30dd57b0833e223d71fd97203733cca51cb8f5fa6f8007d629f9793c168eb5c8",
+    "skills/swiftdata-pro/references/class-inheritance.md": "07b55cd00dba950ac0ff59829b64c9f19efa5686cb78c6e30cfc235b06dfc1ca",
+    "skills/swiftdata-pro/references/cloudkit.md": "17f341b72e8ebed60d6546c92052ebc968a9661d1c02e9487f9ba7d8872b1507",
+    "skills/swiftdata-pro/references/core-rules.md": "ff236e416a798ecf9c4f4ad5427dd0d5301b041ce147e46dd7e731cf09176b03",
+    "skills/swiftdata-pro/references/indexing.md": "06fa042d80a4e76e175312a322889d5acf06e5e521dc5631586ff948e1e5993d",
+    "skills/swiftdata-pro/references/predicates.md": "55d4438d9440cf02d65373493a7a6090b44bc1fdcd06ce62541024ff85ca09a8",
+    "tests/test_vendor.py": "6bf6d2513403049d84a38f835cd96c5e40715ee1b9ddb407cc30c2e228f48d92"
+  }
+}

@@ -5,21 +5,22 @@
  *   1  [model]  project  git:(branch*)  weather                    thinking: high
  *   2  Context ███████░░░░░ 35%  ·  Cache ██░░░ 14%  ·  $0.412
  *   3  ✓ bash ×19  ·  ✓ read ×4  ·  ✗ edit ×1
- *   3b   ◐ scout       42s  map repo layout for cars.js      (one row per running subagent, only while running)
+ *   3b   ◐ scout       42s  map repository layout             (one row per running subagent, only while running)
  *   4  Tokens 37.5M (in 27k · out 123k · cache 37.4M)  ·  5m 55s
  *   5  ~/path/to/cwd                              <extension statuses>
  *
- * /hud toggles it off/on. Weather is cached on disk and refreshed at most
- * every 30 min in a detached curl, so render stays synchronous and instant.
+ * /hud toggles it off/on. Weather is cached on disk; setting PI_HUD_WEATHER=1
+ * permits at most one detached curl refresh per session.
  */
 
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import type { AssistantMessage, ToolResultMessage } from "@earendil-works/pi-ai";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { getAgentDir, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { sanitizeTerminalText } from "./lib/sanitize.ts";
 
 /** Subscription quota scraped from provider response headers. */
 type Quota = { percent: number; resetAt: number | null; window: string };
@@ -59,7 +60,8 @@ function parseCodexQuota(h: Record<string, string>): Quota | null {
 	return best;
 }
 
-const WEATHER_CACHE = join(homedir(), ".pi", "agent", "hud-weather.txt");
+const AGENT_DIR = getAgentDir();
+const WEATHER_CACHE = join(AGENT_DIR, "hud-weather.txt");
 const WEATHER_MAX_AGE_MS = 30 * 60 * 1000;
 const TICK_MS = 10_000;
 
@@ -99,7 +101,16 @@ function fmtElapsed(ms: number): string {
 	return `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-/** Read the weather cache, kicking off a detached refresh when it is stale. */
+let weatherRefreshStarted = false;
+
+function safeWeather(value: string): string {
+	return sanitizeTerminalText(value, 1024)
+		.replace(/\s+/g, " ")
+		.trim()
+		.slice(0, 80);
+}
+
+/** Read the weather cache. Network refresh is explicitly opt-in. */
 function weather(): string {
 	let text = "";
 	let stale = true;
@@ -109,21 +120,32 @@ function weather(): string {
 			stale = Date.now() - statSync(WEATHER_CACHE).mtimeMs > WEATHER_MAX_AGE_MS;
 		}
 	} catch {
-		/* cache unreadable — fall through to refresh */
+		/* cache unreadable — leave weather blank */
 	}
-	if (stale) {
+	if (stale && process.env.PI_HUD_WEATHER === "1" && !weatherRefreshStarted) {
+		weatherRefreshStarted = true;
 		try {
-			const child = spawn(
-				"/bin/sh",
-				["-c", `curl -s --max-time 8 'https://wttr.in/?format=%c%t' > ${JSON.stringify(WEATHER_CACHE)}.tmp && mv ${JSON.stringify(WEATHER_CACHE)}.tmp ${JSON.stringify(WEATHER_CACHE)}`],
-				{ detached: true, stdio: "ignore" },
-			);
+			const child = spawn("curl", ["-fsS", "--max-time", "8", "https://wttr.in/?format=%c%t"], {
+				detached: true,
+				stdio: ["ignore", "pipe", "ignore"],
+			});
+			let output = "";
+			child.stdout?.on("data", (chunk: Buffer) => {
+				if (output.length < 1024) output += chunk.toString("utf8", 0, 1024 - output.length);
+			});
+			child.on("error", () => {});
+			child.on("close", (code) => {
+				const safe = safeWeather(output);
+				if (code === 0 && safe) {
+					try { writeFileSync(WEATHER_CACHE, `${safe}\n`, { mode: 0o600 }); } catch { /* best effort */ }
+				}
+			});
 			child.unref();
 		} catch {
 			/* offline — keep showing the stale value */
 		}
 	}
-	return text.replace(/\s+/g, " ").trim();
+	return safeWeather(text);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -138,9 +160,13 @@ export default function (pi: ExtensionAPI) {
 	// Codex yields nothing and the HUD simply omits the gauge rather than guessing.
 	pi.on("after_provider_response", (event: any) => {
 		const h = event?.headers as Record<string, string> | undefined;
-		if (!h) return;
-		const next = h["anthropic-ratelimit-unified-status"] ? parseAnthropicQuota(h) : h["x-codex-plan-type"] ? parseCodexQuota(h) : null;
-		if (next) quota = next;
+		quota = h
+			? h["anthropic-ratelimit-unified-status"]
+				? parseAnthropicQuota(h)
+				: h["x-codex-plan-type"]
+					? parseCodexQuota(h)
+					: null
+			: null;
 	});
 
 	/** Cheap async git-dirty probe; result is read synchronously during render. */
@@ -180,6 +206,7 @@ export default function (pi: ExtensionAPI) {
 			};
 
 			const dot = theme.fg("dim", " · ");
+			const safe = (value: unknown, max = 1000) => sanitizeTerminalText(value, max);
 
 			const join2 = (left: string, right: string, width: number): string => {
 				const gap = width - visibleWidth(left) - visibleWidth(right);
@@ -225,9 +252,9 @@ export default function (pi: ExtensionAPI) {
 					const ctxWindow = usage?.contextWindow ?? ctx.model?.contextWindow ?? 0;
 
 					// ---- line 1: identity --------------------------------------
-					const modelId = ctx.model?.id ?? "no-model";
-					const project = basename(ctx.sessionManager.getCwd()) || "/";
-					const branch = footerData.getGitBranch();
+					const modelId = safe(ctx.model?.id ?? "no-model");
+					const project = safe(basename(ctx.sessionManager.getCwd()) || "/");
+					const branch = safe(footerData.getGitBranch());
 
 					// mdHeading/mdLink are the theme's "prominent warm" pair; accent stays the
 					// UI colour (cursor, selection, input border) so the badge can differ from it.
@@ -240,7 +267,7 @@ export default function (pi: ExtensionAPI) {
 							(dirty ? theme.fg("warning", "*") : "") +
 							theme.fg("dim", ")");
 					}
-					const sessionName = ctx.sessionManager.getSessionName();
+					const sessionName = safe(ctx.sessionManager.getSessionName());
 					if (sessionName) l1 += dot + theme.fg("muted", sessionName);
 					const w = weather();
 					if (w) l1 += dot + theme.fg("mdLink", w);
@@ -248,7 +275,7 @@ export default function (pi: ExtensionAPI) {
 					const level = ctx.thinkingLevel ?? "off";
 					const right1 = ctx.model?.reasoning
 						? theme.fg(THINKING_COLOR[level] ?? "dim", `thinking: ${level}`)
-						: theme.fg("dim", ctx.model?.provider ?? "");
+						: theme.fg("dim", safe(ctx.model?.provider ?? ""));
 
 					// ---- line 2: gauges ----------------------------------------
 					const cells = width >= 90 ? 16 : width >= 60 ? 10 : 6;
@@ -282,7 +309,7 @@ export default function (pi: ExtensionAPI) {
 							const ok = toolOk.get(name) ?? 0;
 							const err = toolErr.get(name) ?? 0;
 							const mark = err > 0 ? theme.fg("error", "✗") : theme.fg("success", "✓");
-							return `${mark} ${theme.fg("muted", name)} ${theme.fg("dim", `×${ok + err}`)}`;
+							return `${mark} ${theme.fg("muted", safe(name))} ${theme.fg("dim", `×${ok + err}`)}`;
 						})
 						.join(theme.fg("dim", " · "));
 
@@ -300,13 +327,14 @@ export default function (pi: ExtensionAPI) {
 					// ---- line 5: cwd + extension statuses ----------------------
 					const home = process.env.HOME ?? homedir();
 					const cwd = ctx.sessionManager.getCwd();
-					const shortCwd = cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
+					const shortCwd = safe(cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd);
 					// A status with tab-separated fields is a vertical block: one row per
 					// running subagent (newline-separated), "agent\telapsed\twhat it is doing".
 					// Rendered under the tool tally, only while something runs.
 					const allStatuses = [...footerData.getExtensionStatuses().entries()].sort(([a], [b]) => a.localeCompare(b));
 					const agentRows: string[] = [];
-					for (const [, text] of allStatuses) {
+					for (const [, rawText] of allStatuses) {
+						const text = safe(rawText, 10_000);
 						if (!text.includes("\t")) continue;
 						for (const row of text.split("\n")) {
 							if (!row.trim()) continue;
@@ -321,6 +349,7 @@ export default function (pi: ExtensionAPI) {
 						}
 					}
 					const statuses = allStatuses
+						.map(([key, text]) => [key, safe(text, 10_000)] as const)
 						.filter(([, text]) => !text.includes("\t"))
 						.map(([, text]) => text.replace(/[\r\n\t]+/g, " ").trim())
 						.join(" ");

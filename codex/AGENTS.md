@@ -96,6 +96,7 @@ publish, upload, or index memory without explicit user approval.
 ## Lifecycle
 
 Native `SessionStart` and `SubagentStart` hooks provide Prime availability and
-bounded-worker guidance. They retain no prompts, write no files, and perform no
-network calls. Ponytail and Caveman static context plus skills become active
-only after preview, explicit apply, and host-trust confirmation.
+bounded-worker guidance. `UserPromptSubmit` conditionally restates Caveman
+guidance for each prompt when enabled. They retain no prompts, write no files,
+and perform no network calls. Ponytail and Caveman static context plus skills
+become active only after preview, explicit apply, and host-trust confirmation.

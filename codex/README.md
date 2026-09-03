@@ -39,11 +39,20 @@ automatically, and does not require Course-RAG.
 
 ## Hooks and MCP
 
-Codex `0.145+` loads native `hooks.json` files. ShahinKit registers only
-`SessionStart` and `SubagentStart`: Prime availability and bounded-worker
-guidance. Hook runner retains no prompts, writes no files, and performs no
-network calls. Ponytail and Caveman remain static instructions and skills.
-Everything activates only after preview, `--apply`, and host-trust confirmation.
+Codex `0.145+` loads native `hooks.json` files. ShahinKit registers
+`SessionStart`, `UserPromptSubmit`, and `SubagentStart`: Prime availability,
+conditional per-prompt Caveman restatement, and bounded-worker guidance. The
+hook runner retains no prompts, writes no files, and performs no network calls.
+Ponytail and Caveman remain static instructions and skills. Everything activates
+only after preview, `--apply`, and host-trust confirmation.
+
+## Pi parity boundary
+
+Static instructions, skills, and role semantics may be mirrored through
+canonical core. Pi TypeScript extensions, HUD/themes, editor hooks, provider
+interception, background callbacks, auth, and private remote config have no
+safe native Codex parity and must not be copied. Use native Codex features where
+available.
 
 Basic Memory template launches preinstalled `basic-memory` through stdio with
 placeholder environment references and local-only policy. Render its local

@@ -28,15 +28,15 @@
     {
       "path": "README.md",
       "category": "documentation",
-      "source_sha256": "9403dba63627beecd224d0942d501ab48670c00fecc4bddfcb58b09eb083ace3",
-      "render_sha256": "9403dba63627beecd224d0942d501ab48670c00fecc4bddfcb58b09eb083ace3",
+      "source_sha256": "76b5dc932c39838fc25276692e21c6b5b27e08caa3c6e921ab6e1a19113c2c34",
+      "render_sha256": "76b5dc932c39838fc25276692e21c6b5b27e08caa3c6e921ab6e1a19113c2c34",
       "ownership": "shared"
     },
     {
       "path": "SKILLS.html",
       "category": "documentation",
-      "source_sha256": "598da4c25a56c8680e1c755637d85f6d7e5b0787cbe0254994578bb6f1fdda4e",
-      "render_sha256": "598da4c25a56c8680e1c755637d85f6d7e5b0787cbe0254994578bb6f1fdda4e",
+      "source_sha256": "b933e69e69a66e8fb2b1cff492dd4fdfd9337e4547ccde9aaf03768771497c63",
+      "render_sha256": "b933e69e69a66e8fb2b1cff492dd4fdfd9337e4547ccde9aaf03768771497c63",
       "ownership": "shared"
     },
     {
@@ -56,8 +56,8 @@
     {
       "path": "claude-code/core/docs/PORTING-PLAN.md",
       "category": "documentation",
-      "source_sha256": "8edcc452d39d3c8b5a8e6f74e5aa2dd5b1efc087bc50a0a25f831a7fa6450433",
-      "render_sha256": "8edcc452d39d3c8b5a8e6f74e5aa2dd5b1efc087bc50a0a25f831a7fa6450433",
+      "source_sha256": "e3942496756ebaf2fc67648c7a52c59004ae308f23e4cb46d93899fe26ebf214",
+      "render_sha256": "e3942496756ebaf2fc67648c7a52c59004ae308f23e4cb46d93899fe26ebf214",
       "ownership": "shared"
     },
     {
@@ -154,8 +154,8 @@
     {
       "path": "claude-code/core/scripts/build_catalog.py",
       "category": "manager-tool",
-      "source_sha256": "2cc0fe6777d3ce1fc7e37a5b005ca979bf0a04e346c0c1d9654586ab5c7d0e81",
-      "render_sha256": "2cc0fe6777d3ce1fc7e37a5b005ca979bf0a04e346c0c1d9654586ab5c7d0e81",
+      "source_sha256": "38f63357c789af0555b7a43145d8366d1ff4f9305176e3c4cde492dde3a9aa34",
+      "render_sha256": "38f63357c789af0555b7a43145d8366d1ff4f9305176e3c4cde492dde3a9aa34",
       "ownership": "shared"
     },
     {
@@ -168,8 +168,8 @@
     {
       "path": "claude-code/core/scripts/manage.py",
       "category": "manager-tool",
-      "source_sha256": "771c3940beadf67bf1bf7cdfa7d1052439ad68cebcddb7dc2c26df7248c04cab",
-      "render_sha256": "771c3940beadf67bf1bf7cdfa7d1052439ad68cebcddb7dc2c26df7248c04cab",
+      "source_sha256": "997cbd0f4e65f74d9336808586cc5e3c85990889c8c06886ea980555197ab1c4",
+      "render_sha256": "997cbd0f4e65f74d9336808586cc5e3c85990889c8c06886ea980555197ab1c4",
       "ownership": "shared"
     },
     {
@@ -913,6 +913,244 @@
       "source_sha256": "40df33b58fc6ef889b93585733feb9566b76e9586efa7f376785c1e995197ac0",
       "render_sha256": "40df33b58fc6ef889b93585733feb9566b76e9586efa7f376785c1e995197ac0",
       "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "render_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/LOCK.json",
+      "category": "vendor-payload",
+      "source_sha256": "666ff11f61872eefa1f686ca809735e9f397f571d674dd91dedc56dde6f234dd",
+      "render_sha256": "666ff11f61872eefa1f686ca809735e9f397f571d674dd91dedc56dde6f234dd",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/PROVENANCE.md",
+      "category": "vendor-payload",
+      "source_sha256": "c958578df031129ae2deb8c6e2b1dfc86d837151656d6ed81e8fcfee66ab44b7",
+      "render_sha256": "c958578df031129ae2deb8c6e2b1dfc86d837151656d6ed81e8fcfee66ab44b7",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "render_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/SKILL.md",
+      "category": "vendor-payload",
+      "source_sha256": "9baed9ec4258949fe850e1e84200d2e9007972dcd43297b4e03a8a494e7d5206",
+      "render_sha256": "9baed9ec4258949fe850e1e84200d2e9007972dcd43297b4e03a8a494e7d5206",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/references/async-tests.md",
+      "category": "vendor-payload",
+      "source_sha256": "1bddcca965422dd6fff8a18d3c86e7ebd9d977c6a1e4a7fd3681f7a9a0a9fc01",
+      "render_sha256": "1bddcca965422dd6fff8a18d3c86e7ebd9d977c6a1e4a7fd3681f7a9a0a9fc01",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/references/core-rules.md",
+      "category": "vendor-payload",
+      "source_sha256": "692216173090da6665a79051eabf51a568931f250bec510454dad39a1770e595",
+      "render_sha256": "692216173090da6665a79051eabf51a568931f250bec510454dad39a1770e595",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/references/migrating-from-xctest.md",
+      "category": "vendor-payload",
+      "source_sha256": "35b64812402ad1d15b496993e1721daaf4e80672bf9cce47078f772fd271f93f",
+      "render_sha256": "35b64812402ad1d15b496993e1721daaf4e80672bf9cce47078f772fd271f93f",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/references/new-features.md",
+      "category": "vendor-payload",
+      "source_sha256": "9ef3a146447cc08ea4226797493fc2a74b4909f27b5fc676a20402a9482b73a4",
+      "render_sha256": "9ef3a146447cc08ea4226797493fc2a74b4909f27b5fc676a20402a9482b73a4",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro/references/writing-better-tests.md",
+      "category": "vendor-payload",
+      "source_sha256": "133796132f0f4c4a193b65b389187a56a84088a6e38af1c975fe5ebdffbce917",
+      "render_sha256": "133796132f0f4c4a193b65b389187a56a84088a6e38af1c975fe5ebdffbce917",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "render_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/LOCK.json",
+      "category": "vendor-payload",
+      "source_sha256": "ddced654814e8325d7b166a71e32607ab32d3137e76311fe9d3ffe1a295b9caf",
+      "render_sha256": "ddced654814e8325d7b166a71e32607ab32d3137e76311fe9d3ffe1a295b9caf",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/PROVENANCE.md",
+      "category": "vendor-payload",
+      "source_sha256": "a7970718cb28bd33208389f851aadf92884583c9adbcbbbda6385ec00b834570",
+      "render_sha256": "a7970718cb28bd33208389f851aadf92884583c9adbcbbbda6385ec00b834570",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "render_sha256": "b9b479e6df9f27cbc8e7abe91f771b396f3f0fa114d070c7c0b02c820c6b74dc",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/SKILL.md",
+      "category": "vendor-payload",
+      "source_sha256": "30dd57b0833e223d71fd97203733cca51cb8f5fa6f8007d629f9793c168eb5c8",
+      "render_sha256": "30dd57b0833e223d71fd97203733cca51cb8f5fa6f8007d629f9793c168eb5c8",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/references/class-inheritance.md",
+      "category": "vendor-payload",
+      "source_sha256": "07b55cd00dba950ac0ff59829b64c9f19efa5686cb78c6e30cfc235b06dfc1ca",
+      "render_sha256": "07b55cd00dba950ac0ff59829b64c9f19efa5686cb78c6e30cfc235b06dfc1ca",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/references/cloudkit.md",
+      "category": "vendor-payload",
+      "source_sha256": "17f341b72e8ebed60d6546c92052ebc968a9661d1c02e9487f9ba7d8872b1507",
+      "render_sha256": "17f341b72e8ebed60d6546c92052ebc968a9661d1c02e9487f9ba7d8872b1507",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/references/core-rules.md",
+      "category": "vendor-payload",
+      "source_sha256": "ff236e416a798ecf9c4f4ad5427dd0d5301b041ce147e46dd7e731cf09176b03",
+      "render_sha256": "ff236e416a798ecf9c4f4ad5427dd0d5301b041ce147e46dd7e731cf09176b03",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/references/indexing.md",
+      "category": "vendor-payload",
+      "source_sha256": "06fa042d80a4e76e175312a322889d5acf06e5e521dc5631586ff948e1e5993d",
+      "render_sha256": "06fa042d80a4e76e175312a322889d5acf06e5e521dc5631586ff948e1e5993d",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro/references/predicates.md",
+      "category": "vendor-payload",
+      "source_sha256": "55d4438d9440cf02d65373493a7a6090b44bc1fdcd06ce62541024ff85ca09a8",
+      "render_sha256": "55d4438d9440cf02d65373493a7a6090b44bc1fdcd06ce62541024ff85ca09a8",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "cad4ce365913759559b9fc878f83e0c36b8dc65831c8d5e87d82834f68e7346b",
+      "render_sha256": "cad4ce365913759559b9fc878f83e0c36b8dc65831c8d5e87d82834f68e7346b",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/LOCK.json",
+      "category": "vendor-payload",
+      "source_sha256": "cdb3b27f5e5f79798fd87f0b3d486aa305fbc93dac34273226d8ecd9cba94eea",
+      "render_sha256": "cdb3b27f5e5f79798fd87f0b3d486aa305fbc93dac34273226d8ecd9cba94eea",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/PROVENANCE.md",
+      "category": "vendor-payload",
+      "source_sha256": "ec470f1d9abfdeeb882a09a8e8f0f6634721c78c3112060b561dd5d057be3716",
+      "render_sha256": "ec470f1d9abfdeeb882a09a8e8f0f6634721c78c3112060b561dd5d057be3716",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/LICENSE",
+      "category": "vendor-payload",
+      "source_sha256": "cad4ce365913759559b9fc878f83e0c36b8dc65831c8d5e87d82834f68e7346b",
+      "render_sha256": "cad4ce365913759559b9fc878f83e0c36b8dc65831c8d5e87d82834f68e7346b",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/SKILL.md",
+      "category": "vendor-payload",
+      "source_sha256": "342f3d20cff01ec082760f74479f4669324976e8ed8ba884f619961969437cdf",
+      "render_sha256": "342f3d20cff01ec082760f74479f4669324976e8ed8ba884f619961969437cdf",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/accessibility.md",
+      "category": "vendor-payload",
+      "source_sha256": "a4545ba71737f2f86e6243a791f96c03d5ae2555f957414b6e6d64b7f7db51e8",
+      "render_sha256": "a4545ba71737f2f86e6243a791f96c03d5ae2555f957414b6e6d64b7f7db51e8",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/api.md",
+      "category": "vendor-payload",
+      "source_sha256": "d25935d878ece067062aad5b596b6b38b7617d5f0a9f4d33e41ff4098e9d404f",
+      "render_sha256": "d25935d878ece067062aad5b596b6b38b7617d5f0a9f4d33e41ff4098e9d404f",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/data.md",
+      "category": "vendor-payload",
+      "source_sha256": "841f7529a864c8395edcd512eae7d921c24ecd34e192adb938b5fe8e59cec1ac",
+      "render_sha256": "841f7529a864c8395edcd512eae7d921c24ecd34e192adb938b5fe8e59cec1ac",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/design.md",
+      "category": "vendor-payload",
+      "source_sha256": "75733ae04b1d7e355a9e5fd5eb4962ea7c31ea51b55bbb4ed70744a2cbb7d37e",
+      "render_sha256": "75733ae04b1d7e355a9e5fd5eb4962ea7c31ea51b55bbb4ed70744a2cbb7d37e",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/hygiene.md",
+      "category": "vendor-payload",
+      "source_sha256": "9a345e8cf9302aaabdb7ee6e5585f803e2fe1fe6089e6c6fbafabc19af7621e8",
+      "render_sha256": "9a345e8cf9302aaabdb7ee6e5585f803e2fe1fe6089e6c6fbafabc19af7621e8",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/navigation.md",
+      "category": "vendor-payload",
+      "source_sha256": "533fc67143c01e769132bfbedb685ea751e9d3a88ce40d4032ffdbb9c124b07a",
+      "render_sha256": "533fc67143c01e769132bfbedb685ea751e9d3a88ce40d4032ffdbb9c124b07a",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/performance.md",
+      "category": "vendor-payload",
+      "source_sha256": "927db14f018efa31e57703abccf7070dec51b13a35818030f5e503c612b2a3b3",
+      "render_sha256": "927db14f018efa31e57703abccf7070dec51b13a35818030f5e503c612b2a3b3",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/swift.md",
+      "category": "vendor-payload",
+      "source_sha256": "99afdbdd9a19b5b8f8e7afeba165657b4a65f121400352dea49882ca266d57b5",
+      "render_sha256": "99afdbdd9a19b5b8f8e7afeba165657b4a65f121400352dea49882ca266d57b5",
+      "ownership": "vendored"
+    },
+    {
+      "path": "claude-code/core/third_party/swiftui/skills/swiftui-pro/references/views.md",
+      "category": "vendor-payload",
+      "source_sha256": "9e94d96114c2c06dae9291db631f7e324809eddba8453079de36f8a5071fd852",
+      "render_sha256": "9e94d96114c2c06dae9291db631f7e324809eddba8453079de36f8a5071fd852",
+      "ownership": "vendored"
     }
   ],
   "adapter_inputs": {
@@ -932,17 +1170,18 @@
       "course-rag/indexes/.gitkeep": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "course-rag/scripts/build.py": "07abfa6bdd3f40733662191cd31d352f68e18b7e7d551b1631b45b89257c4fe0",
       "course-rag/scripts/search.py": "851ea2280e47d3eb76c76baed40e6062aefcaf0a1abe515afb5c6f76aa7650db",
+      "hooks/fable-mode.sh": "0d1d6de97f7cbbc2a09204b5044d521696596967321334d0cd585a9c50d38de1",
       "hooks/generic.disabled.example.json": "1a92c9db1decd9aff78faf2dd2bc08ff549b4fa788347ed4357c6d30aedfdbe1",
       "hooks/managed-lifecycle.after-trust.json": "1c311b526293771dbe31282088fe3bfe9425d2f2b8071f3ff61f57ef7920ab65",
       "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "55fd77f14f98e5f2a0a26eaa14f79db18d1fc15238518f1d789891b2a9c3c7f3",
-      "render-manifest.json": "00dc16b06513fa898dd6c1786f668d96ca0679e21befcc7806d54af9d6910bff",
+      "render-manifest.json": "cbf5dfd6abd8800853fc54a592e5a5db8d24906a8e5ec78338beae332ed0be30",
       "skills/course-rag/SKILL.md": "338bfac7022dc6f1deb411d480f8a6058e18c9923c9d5f585de3bd638595ce49"
     },
     "codex": {
-      "AGENTS.md": "b80681079a784e5f74398551c7944d3f3817d52c5236b7e12418fc57093ae19c",
-      "README.md": "a6dbc03757ccf2a9b25285daed71ae58a427dca429ba92b01dfc18a615b45d28",
+      "AGENTS.md": "bcbaae18bef234a660e347a73dd1bbb067810180ce98dc0fdb59050183e9c1f7",
+      "README.md": "ff8b91c87b41ae34778bdd03e3b4980648fb10fdecb2b8db05bf4ebff3ae2430",
       "config/agents/controller.toml": "0bab7759283e704ea43a9b106e3c2282d0ab031ff8a4d0d6d4d73dd703603eff",
       "config/agents/implementation.toml": "0e4bc262c865540027fe2b0131e86e954e862de3778d21230789e6cf60a6f0e8",
       "config/agents/mechanical.toml": "8a8a179932f86da758e30d4a977b5b68c9f98b27e0fd7f2431ed2de355c09780",
@@ -960,7 +1199,7 @@
       "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "249398b5b4657283632b878814746fc001c59c379f308055bf37e149f24690e4",
-      "render-manifest.json": "03c7d5375b80d40bf7bec3be812ce14abc8ab74d4591f9062690cd4bb671c07a"
+      "render-manifest.json": "1a0e0fc28cb25553932ceccf139acec1389e623ef798a379c253fead378039c1"
     },
     "opencode": {
       ".opencode/agents/controller.md": "2e6af7d36bbb6d41246a64ce223642f6cd1d3bdbc7e38658deb9722bd9716b94",
@@ -981,7 +1220,7 @@
       "README.md": "d75b5d94dc1571f8136ce659fede3924a266204cb4482ed489e8b1fd571b628b",
       "opencode.jsonc.example": "d61382f71e9b023b6fb1950d7bb7bbc7921c096df50d35f12024c6f72591a57f",
       "opencode.user.jsonc.example": "223e2b04194b95a444ace2e5d3be977605f420d533ce9d00945ba719b7b284d2",
-      "render-manifest.json": "73f6a6b3004832d2f031fc1656e72e05679a96f4e963a47b2e50b000df3237a5",
+      "render-manifest.json": "c5db4cf25df4caba2600add784249c28036723ba47f495788af39ce017eb9e43",
       "scripts/reflect.mjs": "d45d73d128a1b8a0233301553f37d9fc4fd884e05842e0e20778c92a935d441a"
     }
   }

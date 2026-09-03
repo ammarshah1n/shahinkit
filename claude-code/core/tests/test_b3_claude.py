@@ -51,12 +51,14 @@ class B3ClaudeAdapterTests(unittest.TestCase):
         for path in ADAPTER.rglob("*"):
             self.assertFalse(path.is_symlink(), path)
 
-    def test_pinned_vendor_skills_are_rendered_without_colliding_command_shims(self):
+    def test_vendor_skills_preserve_legacy_copies_and_add_shared_sidecar_mapping(self):
         copies = {(item["source"], item["destination"]) for item in self.render["copies"]}
         for skill in ("ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"):
             self.assertIn((f"claude-code/core/third_party/ponytail/skills/{skill}/SKILL.md", f"skills/{skill}/SKILL.md"), copies)
         for skill in ("caveman", "caveman-commit", "caveman-help", "caveman-review"):
             self.assertIn((f"claude-code/core/third_party/caveman/skills/{skill}/SKILL.md", f"skills/{skill}/SKILL.md"), copies)
+        expected = json.loads((ROOT / "claude-code/core/tests/fixtures/vendor-file-mappings.json").read_text())
+        self.assertEqual(self.render["vendor_file_mappings"], expected)
         self.assertFalse(any(destination.startswith("commands/") for _, destination in copies))
         self.assertFalse(any((ADAPTER / "commands").glob("*.md")))
         readme = (ADAPTER / "README.md").read_text()

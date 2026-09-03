@@ -49,7 +49,7 @@ Claude Code and OpenCode auto marker sets require listed environment version plu
 
 ## Portable skills, lifecycle, and capability contract
 
-Shared skills: `prime`, `memory`, `context-router`, `checkpoint`, `session-handoff`, `reflect`, `reflect-and-compound`, `wrap-up`, `miniwrap`, `correction-protocol`, `self-improve`, `delegation-routing`, `idea`, `plan`, `plans`, `mission`, `deep-idea`, `deep-plan`.
+Shared skills: `prime`, `memory`, `context-router`, `checkpoint`, `session-handoff`, `reflect`, `wrap-up`, `miniwrap`, `correction-protocol`, `self-improve`, `delegation-routing`, `idea`, `plan`, `plans`, `mission`, `deep-idea`, `deep-plan`.
 
 Fixture tests prove each skill's behavioral/capability contract, not only filename: memory/local source behavior; lifecycle ordering and bounded writes; idea/plan/plans/mission mode selection; controller/research/worker/reviewer/mechanical routing; excluded personal/domain/transcript/cloud behavior.
 

@@ -129,6 +129,7 @@ class B3OpenCodeTests(unittest.TestCase):
         self.assertEqual(rendered["render"]["default_substitutions"], {"PONYTAIL_ENABLED": "true", "CAVEMAN_ENABLED": "true"})
         self.assertEqual(rendered["vendor_skills"]["ponytail"][0], "ponytail")
         self.assertEqual(rendered["vendor_skills"]["caveman"][0], "caveman")
+        self.assertEqual(rendered["vendor_file_mappings"], json.loads((ROOT / "claude-code/core/tests/fixtures/vendor-file-mappings.json").read_text()))
         self.assertFalse(any((OPENCODE / "skills").rglob("SKILL.md")))
         self.assertFalse(any((ADAPTER / "memory").glob("*.md")))
         agents = self.read("AGENTS.md")

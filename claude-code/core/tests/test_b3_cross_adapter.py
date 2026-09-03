@@ -1,4 +1,5 @@
 import hashlib
+import importlib.util
 import json
 import re
 import shutil
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[3]
 ROLES = ("controller", "research", "implementation", "review", "mechanical")
 SHARED_SKILLS = sorted(path.parent.name for path in (ROOT / "claude-code" / "core" / "shared" / "skills").glob("*/SKILL.md"))
 MEMORY = sorted(path.name for path in (ROOT / "claude-code" / "core" / "shared" / "memory").glob("*.md"))
+VENDOR_FILE_MAPPINGS = json.loads((ROOT / "claude-code" / "core" / "tests" / "fixtures" / "vendor-file-mappings.json").read_text())
 
 
 def destination_path(scope_root, home_root, destination, data_root):
@@ -123,6 +125,10 @@ def render_destinations(render, scope):
     if template:
         yield template["config_destination"]
         yield template["plugin_destination"]
+    skill_root = render["render_rules"]["scope_roots"][scope]["skills"]
+    for mapping in render.get("vendor_file_mappings", []):
+        for name in mapping["files"]:
+            yield f"{skill_root}/{mapping['skill']}/{name}"
 
 
 class B3CrossAdapterTests(unittest.TestCase):
@@ -136,11 +142,13 @@ class B3CrossAdapterTests(unittest.TestCase):
     def test_context_and_skill_maps_reference_canonical_assets(self):
         self.assertEqual(sorted(self.claude["shared"]["skills"]), SHARED_SKILLS)
         self.assertEqual(sorted(self.claude["shared"]["memory"]), MEMORY)
-        for render in (self.codex, self.opencode):
-            self.assertEqual(sorted(render["shared_skills"]), SHARED_SKILLS)
-            self.assertEqual(sorted(render["shared_memory"]), MEMORY)
-            self.assertEqual(render["vendor_skills"]["ponytail"], ["ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"])
-            self.assertEqual(render["vendor_skills"]["caveman"], ["caveman", "caveman-commit", "caveman-help", "caveman-review"])
+        for render in (self.claude, self.codex, self.opencode):
+            if render is not self.claude:
+                self.assertEqual(sorted(render["shared_skills"]), SHARED_SKILLS)
+                self.assertEqual(sorted(render["shared_memory"]), MEMORY)
+                self.assertEqual(render["vendor_skills"]["ponytail"], ["ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review"])
+                self.assertEqual(render["vendor_skills"]["caveman"], ["caveman", "caveman-commit", "caveman-help", "caveman-review"])
+            self.assertEqual(render["vendor_file_mappings"], VENDOR_FILE_MAPPINGS)
         for skill in SHARED_SKILLS:
             self.assertRegex((ROOT / "claude-code" / "core" / "shared" / "skills" / skill / "SKILL.md").read_text(), rf"(?m)^name: {re.escape(skill)}$")
 
@@ -178,7 +186,20 @@ class B3CrossAdapterTests(unittest.TestCase):
             sources.update(f"claude-code/core/shared/memory/{name}" for name in memory)
             for vendor, names in render.get("vendor_skills", {}).items():
                 sources.update(f"claude-code/core/third_party/{vendor}/skills/{name}/SKILL.md" for name in names)
+            vendor_file_sources = {
+                f"{mapping['source_root']}/{name}"
+                for mapping in render.get("vendor_file_mappings", [])
+                for name in mapping["files"]
+            }
+            sources.update(vendor_file_sources)
             for source in sources:
+                candidate = ROOT.joinpath(*PurePosixPath(source).parts)
+                root_is_absent = any(
+                    source.startswith(f"{mapping['source_root']}/") and not (ROOT / mapping["source_root"]).is_dir()
+                    for mapping in render.get("vendor_file_mappings", [])
+                )
+                if source in vendor_file_sources and root_is_absent:
+                    continue  # Vendor roots land with their own pinned manifest update.
                 candidate = assert_safe_manifest_path(self, source)
                 self.assertTrue(candidate.is_file(), source)
                 source_host = next((name for name in ("claude-code", "codex", "opencode") if source.startswith(f"{name}/")), None)
@@ -189,6 +210,25 @@ class B3CrossAdapterTests(unittest.TestCase):
                 else:
                     self.assertIn(source, owned)
                     self.assertEqual(owned[source]["source_sha256"], hashlib.sha256(candidate.read_bytes()).hexdigest())
+
+    def test_catalog_discovers_declarative_vendor_roots(self):
+        catalog_path = ROOT / "claude-code" / "core" / "scripts" / "build_catalog.py"
+        spec = importlib.util.spec_from_file_location("shahinkit_catalog", catalog_path)
+        catalog = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(catalog)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            render_path = root / "claude-code" / "render-manifest.json"
+            render_path.parent.mkdir(parents=True)
+            render_path.write_text(json.dumps({"vendor_skills": {}, "vendor_file_mappings": VENDOR_FILE_MAPPINGS}))
+            for mapping in VENDOR_FILE_MAPPINGS:
+                path = root / mapping["source_root"] / "SKILL.md"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"---\nname: {mapping['skill']}\ndescription: use when testing catalog discovery\n---\n")
+            course = root / "claude-code" / "skills" / "course-rag" / "SKILL.md"
+            course.parent.mkdir(parents=True)
+            course.write_text("---\nname: course-rag\ndescription: use when testing catalog discovery\n---\n")
+            self.assertEqual({item["name"] for item in catalog.skills(root)}, {"course-rag", *(mapping["skill"] for mapping in VENDOR_FILE_MAPPINGS)})
 
     def test_required_install_assets_are_explicit_and_present(self):
         expected = {
@@ -204,6 +244,8 @@ class B3CrossAdapterTests(unittest.TestCase):
                 self.assertIn(asset, json.loads((ROOT / ".shahinkit-manifest.json").read_text())["adapter_inputs"][host])
                 destinations = render.get("scope_install_destinations")
                 if destinations:
+                    if asset in ("AGENTS.md", "course-rag/SKILL.md", "course-rag/scripts/build.py", "course-rag/scripts/search.py"):
+                        continue  # rendered through the instruction or course-rag declarations
                     self.assertTrue(all(destinations[scope][asset] for scope in ("user", "project")))
                 else:
                     self.assertTrue(render["install_destinations"][asset])
@@ -275,12 +317,10 @@ class B3CrossAdapterTests(unittest.TestCase):
             "user": {
                 "config/config.patch.example.toml": fixtures / "user/config.toml",
                 "config/agents/controller.toml": fixtures / "user/agents/controller.toml",
-                "course-rag/SKILL.md": home / ".agents/skills/course-rag/SKILL.md",
             },
             "project": {
                 "config/config.patch.example.toml": fixtures / "project/.codex/config.toml",
                 "config/agents/controller.toml": fixtures / "project/.codex/agents/controller.toml",
-                "course-rag/SKILL.md": fixtures / "project/.agents/skills/course-rag/SKILL.md",
             },
         }
         for scope, assets in expected.items():

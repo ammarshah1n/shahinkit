@@ -230,28 +230,65 @@
   ],
   "scope_install_destinations": {
     "user": {
-      "AGENTS.md": "AGENTS.md",
       "config/config.patch.example.toml": "config.toml",
       "config/agents/controller.toml": "agents/controller.toml",
       "config/agents/research.toml": "agents/research.toml",
       "config/agents/implementation.toml": "agents/implementation.toml",
       "config/agents/review.toml": "agents/review.toml",
-      "config/agents/mechanical.toml": "agents/mechanical.toml",
-      "course-rag/SKILL.md": "$HOME/.agents/skills/course-rag/SKILL.md",
-      "course-rag/scripts/build.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py",
-      "course-rag/scripts/search.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"
+      "config/agents/mechanical.toml": "agents/mechanical.toml"
     },
     "project": {
-      "AGENTS.md": "AGENTS.md",
       "config/config.patch.example.toml": ".codex/config.toml",
       "config/agents/controller.toml": ".codex/agents/controller.toml",
       "config/agents/research.toml": ".codex/agents/research.toml",
       "config/agents/implementation.toml": ".codex/agents/implementation.toml",
       "config/agents/review.toml": ".codex/agents/review.toml",
-      "config/agents/mechanical.toml": ".codex/agents/mechanical.toml",
-      "course-rag/SKILL.md": ".agents/skills/course-rag/SKILL.md",
-      "course-rag/scripts/build.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/build.py",
-      "course-rag/scripts/search.py": "{{SHAHINKIT_DATA_DIR}}/course-rag/scripts/search.py"
+      "config/agents/mechanical.toml": ".codex/agents/mechanical.toml"
     }
-  }
+  },
+  "vendor_file_mappings": [
+    {
+      "source_root": "claude-code/core/third_party/swift-testing/skills/swift-testing-pro",
+      "skill": "swift-testing-pro",
+      "files": [
+        "SKILL.md",
+        "LICENSE",
+        "references/async-tests.md",
+        "references/core-rules.md",
+        "references/migrating-from-xctest.md",
+        "references/new-features.md",
+        "references/writing-better-tests.md"
+      ]
+    },
+    {
+      "source_root": "claude-code/core/third_party/swiftdata/skills/swiftdata-pro",
+      "skill": "swiftdata-pro",
+      "files": [
+        "SKILL.md",
+        "LICENSE",
+        "references/class-inheritance.md",
+        "references/cloudkit.md",
+        "references/core-rules.md",
+        "references/indexing.md",
+        "references/predicates.md"
+      ]
+    },
+    {
+      "source_root": "claude-code/core/third_party/swiftui/skills/swiftui-pro",
+      "skill": "swiftui-pro",
+      "files": [
+        "SKILL.md",
+        "LICENSE",
+        "references/accessibility.md",
+        "references/api.md",
+        "references/data.md",
+        "references/design.md",
+        "references/hygiene.md",
+        "references/navigation.md",
+        "references/performance.md",
+        "references/swift.md",
+        "references/views.md"
+      ]
+    }
+  ]
 }

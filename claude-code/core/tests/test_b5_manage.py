@@ -23,6 +23,14 @@ spec.loader.exec_module(manage)
 
 
 class B5ManagerTests(unittest.TestCase):
+    def test_duplicate_render_destinations_fail_closed(self):
+        duplicate = [
+            {"path": Path("/tmp/same"), "relative": "first", "data": b"one"},
+            {"path": Path("/tmp/same"), "relative": "second", "data": b"one"},
+        ]
+        with self.assertRaisesRegex(manage.ManagerError, "duplicate render destination"):
+            manage.reject_duplicate_outputs(duplicate)
+
     def fixture(self, agent, scope):
         temp = tempfile.TemporaryDirectory()
         root = Path(temp.name) / "destination"
@@ -108,6 +116,71 @@ class B5ManagerTests(unittest.TestCase):
                     self.assertTrue(restored["features"]["caveman"])
                     self.apply("uninstall", agent, scope, root)
                     self.assertFalse((root / ".shahinkit-install-receipt.json").exists())
+
+    def test_vendor_sidecars_cover_all_host_lifecycles_and_receipt_digests(self):
+        mappings = json.loads((ROOT / "claude-code/core/tests/fixtures/vendor-file-mappings.json").read_text())
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture_root = Path(temporary)
+            source_files = {
+                f"{mapping['source_root']}/{name}": fixture_root / mapping["source_root"] / name
+                for mapping in mappings
+                for name in mapping["files"]
+            }
+            for source, path in source_files.items():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(f"initial {source}\n".encode())
+            original_read_source = manage.read_source
+
+            def fixture_read_source(source):
+                path = source_files.get(source)
+                return path.read_bytes() if path else original_read_source(source)
+
+            with mock.patch.object(manage, "read_source", side_effect=fixture_read_source):
+                for agent in ("claude-code", "opencode", "codex"):
+                    for scope in ("user", "project"):
+                        with self.subTest(agent=agent, scope=scope):
+                            for source, path in source_files.items():
+                                path.write_bytes(f"initial {source}\n".encode())
+                            root = self.fixture(agent, scope).resolve()
+                            home = root / "home"
+                            features = {"ponytail": True, "caveman": True, "basic-memory": False}
+                            outputs = manage.outputs_for(agent, scope, root, home, features)
+                            receipt = manage.apply_plan(
+                                root,
+                                home,
+                                agent,
+                                scope,
+                                features,
+                                {"kind": "test"},
+                                manage.changed_plan(outputs, root, home),
+                                None,
+                            )
+                            skill_root = json.loads((ROOT / agent / "render-manifest.json").read_text())["render_rules"]["scope_roots"][scope]["skills"]
+                            for mapping in mappings:
+                                for name in mapping["files"]:
+                                    source = f"{mapping['source_root']}/{name}"
+                                    base = "home" if skill_root.startswith("$HOME/") else "root"
+                                    destination = f"{skill_root.removeprefix('$HOME/')}/{mapping['skill']}/{name}"
+                                    item = next(item for item in receipt["owned"] if item["base"] == base and item["path"] == destination)
+                                    self.assertEqual(item["sha256"], hashlib.sha256(source_files[source].read_bytes()).hexdigest())
+                                    self.assertEqual(self.local_path(root, item).read_bytes(), source_files[source].read_bytes())
+
+                            changed_source = next(source for source in source_files if source.endswith("references/async-tests.md"))
+                            source_files[changed_source].write_bytes(b"updated vendor sidecar\n")
+                            updated_outputs = manage.outputs_for(agent, scope, root, home, features)
+                            update_plan = manage.changed_plan(updated_outputs, root, home, receipt)
+                            self.assertTrue(any(change["source"] == changed_source for change in update_plan))
+                            updated_receipt = manage.apply_plan(root, home, agent, scope, features, {"kind": "test"}, update_plan, receipt)
+                            updated_item = next(item for item in updated_receipt["owned"] if item["path"].endswith(f"/{mappings[0]['skill']}/references/async-tests.md"))
+                            self.assertEqual(updated_item["sha256"], hashlib.sha256(b"updated vendor sidecar\n").hexdigest())
+
+                            manage.rollback(root, home, updated_receipt)
+                            restored = manage.verify_receipt(root)
+                            restored_item = next(item for item in restored["owned"] if item["path"].endswith(f"/{mappings[0]['skill']}/references/async-tests.md"))
+                            self.assertEqual(self.local_path(root, restored_item).read_bytes(), f"initial {changed_source}\n".encode())
+                            manage.remove_owned(root, home, restored)
+                            self.assertFalse(manage.receipt_path(root).exists())
+                            self.assertFalse(self.local_path(root, restored_item).exists())
 
     def test_codex_user_isolated_destination_uses_root_and_home_aliases_through_lifecycle(self):
         root = self.fixture("codex", "user")

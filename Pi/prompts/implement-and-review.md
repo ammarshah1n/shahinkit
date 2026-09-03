@@ -1,7 +1,7 @@
 ---
 description: Worker implements, reviewer reviews, worker applies feedback
 ---
-Use the subagent tool with the chain parameter to execute this workflow:
+Use the subagent tool with the chain parameter to execute this workflow. If these profiles are installed under project-local `.pi/agents`, set `agentScope: "project"`; otherwise use the default user scope:
 
 1. First, use the "worker" agent to implement: $@
 2. Then, use the "reviewer" agent to review the implementation from the previous step (use {previous} placeholder)

@@ -370,6 +370,50 @@ def budget_values(agent: str, root: Path) -> dict[str, str]:
     return values
 
 
+def vendor_file_mappings(render: dict, features: dict[str, bool]) -> list[tuple[str, str, list[str]]]:
+    """Normalize legacy one-file vendors and declarative multi-file vendors."""
+    mappings = []
+    legacy = render.get("vendor_skills", {})
+    if not isinstance(legacy, dict):
+        fail("vendor_skills must be an object")
+    for vendor, skills in legacy.items():
+        if not isinstance(vendor, str) or not isinstance(skills, list):
+            fail("invalid vendor_skills entry")
+        if not features.get(vendor, True):
+            continue
+        for skill in skills:
+            if not isinstance(skill, str):
+                fail("invalid vendor skill name")
+            mappings.append((f"claude-code/core/third_party/{vendor}/skills/{skill}", skill, ["SKILL.md"]))
+    declared = render.get("vendor_file_mappings", [])
+    if not isinstance(declared, list):
+        fail("vendor_file_mappings must be a list")
+    for mapping in declared:
+        if not isinstance(mapping, dict):
+            fail("invalid vendor file mapping")
+        source_root, skill, files = mapping.get("source_root"), mapping.get("skill"), mapping.get("files")
+        if not isinstance(source_root, str) or not isinstance(skill, str) or not isinstance(files, list):
+            fail("invalid vendor file mapping")
+        relpath(source_root)
+        if len(PurePosixPath(skill).parts) != 1:
+            fail("vendor skill name must be one path component")
+        relpath(skill)
+        if not files or "SKILL.md" not in files or any(not isinstance(name, str) for name in files):
+            fail("vendor file mapping must include SKILL.md")
+        if len(set(files)) != len(files):
+            fail("vendor file mapping has duplicate files")
+        for name in files:
+            relpath(name)
+        mappings.append((source_root, skill, files))
+    return mappings
+
+
+def add_vendor_outputs(outputs: list[dict], render: dict, skill_root: str, root: Path, home: Path, values: dict[str, str], path_values: dict[str, str], features: dict[str, bool], preserve_existing: bool) -> None:
+    for source_root, skill, files in vendor_file_mappings(render, features):
+        for name in files:
+            add_output(outputs, f"{source_root}/{name}", f"{skill_root}/{skill}/{name}", root, home, values, path_values, features, preserve_existing=preserve_existing)
+
+
 def add_local_data(outputs: list[dict], root: Path, home: Path, values: dict[str, str], path_values: dict[str, str], features: dict[str, bool], preserve_existing: bool) -> None:
     """Install-owned runtime config for the copied lifecycle hook. Authoritative
     and rewritten every render. The companion path opt-out list lives in an
@@ -399,6 +443,15 @@ def add_local_data(outputs: list[dict], root: Path, home: Path, values: dict[str
         "file",
         preserve_existing,
     )
+
+
+def reject_duplicate_outputs(outputs: list[dict]) -> list[dict]:
+    unique: dict[Path, dict] = {}
+    for output in outputs:
+        if output["path"] in unique:
+            fail(f"duplicate render destination: {output['relative']}")
+        unique[output["path"]] = output
+    return list(unique.values())
 
 
 def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[str, bool], preserve_existing: bool = False) -> list[dict]:
@@ -441,6 +494,7 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
     if any(not values.get(key) for key in required):
         fail("missing required render substitution")
     outputs: list[dict] = []
+    skill_root = render["render_rules"]["scope_roots"][scope]["skills"]
     if agent == "claude-code":
         for item in render.get("copies", []) + render.get("adapter_assets", []):
             destination = item["destination"]
@@ -450,6 +504,7 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
                         destination = ".claude/" + destination
                         break
             add_output(outputs, item["source"], destination, root, home, values, path_values, features, preserve_existing=preserve_existing)
+        add_vendor_outputs(outputs, render, skill_root, root, home, values, path_values, features, preserve_existing)
         # Context is merged into existing host instruction file, never whole-file overwrite.
         for output in outputs:
             if output["kind"] != "preserved" and output["base"] == "root" and output["relative"] == "CLAUDE.md":
@@ -479,14 +534,9 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
     else:
         instruction = "AGENTS.md"
         add_output(outputs, f"{agent}/AGENTS.md", instruction, root, home, values, path_values, features, "instruction", preserve_existing)
-        skill_root = render["render_rules"]["scope_roots"][scope]["skills"]
         for skill in render.get("shared_skills", []):
             add_output(outputs, f"claude-code/core/shared/skills/{skill}/SKILL.md", f"{skill_root}/{skill}/SKILL.md", root, home, values, path_values, features, preserve_existing=preserve_existing)
-        for vendor, skills in render.get("vendor_skills", {}).items():
-            if not features.get(vendor, True):
-                continue
-            for skill in skills:
-                add_output(outputs, f"claude-code/core/third_party/{vendor}/skills/{skill}/SKILL.md", f"{skill_root}/{skill}/SKILL.md", root, home, values, path_values, features, preserve_existing=preserve_existing)
+        add_vendor_outputs(outputs, render, skill_root, root, home, values, path_values, features, preserve_existing)
         for name in render.get("shared_memory", []):
             add_output(outputs, f"claude-code/core/shared/memory/{name}", f".shahinkit-state/memory/{name}", root, home, values, path_values, features, preserve_existing=preserve_existing)
         if agent == "opencode":
@@ -521,13 +571,7 @@ def outputs_for(agent: str, scope: str, root: Path, home: Path, features: dict[s
     add_local_data(outputs, root, home, values, path_values, features, preserve_existing)
     if features["basic-memory"]:
         add_output(outputs, "claude-code/core/shared/mcp/basic-memory/local-config.example.json", ".shahinkit-state/basic-memory/config.json", root, home, values, path_values, features, preserve_existing=preserve_existing)
-    unique: dict[Path, dict] = {}
-    for output in outputs:
-        previous = unique.get(output["path"])
-        if previous and previous["data"] != output["data"]:
-            fail(f"two render entries conflict: {output['relative']}")
-        unique[output["path"]] = previous if previous and previous["kind"] == "instruction" else output
-    return list(unique.values())
+    return reject_duplicate_outputs(outputs)
 
 
 def instruction_change(path: Path, rendered: bytes) -> tuple[bytes, dict]:

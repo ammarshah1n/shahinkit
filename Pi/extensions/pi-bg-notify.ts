@@ -1,6 +1,5 @@
-// pi-bg-notify — closes the gap that made sol sleep-poll `pi-bg ls` 20× in the
-// Cars session (2026-08-28): `~/bin/pi-bg` is fire-and-forget with no completion
-// signal, so the controller burned turns waiting. This extension:
+// pi-bg-notify — adds completion delivery to the fire-and-forget `pi-bg`
+// helper so controllers do not burn turns polling job state. This extension:
 //   1. watches bash tool results for job ids printed by `pi-bg run`,
 //   2. appends a one-line "tracked — do not poll" note to that tool result,
 //   3. polls the job's pid every 5s (kill -0, same test pi-bg ls uses) and, when it
@@ -8,19 +7,36 @@
 //      the same delivery the subagent tool uses for background: true.
 // ponytail: pid polling, not fs.watch — jsonl is appended constantly, pid death is
 // the only clean edge. Jobs started by another session are not tracked (no id seen).
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, appendFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { getAgentDir, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { sanitizeTerminalText } from "./lib/sanitize.ts";
 
-const BG = process.env.PI_BG_DIR ?? join(homedir(), ".pi", "bg");
-const ID_RE = /^[a-z][a-z-]*-\d{6}-\d+$/;
+const AGENT_DIR = getAgentDir();
+const DEFAULT_BG = process.env.PI_CODING_AGENT_DIR ? join(AGENT_DIR, "bg") : join(homedir(), ".pi", "bg");
+const BG = process.env.PI_BG_DIR ?? DEFAULT_BG;
+const ID_RE = /^[a-z][a-z0-9-]*-\d{6}-\d+$/;
 const LOG = process.env.PI_BG_NOTIFY_LOG; // test hook only
 const log = (s: string) => LOG && appendFileSync(LOG, `${new Date().toISOString()} ${s}\n`);
 
 function alive(id: string): boolean {
 	try {
-		process.kill(Number(readFileSync(join(BG, `${id}.pid`), "utf8").trim()), 0);
+		const pid = Number(readFileSync(join(BG, `${id}.pid`), "utf8").trim());
+		let live = false;
+		try { process.kill(pid, 0); live = true; } catch {
+			try { process.kill(-pid, 0); live = true; } catch { /* leader and process group are gone */ }
+		}
+		if (!live) return false;
+		const receipt = join(BG, `${id}.process`);
+		if (!existsSync(receipt)) return true; // live but identity-unknown: never announce completion
+		try {
+			const line = execFileSync("ps", ["-ww", "-p", String(pid), "-o", "lstart=", "-o", "command="], { encoding: "utf8" });
+			const current = createHash("sha256").update(line.replace(/\n+$/, "")).digest("hex");
+			if (current !== readFileSync(receipt, "utf8").trim()) return true; // live mismatch stays UNKNOWN
+		} catch { return true; }
 		return true;
 	} catch {
 		return false;
@@ -47,6 +63,7 @@ function finalReply(id: string): string {
 			if (err) out = `(no output) stderr:\n${err}`;
 		} catch {}
 	}
+	out = sanitizeTerminalText(out, 6001);
 	return out.length > 6000 ? `${out.slice(0, 6000)}\n…[truncated; pi-bg get ${id} for full]` : out;
 }
 
@@ -61,7 +78,7 @@ export default function (pi: ExtensionAPI) {
 		if (tracked.size === 0) return ui.setStatus("pi-bg", undefined);
 		const now = Date.now();
 		const task = (id: string) => {
-			try { return readFileSync(join(BG, `${id}.task`), "utf8").replace(/\s+/g, " ").trim().slice(0, 70); } catch { return ""; }
+			try { return sanitizeTerminalText(readFileSync(join(BG, `${id}.task`), "utf8"), 1000).replace(/\s+/g, " ").trim().slice(0, 70); } catch { return ""; }
 		};
 		// newline-separated rows → hud.ts renders a vertical block (agent\telapsed\ttask)
 		ui.setStatus("pi-bg", [...tracked].map(([id, t]) => `${id.replace(/-\d{6}-\d+$/, "")} ⇢\t${fmtSecs(now - t)}\t${task(id)}`).join("\n"));
@@ -73,7 +90,7 @@ export default function (pi: ExtensionAPI) {
 			tracked.delete(id);
 			const meta = (() => {
 				try {
-					return readFileSync(join(BG, `${id}.meta`), "utf8").trim();
+					return sanitizeTerminalText(readFileSync(join(BG, `${id}.meta`), "utf8"), 1000).trim();
 				} catch {
 					return "";
 				}

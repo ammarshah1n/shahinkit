@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -19,6 +20,7 @@ CATEGORIES = {
     "Research and review": {"research", "audit-tool", "collab", "graphify", "taste-gate", "watch"},
     "Build and coordinate": {"delegation-routing", "parallel-worktrees", "skill-builder", "output-style"},
     "Study": {"study", "course-rag"},
+    "Apple development": {"swift-testing-pro", "swiftdata-pro", "swiftui-pro"},
     "Modes": {"ponytail", "ponytail-audit", "ponytail-debt", "ponytail-gain", "ponytail-help", "ponytail-review", "caveman", "caveman-commit", "caveman-help", "caveman-review"},
 }
 
@@ -51,11 +53,42 @@ def metadata(path: Path) -> tuple[str, str]:
     return name, description
 
 
-def skills() -> list[dict[str, str]]:
-    paths = list((ROOT / "claude-code" / "core" / "shared" / "skills").glob("*/SKILL.md"))
-    for vendor in ("ponytail", "caveman"):
-        paths.extend((ROOT / "claude-code" / "core" / "third_party" / vendor / "skills").glob("*/SKILL.md"))
-    paths.append(ROOT / "claude-code" / "skills" / "course-rag" / "SKILL.md")
+def safe_vendor_path(root: Path, relative: str) -> Path:
+    if not isinstance(relative, str):
+        raise ValueError("vendor manifest path must be a string")
+    pure = PurePosixPath(relative)
+    if pure.is_absolute() or any(part in ("", ".", "..") for part in pure.parts):
+        raise ValueError(f"unsafe vendor manifest path: {relative!r}")
+    repository = root.resolve()
+    allowed = (root / "claude-code" / "core" / "third_party").resolve()
+    candidate = (root / Path(*pure.parts)).resolve()
+    try:
+        allowed.relative_to(repository)
+        candidate.relative_to(allowed)
+    except ValueError as error:
+        raise ValueError(f"vendor manifest path escapes third_party: {relative!r}") from error
+    return candidate
+
+
+def vendor_skill_paths(root: Path = ROOT) -> list[Path]:
+    render = json.loads((root / "claude-code" / "render-manifest.json").read_text())
+    paths = []
+    for vendor, names in render.get("vendor_skills", {}).items():
+        for name in names:
+            paths.append(safe_vendor_path(root, f"claude-code/core/third_party/{vendor}/skills/{name}/SKILL.md"))
+    for item in render.get("copies", []):
+        source = item.get("source")
+        if isinstance(source, str) and source.startswith("claude-code/core/third_party/") and source.endswith("/SKILL.md"):
+            paths.append(safe_vendor_path(root, source))
+    for mapping in render.get("vendor_file_mappings", []):
+        paths.append(safe_vendor_path(root, f"{mapping.get('source_root', '')}/SKILL.md"))
+    return list(dict.fromkeys(paths))
+
+
+def skills(root: Path = ROOT) -> list[dict[str, str]]:
+    paths = list((root / "claude-code" / "core" / "shared" / "skills").glob("*/SKILL.md"))
+    paths.extend(path for path in vendor_skill_paths(root) if path.is_file())
+    paths.append(root / "claude-code" / "skills" / "course-rag" / "SKILL.md")
     result = []
     for path in paths:
         name, description = metadata(path)

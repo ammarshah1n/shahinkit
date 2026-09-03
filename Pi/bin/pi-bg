@@ -1,25 +1,131 @@
 #!/usr/bin/env bash
 # pi-bg — fire-and-forget pi subagent. Main session stays free.
-#   pi-bg run <agent> [-m model] [-C cwd] [--local] [--no-wt] <task...> -> job id
-#   Runs on fedora via ssh (cwd must map). --local overrides.
-#   Git worktree isolation is ON by default (local and fedora). --no-wt disables.
+#   pi-bg run <agent> [-m model] [-C cwd] [--local] [--no-wt] [--task-file path] < task -> job id
+#   Remote SSH routing is opt-in (cwd must map). --local overrides.
+#   Git worktree isolation is ON by default. --no-wt disables.
 #   pi-bg ls                                          -> job states
 #   pi-bg get <id>                                    -> final reply only
 #   pi-bg diff <id>                                   -> git diff from the job's worktree
 #   pi-bg log <id>                                    -> stderr + tool trace
-#   pi-bg kill <id> | pi-bg clean
+#   pi-bg kill <id> | pi-bg clean [--force] [id]
 set -euo pipefail
-D=${PI_BG_DIR:-$HOME/.pi/bg}; AD=$HOME/.pi/agent/agents; RH=/home/ammarshahin; mkdir -p "$D"</dev/null
-RWT=$RH/.pi/bg/wt
+umask 077
+AGENT_DIR=${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}
+case "$AGENT_DIR" in '~') AGENT_DIR=$HOME;; '~/'*) AGENT_DIR="$HOME/${AGENT_DIR:2}";; esac
+DEFAULT_BG=$HOME/.pi/bg; [ -z "${PI_CODING_AGENT_DIR:-}" ] || DEFAULT_BG=$AGENT_DIR/bg
+D=${PI_BG_DIR:-$DEFAULT_BG}; AD=$AGENT_DIR/agents; mkdir -p "$D"</dev/null
+D=$(cd "$D" && pwd -P)
+REMOTE_HOST=${PI_REMOTE_SUBAGENT_HOST:-}; RH=${PI_REMOTE_SUBAGENT_HOME:-}; REMOTE_MAP=${PI_REMOTE_SUBAGENT_MAP:-}
+RWT=${RH:+$RH/.pi/bg/wt}; REMOTE_AGENT_DIR=""
+case "$AGENT_DIR" in "$HOME") REMOTE_AGENT_DIR=$RH;; "$HOME"/*) REMOTE_AGENT_DIR="$RH${AGENT_DIR#$HOME}";; esac
 
 field() { awk -v k="$1" '/^---$/{c++; next} c==1 && $0 ~ "^"k": " {sub("^"k": ",""); print; exit}' "$2"; }
+valid_job_id() { [[ ${1:-} =~ ^[a-z][a-z0-9-]*-[0-9]{6}-[0-9]+$ ]]; }
+valid_host() { [[ ${1:-} =~ ^[A-Za-z0-9][A-Za-z0-9_.@:-]*$ ]]; }
+process_token() {
+  local line
+  line=$(ps -ww -p "$1" -o lstart= -o command= 2>/dev/null) || return 1
+  [ -n "${line//[[:space:]]/}" ] || return 1
+  printf '%s' "$line" | python3 -c 'import hashlib,sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())'
+}
+pid_alive() {
+  local p
+  p=$(cat "$D/$1.pid" 2>/dev/null) || return 1
+  kill -0 "$p" 2>/dev/null
+}
+group_alive() {
+  local p
+  p=$(cat "$D/$1.pid" 2>/dev/null) || return 1
+  kill -0 -- "-$p" 2>/dev/null
+}
+job_running() {
+  local id=$1 p current expected
+  p=$(cat "$D/$id.pid" 2>/dev/null) || return 1
+  kill -0 "$p" 2>/dev/null || return 1
+  [ -f "$D/$id.process" ] || return 1
+  expected=$(cat "$D/$id.process"); current=$(process_token "$p") || return 1
+  [ "$current" = "$expected" ]
+}
+job_busy() {
+  pid_alive "$1" || group_alive "$1"
+}
+kill_tree() {
+  local p=$1 child
+  if kill -0 -- "-$p" 2>/dev/null; then
+    kill -TERM -- "-$p" 2>/dev/null || true
+    for _ in {1..20}; do kill -0 -- "-$p" 2>/dev/null || return 0; sleep 0.1; done
+    kill -KILL -- "-$p" 2>/dev/null || true
+    return
+  fi
+  while read -r child; do [ -n "$child" ] && kill_tree "$child"; done < <(ps -eo pid=,ppid= | awk -v p="$p" '$2 == p {print $1}')
+  kill "$p" 2>/dev/null || true
+}
+reserve_job_id() {
+  local agent=$1 candidate
+  for _ in {1..100}; do
+    candidate="$agent-$(date +%H%M%S)-$RANDOM"
+    [ ! -e "$D/$candidate.task" ] || continue
+    if (set -o noclobber; : > "$D/$candidate.reserve") 2>/dev/null; then id=$candidate; return 0; fi
+  done
+  echo "could not reserve unique job id" >&2; return 1
+}
 body()  { awk 'f{print} /^---$/{c++; if(c==2) f=1}' "$1"; }
 q()     { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
-mapcwd() { case $(cd "$1" && pwd -P) in
-    /Users/integrale/time-manager-desktop*) echo "$RH/repos/time-manager-desktop${1#/Users/integrale/time-manager-desktop}";;
-    /Users/integrale/facilitated*)          echo "$RH/repos/facilitated${1#/Users/integrale/facilitated}";;
-    /Users/integrale/Documents*)            echo "$RH/repos${1#/Users/integrale/Documents}";;
-  esac; }
+sanitize_stream() {
+  python3 -c 'import re,sys
+s=sys.stdin.buffer.read().decode("utf-8", "replace")
+s=re.sub(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\\\|$)", "", s)
+s=re.sub(r"\x1b[P_^][\s\S]*?(?:\x1b\\\\|$)", "", s)
+s=re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", s)
+s=s.replace("\x1b", "")
+s=re.sub(r"[\x00-\x08\x0b-\x1f\x7f-\x9f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]", "", s)
+sys.stdout.write(s)'
+}
+safe_err() { printf '%s\n' "$*" | sanitize_stream >&2; }
+mapcwd() {
+  local cwd entry local_root remote_root
+  MAPPED_CWD=""; MAPPED_ROOT=""
+  cwd=$(cd "$1" && pwd -P)
+  IFS=';' read -ra entries <<< "$REMOTE_MAP"
+  for entry in "${entries[@]}"; do
+    [ "${entry#*=}" != "$entry" ] || continue
+    local_root=${entry%%=*}; remote_root=${entry#*=}; remote_root=${remote_root%/}
+    case "$remote_root" in /*) ;; *) continue;; esac
+    local_root=$(cd "$local_root" 2>/dev/null && pwd -P) || continue
+    case "$cwd" in
+      "$local_root") MAPPED_CWD=$remote_root; MAPPED_ROOT=$remote_root; return 0;;
+      "$local_root"/*) MAPPED_CWD="$remote_root${cwd#$local_root}"; MAPPED_ROOT=$remote_root; return 0;;
+    esac
+  done
+  return 1
+}
+remote_guard() {
+  printf 'root=$(realpath %s) && cwd=$(realpath %s) && case "$cwd" in "$root"|"$root"/*) ;; *) exit 64 ;; esac' "$(q "$1")" "$(q "$2")"
+}
+remote_exact_guard() {
+  printf '[ ! -L %s ] && [ ! -L %s ] && home=$(realpath %s) && root=$(realpath %s) && [ "$root" = "$home/.pi/bg/wt" ] && cwd=$(realpath %s) && [ "$cwd" = "$root/%s" ]' \
+    "$(q "$1")" "$(q "$2")" "$(q "$RH")" "$(q "$1")" "$(q "$2")" "$3"
+}
+remote_prompt_prepare() {
+  local root=$1 id=$2 prompts="$1/prompts" dir="$1/prompts/$2"
+  printf '[ ! -L %s ] && [ ! -L %s ] && [ ! -L %s ] && mkdir -p %s && [ ! -L %s ] && home=$(realpath %s) && root=$(realpath %s) && [ "$root" = "$home/.pi/bg/wt" ] && mkdir -p %s && [ ! -L %s ] && prompts=$(realpath %s) && [ "$prompts" = "$root/prompts" ] && mkdir -p %s && [ ! -L %s ] && dir=$(realpath %s) && [ "$dir" = "$prompts/%s" ]' \
+    "$(q "$RH")" "$(q "$RH/.pi")" "$(q "$RH/.pi/bg")" "$(q "$root")" "$(q "$root")" "$(q "$RH")" "$(q "$root")" "$(q "$prompts")" "$(q "$prompts")" "$(q "$prompts")" "$(q "$dir")" "$(q "$dir")" "$(q "$dir")" "$id"
+}
+remote_prompt_remove() {
+  local root=$1 id=$2 prompts="$1/prompts" dir="$1/prompts/$2"
+  printf 'if [ -e %s ]; then [ ! -L %s ] && home=$(realpath %s) && root=$(realpath %s) && [ "$root" = "$home/.pi/bg/wt" ] && [ ! -L %s ] && prompts=$(realpath %s) && [ "$prompts" = "$root/prompts" ] || exit 65; if [ -e %s ]; then [ ! -L %s ] && dir=$(realpath %s) && [ "$dir" = "$prompts/%s" ] || exit 65; rm -rf "$dir"; fi; fi' \
+    "$(q "$prompts")" "$(q "$root")" "$(q "$RH")" "$(q "$root")" "$(q "$prompts")" "$(q "$prompts")" "$(q "$dir")" "$(q "$dir")" "$(q "$dir")" "$id"
+}
+local_worktree_ok() {
+  local id=$1 w=$2 root actual
+  [ "$w" = "$D/wt/$id" ] && [ ! -L "$D/wt" ] || return 1
+  root=$(cd "$D/wt" 2>/dev/null && pwd -P) || return 1
+  [ "$root" = "$D/wt" ] || return 1
+  [ ! -e "$w" ] && return 0
+  [ ! -L "$w" ] || return 1
+  actual=$(cd "$w" 2>/dev/null && pwd -P) || return 1
+  [ "$actual" = "$D/wt/$id" ]
+}
 isonote() { cat >> "$1" <<'EOF'
 
 ## Isolation (injected by pi-bg)
@@ -30,27 +136,99 @@ Leave every change uncommitted in the working tree; the controller collects your
 work with `git diff` and applies it itself.
 EOF
 }
+showdiff() {
+  local repo=$1 idx status=0
+  idx=$(mktemp); rm -f "$idx" # Git requires a missing path, not an empty index file.
+  GIT_INDEX_FILE=$idx git -C "$repo" read-tree HEAD \
+    && GIT_INDEX_FILE=$idx git -C "$repo" add -A -N . \
+    && GIT_INDEX_FILE=$idx git -C "$repo" diff || status=$?
+  rm -f "$idx"
+  return "$status"
+}
+remove_artifacts() {
+  local id=$1
+  rm -f "$D/$id.jsonl" "$D/$id.err" "$D/$id.sys" "$D/$id.pid" "$D/$id.process" "$D/$id.meta" \
+    "$D/$id.task" "$D/$id.prompt" "$D/$id.host" "$D/$id.worktree" "$D/$id.collected" "$D/$id.reserve"
+}
+clean_one() {
+  local id=$1 force=$2 w host guard prompt_cleanup
+  valid_job_id "$id" || { echo "invalid job id: $id" >&2; return 1; }
+  job_busy "$id" && { echo "refusing to clean running or identity-unknown job: $id" >&2; return 1; }
+  if [ -f "$D/$id.worktree" ]; then
+    [ "$force" = 1 ] || [ -f "$D/$id.collected" ] || {
+      echo "refusing to delete uncollected worktree: $id (run pi-bg diff $id, or clean --force $id)" >&2; return 1; }
+    w=$(cat "$D/$id.worktree")
+    if [ -f "$D/$id.host" ]; then
+      host=$(cat "$D/$id.host")
+      valid_host "$host" && [ -n "$REMOTE_HOST" ] && [ "$host" = "$REMOTE_HOST" ] \
+        || { echo "remote host receipt does not match current configured host" >&2; return 1; }
+      [ -n "$RWT" ] && [ "$w" = "$RWT/$id" ] \
+        || { echo "remote worktree receipt is outside the managed job path" >&2; return 1; }
+      guard=$(remote_exact_guard "$RWT" "$w" "$id"); prompt_cleanup=$(remote_prompt_remove "$RWT" "$id")
+      ssh -o BatchMode=yes -o ConnectTimeout=5 "$host" \
+        "umask 077; if [ -e $(q "$w") ]; then $guard && git -C \"\$cwd\" worktree remove --force \"\$cwd\" || exit 1; fi; $prompt_cleanup" </dev/null 2> >(sanitize_stream >&2) || {
+        echo "remote cleanup failed; receipts preserved for $id" >&2; return 1; }
+    else
+      local_worktree_ok "$id" "$w" \
+        || { echo "local worktree receipt is outside the managed job path" >&2; return 1; }
+      if [ -e "$w" ]; then
+        git -C "$w" worktree remove --force "$w" 2> >(sanitize_stream >&2) || {
+          echo "local cleanup failed; receipts preserved for $id" >&2; return 1; }
+      fi
+    fi
+  fi
+  if [ -f "$D/$id.host" ] && [ ! -f "$D/$id.worktree" ]; then
+    host=$(cat "$D/$id.host")
+    valid_host "$host" && [ -n "$REMOTE_HOST" ] && [ "$host" = "$REMOTE_HOST" ] && [ -n "$RWT" ] \
+      || { echo "remote host receipt does not match current configured host" >&2; return 1; }
+    prompt_cleanup=$(remote_prompt_remove "$RWT" "$id")
+    ssh -o BatchMode=yes -o ConnectTimeout=5 "$host" "$prompt_cleanup" \
+      </dev/null 2> >(sanitize_stream >&2) || { echo "remote prompt cleanup failed; receipts preserved for $id" >&2; return 1; }
+  fi
+  remove_artifacts "$id"
+}
 
 case ${1:-} in
 run)
-  shift; agent=$1; shift; model=""; wd=$PWD; local_only=0; wt=1
+  shift; agent=${1:-}; shift || true
+  [[ $agent =~ ^[a-z][a-z0-9-]*$ ]] || { echo "invalid agent name" >&2; exit 1; }
+  model=""; wd=$PWD; local_only=0; wt=1; task_file=""
   while [ $# -gt 0 ]; do case $1 in
     -m) model=$2; shift 2;; -C) wd=$2; shift 2;; --local) local_only=1; shift;;
-    --no-wt) wt=0; shift;; -W) shift;; *) break;; esac; done
+    --no-wt) wt=0; shift;; --task-file) task_file=$2; shift 2;; -W) shift;;
+    *) echo "task arguments are disabled; pipe task text on stdin or use --task-file" >&2; exit 2;; esac; done
+  if [ -n "$task_file" ]; then
+    [ -f "$task_file" ] && [ ! -L "$task_file" ] || { echo "task file must be a regular non-symlink" >&2; exit 2; }
+    task=$(cat "$task_file")
+  else
+    [ ! -t 0 ] || { echo "pipe task text on stdin or use --task-file" >&2; exit 2; }
+    task=$(cat)
+  fi
+  [ -n "${task//[[:space:]]/}" ] || { echo "task must not be empty" >&2; exit 2; }
+  wd=$(cd "$wd" 2>/dev/null && pwd -P) || { safe_err "working directory does not exist: $wd"; exit 1; }
   f="$AD/$agent.md"; [ -f "$f" ] || { echo "unknown agent: $agent" >&2; exit 1; }
   [ -n "$model" ] || model=$(field model "$f")
   [ -n "$model" ] || { echo "no model for $agent — pass -m" >&2; exit 1; }
-  id="$agent-$(date +%H%M%S)-$RANDOM"
-  body "$f" > "$D/$id.sys"; printf '%s\n' "$*" > "$D/$id.task"   # task text for the HUD row (pi-bg-notify)
+  [[ $model =~ ^[A-Za-z0-9._:/-]+$ ]] || { echo "invalid model id" >&2; exit 1; }
+  reserve_job_id "$agent"
+  trap 'rm -f "$D/$id.reserve"' EXIT
+  body "$f" > "$D/$id.sys"; printf '%s\n' "$task" > "$D/$id.task"   # task text for the HUD row (pi-bg-notify)
+  printf 'Task: %s\n' "$task" > "$D/$id.prompt"
   args=(--mode json -p --no-session --model "$model")
   t=$(field tools "$f"); [ -n "$t" ] && args+=(--tools "${t// /}")
 
   rc=""
-  if [ "$local_only" = 0 ] && [ "${PI_REMOTE_SUBAGENTS:-1}" != 0 ] && [ ! -e "$HOME/.pi/agent/remote-subagents-off" ]; then
-    rc=$(mapcwd "$wd")
-    [ -n "$rc" ] || { echo "cwd not mapped to fedora: $wd (use --local, or -C a mapped repo)" >&2; exit 1; }
-    ssh -o BatchMode=yes -o ConnectTimeout=5 fedora "test -d $(q "$rc")" </dev/null || {
-      echo "fedora unreachable or missing $rc" >&2; exit 1; }
+  if [ "$local_only" = 0 ] && [ "${PI_REMOTE_SUBAGENTS:-1}" != 0 ] && [ ! -e "$AGENT_DIR/remote-subagents-off" ] \
+     && [ -n "$REMOTE_HOST" ] && [ -n "$RH" ] && [ -n "$REMOTE_MAP" ]; then
+    valid_host "$REMOTE_HOST" || { echo "invalid PI_REMOTE_SUBAGENT_HOST" >&2; exit 1; }
+    [ -n "$REMOTE_AGENT_DIR" ] || { echo "active Pi config is outside HOME and cannot map remotely; use --local" >&2; exit 1; }
+    mapcwd "$wd" || { safe_err "cwd not in PI_REMOTE_SUBAGENT_MAP: $wd (use --local, or add an approved mapping)"; exit 1; }
+    rc=$MAPPED_CWD; remote_root=$MAPPED_ROOT
+    remote_fast="$REMOTE_AGENT_DIR/extensions/fast-mode.ts"
+    guard=$(remote_guard "$remote_root" "$rc")
+    ssh -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE_HOST" \
+      "$guard && test -d \"\$cwd\" && test -f $(q "$remote_fast")" </dev/null 2> >(sanitize_stream >&2) || {
+      echo "remote host missing mapped cwd or Fast Mode extension, or canonical cwd escaped its allowed root" >&2; exit 1; }
   fi
 
   # Worktree isolation — default ON, both routes. Never fan out parallel writes
@@ -58,66 +236,138 @@ run)
   iso=0
   if [ "$wt" = 1 ]; then
     if [ -n "$rc" ]; then
-      if ssh -o BatchMode=yes fedora "git -C $(q "$rc") rev-parse --git-dir >/dev/null 2>&1 \
-           && mkdir -p $(q "$RWT") && git -C $(q "$rc") worktree add --detach -q $(q "$RWT/$id") HEAD" </dev/null
-      then rc="$RWT/$id"; iso=1
-      else echo "pi-bg: no worktree (not a git repo on fedora): $rc — running in place" >&2; fi
+      guard=$(remote_guard "$remote_root" "$rc")
+      if ssh -o BatchMode=yes "$REMOTE_HOST" "umask 077; $guard && git -C \"\$cwd\" rev-parse --git-dir >/dev/null 2>&1 \
+           && [ ! -L $(q "$RH") ] && [ ! -L $(q "$RH/.pi") ] && [ ! -L $(q "$RH/.pi/bg") ] && mkdir -p $(q "$RWT") && [ ! -L $(q "$RWT") ] && home=\$(realpath $(q "$RH")) && rwt=\$(realpath $(q "$RWT")) && [ "\$rwt" = "\$home/.pi/bg/wt" ] && git -C \"\$cwd\" worktree add --detach -q $(q "$RWT/$id") HEAD" </dev/null 2> >(sanitize_stream >&2)
+      then rc="$RWT/$id"; remote_root=$RWT; iso=1
+      else echo "pi-bg: remote worktree creation failed; refusing shared-checkout write (use --no-wt deliberately)" >&2; exit 1; fi
     elif git -C "$wd" rev-parse --git-dir >/dev/null 2>&1; then
-      mkdir -p "$D/wt"; git -C "$wd" worktree add --detach -q "$D/wt/$id" HEAD
+      mkdir -p "$D/wt"
+      [ ! -L "$D/wt" ] && [ "$(cd "$D/wt" && pwd -P)" = "$D/wt" ] \
+        || { echo "local worktree root is not a canonical managed directory" >&2; exit 1; }
+      git -C "$wd" worktree add --detach -q "$D/wt/$id" HEAD 2> >(sanitize_stream >&2)
       wd="$D/wt/$id"; iso=1
     else
-      echo "pi-bg: no worktree (not a git repo): $wd — running in place" >&2
+      echo "pi-bg: worktree creation failed; refusing shared-checkout write (use --no-wt deliberately)" >&2
+      exit 1
     fi
   fi
-  [ "$iso" = 0 ] || isonote "$D/$id.sys"
+  if [ "$iso" = 1 ]; then
+    isonote "$D/$id.sys"
+    [ -n "$rc" ] && worktree=$rc || worktree=$wd
+    printf '%s\n' "$worktree" > "$D/$id.worktree"
+  fi
 
+  supervisor=$'import os,subprocess,sys,time\nos.setsid()\nchild=subprocess.Popen(sys.argv[1:])\ncode=child.wait()\nwhile True:\n p=subprocess.Popen(["ps","-eo","pid=,pgid="],stdout=subprocess.PIPE,text=True)\n out=p.communicate()[0]\n live=any(int(pid) not in (os.getpid(),p.pid) and int(pgid)==os.getpgrp() for pid,pgid in (line.split() for line in out.splitlines()))\n if not live: break\n time.sleep(0.2)\nsys.exit(code)'
+  launcher=(python3 -c "$supervisor")
   if [ -n "$rc" ]; then
-    cmd="export PATH=\$HOME/.local/bin:\$PATH; cd $(q "$rc") && pi --no-extensions"
-    for a in "${args[@]}" --append-system-prompt "$(cat "$D/$id.sys")" "Task: $*"; do cmd="$cmd $(q "$a")"; done
-    printf '%s\n' "$agent | $model | fedora:$rc" > "$D/$id.meta"
-    nohup ssh -o BatchMode=yes fedora "$cmd" >"$D/$id.jsonl" 2>"$D/$id.err" </dev/null &
+    printf '%s\n' "$REMOTE_HOST" > "$D/$id.host"
+    remote_prompt="$RWT/prompts/$id"; remote_sys="$remote_prompt/system.md"; remote_task="$remote_prompt/task.md"
+    prompt_prepare=$(remote_prompt_prepare "$RWT" "$id")
+    if ! ssh -o BatchMode=yes "$REMOTE_HOST" "umask 077; $prompt_prepare && cat > $(q "$remote_sys")" < "$D/$id.sys" 2> >(sanitize_stream >&2); then
+      if clean_one "$id" 1; then echo "remote prompt staging failed for $id; setup rolled back" >&2
+      else echo "remote prompt staging and rollback failed for $id; run pi-bg clean --force $id" >&2; fi
+      trap - EXIT; exit 1
+    fi
+    if ! ssh -o BatchMode=yes "$REMOTE_HOST" "umask 077; $prompt_prepare && cat > $(q "$remote_task")" < "$D/$id.prompt" 2> >(sanitize_stream >&2); then
+      if clean_one "$id" 1; then echo "remote prompt staging failed for $id; setup rolled back" >&2
+      else echo "remote prompt staging and rollback failed for $id; run pi-bg clean --force $id" >&2; fi
+      trap - EXIT; exit 1
+    fi
+    guard=$(remote_guard "$remote_root" "$rc")
+    cmd="umask 077; export PI_CODING_AGENT_DIR=$(q "$REMOTE_AGENT_DIR"); export PATH=\$HOME/.local/bin:\$PATH; $guard && cd \"\$cwd\" && pi --no-extensions -e $(q "$remote_fast")"
+    for a in "${args[@]}" --append-system-prompt "$remote_sys" "@$remote_task"; do cmd="$cmd $(q "$a")"; done
+    printf '%s\n' "$agent | $model | remote:$rc" > "$D/$id.meta"
+    nohup "${launcher[@]}" ssh -o BatchMode=yes "$REMOTE_HOST" "$cmd" >"$D/$id.jsonl" 2>"$D/$id.err" </dev/null &
   else
     printf '%s\n' "$agent | $model | LOCAL:$wd" > "$D/$id.meta"
     # NOTE: cd in-place, then background a *simple* command. Wrapping this in
     # `( cd && nohup pi ) &` forks a subshell that keeps the caller's stdout
     # (a $(...) pipe) open until the job ends, so `E=$(pi-bg run ...)` blocks.
     cd "$wd"
-    # --no-extensions + fast-mode: same as ~/bin/luna. Without it every child loads
-    # hud/subagent/mcp (≈60 timed tools in its prompt, every turn) and runs on the
-    # normal tier. Measured 2026-08-28: 7.8s → 5.9s cold, far less context per turn.
-    nohup pi --no-extensions -e "$HOME/.pi/agent/extensions/fast-mode.ts" "${args[@]}" --append-system-prompt "$D/$id.sys" "Task: $*" \
+    # --no-extensions + fast-mode avoids loading the controller's full extension/tool set.
+    nohup "${launcher[@]}" pi --no-extensions -e "$AGENT_DIR/extensions/fast-mode.ts" "${args[@]}" --append-system-prompt "$D/$id.sys" "@$D/$id.prompt" \
       >"$D/$id.jsonl" 2>"$D/$id.err" </dev/null &
   fi
-  echo $! >"$D/$id.pid"
+  pid=$!; echo "$pid" >"$D/$id.pid"
+  token=""
+  for _ in {1..20}; do
+    first=$(process_token "$pid" 2>/dev/null || true); sleep 0.05
+    second=$(process_token "$pid" 2>/dev/null || true)
+    if [ -n "$first" ] && [ "$first" = "$second" ]; then token=$first; break; fi
+  done
+  if [ -z "$token" ]; then
+    if kill -0 "$pid" 2>/dev/null; then kill_tree "$pid"; remove_artifacts "$id"; echo "could not record stable worker process identity" >&2; exit 1
+    else token=exited; fi
+  fi
+  printf '%s\n' "$token" > "$D/$id.process"
+  rm -f "$D/$id.reserve"; trap - EXIT
   echo "$id"
   ;;
 ls)
   for m in "$D"/*.meta; do [ -e "$m" ] || { echo "(no jobs)"; exit 0; }
-    id=$(basename "$m" .meta); p=$(cat "$D/$id.pid" 2>/dev/null || echo 0)
-    kill -0 "$p" 2>/dev/null && s=RUNNING || s=done
-    echo "$s  $id  $(cat "$m")"
+    id=$(basename "$m" .meta)
+    if job_running "$id"; then s=RUNNING
+    elif job_busy "$id"; then s=UNKNOWN
+    else s=done; fi
+    printf '%s  %s  %s\n' "$s" "$id" "$(cat "$m")" | sanitize_stream
   done ;;
 get)
-  id=$2; p=$(cat "$D/$id.pid" 2>/dev/null || echo 0)
-  kill -0 "$p" 2>/dev/null && { echo "RUNNING"; exit 2; }
-  jq -rs '[.[]|select(.type=="message_end" and .message.role=="assistant")
+  id=${2:-}; valid_job_id "$id" || { echo "invalid job id" >&2; exit 1; }
+  job_busy "$id" && { echo "RUNNING"; exit 2; }
+  { jq -rs '[.[]|select(.type=="message_end" and .message.role=="assistant")
            |.message.content[]?|select(.type=="text")|.text]|last // "(no output)"' \
-     "$D/$id.jsonl" 2>/dev/null || tail -5 "$D/$id.err" ;;
+     "$D/$id.jsonl" 2>/dev/null || tail -5 "$D/$id.err"; } | sanitize_stream ;;
 diff)
-  # add -A -N marks untracked files intent-to-add so NEW files show up in the
-  # diff. Plain `git diff` silently omits them and the worker's work is lost.
+  valid_job_id "${2:-}" || { echo "invalid job id" >&2; exit 1; }
+  job_busy "$2" && { echo "refusing partial diff from running or identity-unknown job: $2" >&2; exit 1; }
+  # Use a temporary index so untracked files appear without mutating the real
+  # checkout index (important when --no-wt was explicitly requested).
   loc=$(sed 's/.*| //' "$D/${2}.meta")
   case $loc in
-    fedora:*) ssh -o BatchMode=yes fedora "cd $(q "${loc#fedora:}") && git add -A -N . && git diff" </dev/null ;;
-    LOCAL:*)  git -C "${loc#LOCAL:}" add -A -N . && git -C "${loc#LOCAL:}" diff ;;
-  esac ;;
-log) tail -40 "$D/${2}.err"; jq -rs '.[]|select(.type=="tool_result_end")|.message.content[0].text? // empty' "$D/${2}.jsonl" 2>/dev/null | tail -20 ;;
-kill) kill "$(cat "$D/${2}.pid")" 2>/dev/null && echo killed ;;
-clean) for w in "$D"/wt/*/; do [ -d "$w" ] || continue
-    git -C "$w" worktree remove --force "$w" 2>/dev/null || rm -rf "$w"; done
-  ssh -o BatchMode=yes -o ConnectTimeout=5 fedora \
-    'for w in ~/.pi/bg/wt/*/; do [ -d "$w" ] || continue
-       git -C "$w" worktree remove --force "$w" 2>/dev/null || rm -rf "$w"; done' </dev/null 2>/dev/null || true
-  rm -f "$D"/*.jsonl "$D"/*.err "$D"/*.sys "$D"/*.pid "$D"/*.meta "$D"/*.task; echo cleaned ;;
+    remote:*) host=$(cat "$D/${2}.host" 2>/dev/null) || { echo "missing remote host receipt" >&2; exit 1; }
+      repo=${loc#remote:}
+      valid_host "$host" && [ -n "$REMOTE_HOST" ] && [ "$host" = "$REMOTE_HOST" ] \
+        || { echo "remote host receipt does not match current configured host" >&2; exit 1; }
+      remote_root=$RWT
+      if [ -z "$RWT" ] || [ "$repo" != "$RWT/$2" ]; then
+        mapcwd "$PWD" && [ "$repo" = "$MAPPED_CWD" ] \
+          || { echo "remote diff path is outside the managed job path" >&2; exit 1; }
+        remote_root=$MAPPED_ROOT
+      fi
+      if [ "$repo" = "$RWT/$2" ]; then guard=$(remote_exact_guard "$RWT" "$repo" "$2")
+      else guard=$(remote_guard "$remote_root" "$repo"); fi
+      ssh -o BatchMode=yes "$host" "umask 077; $guard && idx=\$(mktemp) && rm -f \"\$idx\" && trap 'rm -f \"\$idx\"' EXIT && GIT_INDEX_FILE=\$idx git -C \"\$cwd\" read-tree HEAD && GIT_INDEX_FILE=\$idx git -C \"\$cwd\" add -A -N . && GIT_INDEX_FILE=\$idx git -C \"\$cwd\" diff" </dev/null 2> >(sanitize_stream >&2) | sanitize_stream ;;
+    LOCAL:*) repo=${loc#LOCAL:}; current=$(pwd -P)
+      if [ "$repo" = "$D/wt/$2" ]; then local_worktree_ok "$2" "$repo" \
+        || { echo "local diff path is outside the managed job path" >&2; exit 1; }
+      elif [ "$repo" != "$current" ]; then echo "local diff path is outside the managed job path" >&2; exit 1
+      fi
+      showdiff "$repo" 2> >(sanitize_stream >&2) | sanitize_stream ;;
+  esac
+  printf '%s\n' collected > "$D/${2}.collected" ;;
+log) valid_job_id "${2:-}" || { echo "invalid job id" >&2; exit 1; }
+  { tail -40 "$D/${2}.err"; jq -rs '.[]|select(.type=="tool_result_end")|.message.content[0].text? // empty' "$D/${2}.jsonl" 2>/dev/null | tail -20; } | sanitize_stream ;;
+kill) valid_job_id "${2:-}" || { echo "invalid job id" >&2; exit 1; }
+  job_running "$2" || { echo "job is not running or process identity changed" >&2; exit 1; }
+  kill_tree "$(cat "$D/${2}.pid")"; echo killed ;;
+clean)
+  shift; force=0; target=""
+  while [ $# -gt 0 ]; do case $1 in
+    --force) force=1;; *) [ -z "$target" ] || { echo "usage: pi-bg clean [--force] [id]" >&2; exit 1; }; target=$1;;
+  esac; shift; done
+  status=0
+  if [ -n "$target" ]; then
+    clean_one "$target" "$force" || status=1
+  else
+    found=0
+    for taskfile in "$D"/*.task; do [ -f "$taskfile" ] || continue
+      found=1; id=$(basename "$taskfile" .task)
+      clean_one "$id" "$force" || status=1
+    done
+    [ "$found" = 1 ] || echo "(no jobs)"
+  fi
+  [ "$status" = 0 ] && echo cleaned || echo "cleanup incomplete; skipped jobs retain their receipts" >&2
+  exit "$status" ;;
 *) sed -n '2,10p' "$0" ;;
 esac
