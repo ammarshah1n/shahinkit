@@ -61,6 +61,28 @@ To merge resources into `~/.pi/agent`, back it up, review `diff -ru` first, and
 copy only explicitly approved files. Restart Pi or run `/reload` after an
 approved extension change.
 
+### Add only the Abliteration.ai provider
+
+Nothing here is installed for you, so a copy of this repository alone leaves
+`/login` with no Abliteration.ai entry. Pi discovers providers from extensions
+in its own config directory, so the file has to be placed there:
+
+```sh
+cp Pi/extensions/abliteration.ts ~/.pi/agent/extensions/abliteration.ts
+```
+
+Extensions load once at startup. Restart Pi, or run `/reload` in a running
+session. `Abliteration.ai` then appears in `/login` as an API-key provider;
+select it and paste the key, which Pi stores as a credential. Setting
+`ABLITERATION_API_KEY` in the environment before launch works instead of
+`/login`, and the extension's static model metadata keeps the provider listed
+even when neither is present yet. Models are `abliteration-ai/abliterated-model`
+and `abliteration-ai/abliterated-model-large`.
+
+Optional: add `"abliteration-ai/*"` to `enabledModels` in `settings.json` to put
+these models in the Ctrl+P cycle. That setting only affects cycling, not
+availability.
+
 The user-level `luna` and `pi-bg` helpers target POSIX hosts and require Bash,
 Python 3, and the `pi` executable; `pi-bg` also uses Git and `jq`, with OpenSSH
 required only for configured remote execution.
