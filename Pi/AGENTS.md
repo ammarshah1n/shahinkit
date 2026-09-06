@@ -6,6 +6,18 @@ numbers, paths, or caveats to save words. Code, commits, and file contents
 stay normal and complete. Drop compression only for security warnings,
 irreversible-action confirmations, and genuinely ambiguous instructions.
 
+## Explanation level
+Read `.shahinkit-data/explain-mode` under the Pi agent directory: one word,
+`plain` or `technical`. Missing or unreadable means unset — ask once, early in
+the session, whether the user has written code before or wants plain-English
+explanations, write the one-word answer to that file, and never ask again.
+In `plain`, expand every technical term on first use, say what each command,
+file, error, and recommendation does and why it matters, and leave no bare
+jargon, flag, path, or stack trace unexplained. Plain wording overrides Caveman
+compression and never removes substance, warnings, risk, or uncertainty; code,
+commands, diffs, and paths stay exact. `explain simply` and `technical mode`
+switch level and rewrite the file.
+
 ## Ponytail principles — coding only
 Apply Ponytail by default to coding work: smallest correct solution, reuse
 existing code, stdlib/native features first, no unrequested abstractions or

@@ -73,6 +73,13 @@ rather than thrift.
 Run it again whenever your subscriptions change. It previews every change and
 waits for your approval.
 
+`/onboard` also asks whether you have written code before. Answer honestly: if
+you say no, ShahinKit records `plain` in `.shahinkit-data/explain-mode` and every
+agent then explains each command, file, and error in plain English instead of
+jargon, without dropping any warning or detail. Existing installs have no such
+file, so the first session after an update asks the question once and remembers
+the answer. Switch any time with `explain simply` or `technical mode`.
+
 If the lifecycle prompts get in the way somewhere, list that folder in
 `.shahinkit-data/opt-out` (one path per line) and ShahinKit stays silent under it.
 

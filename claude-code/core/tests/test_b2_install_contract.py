@@ -22,6 +22,7 @@ class B2InstallContractTests(unittest.TestCase):
             "claude-code/core/shared/context/core-policy.block.md": "CORE-POLICY",
             "claude-code/core/shared/context/ponytail-default.block.md": "PONYTAIL",
             "claude-code/core/shared/context/caveman-default.block.md": "CAVEMAN",
+            "claude-code/core/shared/context/explain-mode.block.md": "EXPLAIN-MODE",
             "claude-code/core/shared/context/adapter-references.block.md": "ADAPTER-REFERENCES",
         }
         forbidden = re.compile(r"/(?:Users|home)/|\bsk-[A-Za-z0-9]|\bbmc_[A-Za-z0-9]", re.I)
@@ -42,6 +43,11 @@ class B2InstallContractTests(unittest.TestCase):
         caveman = self.read("claude-code/core/shared/context/caveman-default.block.md")
         self.assertIn("full", caveman)
         self.assertIn("Auto-Clarity", caveman)
+        explain = self.read("claude-code/core/shared/context/explain-mode.block.md")
+        self.assertIn("explain-mode", explain)
+        self.assertIn("plain", explain)
+        self.assertIn("technical", explain)
+        self.assertIn("ask once", explain)
 
     def test_basic_memory_templates_are_pinned_local_and_parseable(self):
         policy = self.load_json("claude-code/core/shared/mcp/basic-memory/local-config.example.json")

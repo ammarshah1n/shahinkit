@@ -92,6 +92,7 @@
       "core-policy.block.md",
       "ponytail-default.block.md",
       "caveman-default.block.md",
+      "explain-mode.block.md",
       "delegation-budget.block.md",
       "adapter-references.block.md"
     ]
@@ -297,6 +298,11 @@
       "source": "claude-code/core/shared/context/caveman-default.block.md",
       "destination": "CLAUDE.md",
       "marker": "CAVEMAN"
+    },
+    {
+      "source": "claude-code/core/shared/context/explain-mode.block.md",
+      "destination": "CLAUDE.md",
+      "marker": "EXPLAIN-MODE"
     },
     {
       "source": "claude-code/core/shared/context/delegation-budget.block.md",

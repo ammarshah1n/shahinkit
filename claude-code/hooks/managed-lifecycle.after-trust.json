@@ -7,8 +7,8 @@
     "fresh_session_required": false
   },
   "hooks": {
-    "SessionStart": "Prime guidance only",
-    "UserPromptSubmit": "Caveman restatement only; reads event cwd for opt-out matching, never the prompt text",
+    "SessionStart": "Prime guidance, plus a one-time instruction to ask the user their explanation level while `.shahinkit-data/explain-mode` is unset",
+    "UserPromptSubmit": "Caveman and plain-English restatement only; reads event cwd for opt-out matching, never the prompt text",
     "SubagentStart": "bounded-worker guidance only",
     "filesystem_writes": false,
     "telemetry": false,
@@ -31,9 +31,16 @@
       "hook_rationale": "Static instruction context decays over a long session. The restatement is advisory additionalContext only."
     }
   },
+  "explain_mode": {
+    "file": ".shahinkit-data/explain-mode",
+    "values": ["plain", "technical"],
+    "effect": "`plain` adds a per-turn instruction to explain commands, files, and errors in plain English without dropping substance or warnings. Missing or unrecognised means unset, so SessionStart asks the user once.",
+    "written_by": "the agent after the user answers, or the user by hand",
+    "user_editable": true
+  },
   "path_opt_out": {
-    "file": ".shahinkit-data/hook-config.json",
-    "key": "opt_out_paths",
+    "file": ".shahinkit-data/opt-out",
+    "format": "one absolute path prefix per line, `#` comments ignored",
     "effect": "Suppresses all ShahinKit lifecycle context when the event cwd is at or under a listed path.",
     "user_editable": true
   },

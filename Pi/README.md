@@ -14,9 +14,10 @@ Last audited against the live setup: **2026-09-03**.
 - `extensions/fable-mode.ts` — injects `FABLE-MODE.md` for controller-tier sessions.
 - `extensions/pi-bg-notify.ts` plus `bin/pi-bg` — detached worktree-isolated write jobs with completion follow-ups.
 - `extensions/hud.ts` — model/project state, context and subscription gauges, tool tally, elapsed time, and running-subagent rows; `/hud` toggles it.
+- `extensions/image-guard.ts` — repairs or drops malformed image attachments before the request is sent, so one bad paste cannot wedge a session with `codec error: the image data you provided does not represent a valid image` on every turn.
 - `extensions/fast-mode.ts`, `abliteration.ts`, and `double-escape-clear.ts` — optional provider speed mode, environment-keyed provider, and double-Escape clearing.
 - `themes/` — `claude-mix`, `dark-hi`, `ember`, and `lagoon`.
-- `tests/` — portable HUD, terminal-sanitization, `pi-bg`, remote-map, and project-trust checks.
+- `tests/` — portable HUD, terminal-sanitization, image-guard, `pi-bg`, remote-map, and project-trust checks.
 - `bin/luna` — one-shot Luna scout wrapper with private prompt-file handling.
 - `packages.example.json` — pinned examples of four separately installed, compatible Pi packages; nothing is installed automatically.
 - `prompts/` — `/implement`, `/implement-and-review`, and `/scout-and-plan`.

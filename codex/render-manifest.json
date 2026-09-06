@@ -39,6 +39,11 @@
       "marker": "CAVEMAN"
     },
     {
+      "source": "claude-code/core/shared/context/explain-mode.block.md",
+      "destination": "AGENTS.md",
+      "marker": "EXPLAIN-MODE"
+    },
+    {
       "source": "claude-code/core/shared/context/delegation-budget.block.md",
       "destination": "AGENTS.md",
       "marker": "DELEGATION-BUDGET"

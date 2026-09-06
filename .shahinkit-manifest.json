@@ -28,15 +28,15 @@
     {
       "path": "README.md",
       "category": "documentation",
-      "source_sha256": "76b5dc932c39838fc25276692e21c6b5b27e08caa3c6e921ab6e1a19113c2c34",
-      "render_sha256": "76b5dc932c39838fc25276692e21c6b5b27e08caa3c6e921ab6e1a19113c2c34",
+      "source_sha256": "ff3a82507568c90e89aae808d2abcb170ee4a97a35e9605f0a0cab81e16ac585",
+      "render_sha256": "ff3a82507568c90e89aae808d2abcb170ee4a97a35e9605f0a0cab81e16ac585",
       "ownership": "shared"
     },
     {
       "path": "SKILLS.html",
       "category": "documentation",
-      "source_sha256": "b933e69e69a66e8fb2b1cff492dd4fdfd9337e4547ccde9aaf03768771497c63",
-      "render_sha256": "b933e69e69a66e8fb2b1cff492dd4fdfd9337e4547ccde9aaf03768771497c63",
+      "source_sha256": "b9335d318090ba9c577cf0c136036245612ec750e5b1873115d4eadcb9355d3c",
+      "render_sha256": "b9335d318090ba9c577cf0c136036245612ec750e5b1873115d4eadcb9355d3c",
       "ownership": "shared"
     },
     {
@@ -91,8 +91,8 @@
     {
       "path": "claude-code/core/hooks/shahinkit_hook.py",
       "category": "hook",
-      "source_sha256": "2f5e29b57fb67c6a895d59071078ad9e94c26d0ed1687b5bb791485118c96b09",
-      "render_sha256": "2f5e29b57fb67c6a895d59071078ad9e94c26d0ed1687b5bb791485118c96b09",
+      "source_sha256": "16d6584fe286c1cdfe07a795c0a684919e0c2b82119567f788a76685c9121a5b",
+      "render_sha256": "16d6584fe286c1cdfe07a795c0a684919e0c2b82119567f788a76685c9121a5b",
       "ownership": "shared"
     },
     {
@@ -205,6 +205,13 @@
       "category": "context-block",
       "source_sha256": "a4b386cd86e7135630a3180525947f4d4eaf9ba3bc3705b8df14350c580d6861",
       "render_sha256": "a4b386cd86e7135630a3180525947f4d4eaf9ba3bc3705b8df14350c580d6861",
+      "ownership": "shared"
+    },
+    {
+      "path": "claude-code/core/shared/context/explain-mode.block.md",
+      "category": "context-block",
+      "source_sha256": "6213fe659cf1ab9986f63a268069ff73a33e87bd945a7366c3272028297c97a2",
+      "render_sha256": "6213fe659cf1ab9986f63a268069ff73a33e87bd945a7366c3272028297c97a2",
       "ownership": "shared"
     },
     {
@@ -483,8 +490,8 @@
     {
       "path": "claude-code/core/shared/skills/onboard/SKILL.md",
       "category": "skill",
-      "source_sha256": "04bb8cb08f35a991f7e46116a42bfc015b433e638e6cbf455c7f8b7bccc7c0b5",
-      "render_sha256": "04bb8cb08f35a991f7e46116a42bfc015b433e638e6cbf455c7f8b7bccc7c0b5",
+      "source_sha256": "1afc8013e49432621f932edb92c037cbfed5d1b8f339f21f427c2292531a5929",
+      "render_sha256": "1afc8013e49432621f932edb92c037cbfed5d1b8f339f21f427c2292531a5929",
       "ownership": "shared"
     },
     {
@@ -1155,7 +1162,7 @@
   ],
   "adapter_inputs": {
     "claude-code": {
-      "CLAUDE.md": "c2a5b40fe7c037096b485297cf649c5679a20e78bbbd8e792d9dda9fc52d7c7a",
+      "CLAUDE.md": "3d089a29c77dd6e33b6ffd47b15ef22d740ef84a87d96e2d18b8d6d2e2a6d3b9",
       "README.md": "20d8f0fdd901894aa8e061bf554b9f6e83d18c3a6473fee17b60e8b8253e6711",
       "agents/controller.md": "1f83f3aa0c527d3c8429eeb831b0c6d363fce0da6430d711635c37dde7347dc9",
       "agents/implementation.md": "6435ba87e01e0bf8657d89b3165a1769d52c007b6cd73b47ec7024ef96335d57",
@@ -1172,15 +1179,15 @@
       "course-rag/scripts/search.py": "851ea2280e47d3eb76c76baed40e6062aefcaf0a1abe515afb5c6f76aa7650db",
       "hooks/fable-mode.sh": "0d1d6de97f7cbbc2a09204b5044d521696596967321334d0cd585a9c50d38de1",
       "hooks/generic.disabled.example.json": "1a92c9db1decd9aff78faf2dd2bc08ff549b4fa788347ed4357c6d30aedfdbe1",
-      "hooks/managed-lifecycle.after-trust.json": "1c311b526293771dbe31282088fe3bfe9425d2f2b8071f3ff61f57ef7920ab65",
+      "hooks/managed-lifecycle.after-trust.json": "2d44e7e84a894d16432243b75ef5ffe44fa2d75f81769c84b7fd3444a45beddd",
       "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "55fd77f14f98e5f2a0a26eaa14f79db18d1fc15238518f1d789891b2a9c3c7f3",
-      "render-manifest.json": "cbf5dfd6abd8800853fc54a592e5a5db8d24906a8e5ec78338beae332ed0be30",
+      "render-manifest.json": "eedf36e62fa38af2c582330bb6f63140fecc342522177f771f9d825cae38e03a",
       "skills/course-rag/SKILL.md": "338bfac7022dc6f1deb411d480f8a6058e18c9923c9d5f585de3bd638595ce49"
     },
     "codex": {
-      "AGENTS.md": "bcbaae18bef234a660e347a73dd1bbb067810180ce98dc0fdb59050183e9c1f7",
+      "AGENTS.md": "cb2713d8b8bfd53315384723ce273944be9c4a9799cc73f47cec0350e9809295",
       "README.md": "ff8b91c87b41ae34778bdd03e3b4980648fb10fdecb2b8db05bf4ebff3ae2430",
       "config/agents/controller.toml": "0bab7759283e704ea43a9b106e3c2282d0ab031ff8a4d0d6d4d73dd703603eff",
       "config/agents/implementation.toml": "0e4bc262c865540027fe2b0131e86e954e862de3778d21230789e6cf60a6f0e8",
@@ -1199,7 +1206,7 @@
       "hooks/project.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "hooks/user.hooks.example.json": "0d3f56d37069a287fabf365e8966d76f7bf253e8f7bbfaa7deb7adaf4ab1ef62",
       "memory/README.md": "249398b5b4657283632b878814746fc001c59c379f308055bf37e149f24690e4",
-      "render-manifest.json": "1a0e0fc28cb25553932ceccf139acec1389e623ef798a379c253fead378039c1"
+      "render-manifest.json": "2d4975ea7bc8b5da9a1096baf0e227dfd10631b2a05d3eaf6e2f8f498f3cd154"
     },
     "opencode": {
       ".opencode/agents/controller.md": "2e6af7d36bbb6d41246a64ce223642f6cd1d3bdbc7e38658deb9722bd9716b94",
@@ -1215,12 +1222,12 @@
       ".opencode/commands/wrap-up.md": "b3568af61180ace34c410332e68e0cf8d43503d80d688485207393b133433505",
       ".opencode/plugins/portable-gates.features.mjs": "53180aa1f759ee87110b9d99465d805709ba31fa1a080391e242065a898e2965",
       ".opencode/plugins/portable-gates.mjs": "4c4531078345404a21fcc2a7bc71fd994f7cbb75aee52c774bbec5d060edd2e3",
-      ".opencode/plugins/shahinkit-guard.mjs": "f1608f9e247e6bbb605cb6cc4f21ce1e8be132e0540d545d60352fcdf9324990",
-      "AGENTS.md": "9b2548540c18acff690dd70fa3a4fc0d29f505e439f230bda3ccdf39ffaa739f",
+      ".opencode/plugins/shahinkit-guard.mjs": "67e09f60e7af6e50eedc4fb3058191d9b7e96cfa6e6fd24653ef6e31b9bd2f8e",
+      "AGENTS.md": "961a19636715e603496f8738b6aa82c0e8bd68132fe02fe9ff9183846ddc0153",
       "README.md": "d75b5d94dc1571f8136ce659fede3924a266204cb4482ed489e8b1fd571b628b",
       "opencode.jsonc.example": "d61382f71e9b023b6fb1950d7bb7bbc7921c096df50d35f12024c6f72591a57f",
       "opencode.user.jsonc.example": "223e2b04194b95a444ace2e5d3be977605f420d533ce9d00945ba719b7b284d2",
-      "render-manifest.json": "c5db4cf25df4caba2600add784249c28036723ba47f495788af39ce017eb9e43",
+      "render-manifest.json": "1440e2804db8c18775abdd86444efab8b6f5f1c05d3b6e552990b1c1b7d83032",
       "scripts/reflect.mjs": "d45d73d128a1b8a0233301553f37d9fc4fd884e05842e0e20778c92a935d441a"
     }
   }

@@ -8,6 +8,13 @@
 //   3. Notifications (macOS best-effort, silently skipped elsewhere): primary
 //      session going idle and permission asks surface instead of silent stalls.
 
+// `require` does not exist in an ES module, so these must be static imports:
+// resolving them lazily made every read below throw ReferenceError into the
+// fail-open catch, silently disabling the path opt-out.
+import { existsSync, readFileSync } from "node:fs"
+import { resolve, dirname, join, sep } from "node:path"
+import { fileURLToPath } from "node:url"
+
 const BASH_DEFAULT_TIMEOUT_MS = 600_000
 const BASH_MAX_TIMEOUT_MS = 1_800_000
 const RECOMMEND_AT_PERCENT = 60
@@ -18,14 +25,43 @@ const contextLimits = new Map()
 const advised = new Set()
 const idleNotifiedAt = new Map()
 const primed = new Set()
+const asked = new Set()
+
+const PLAIN_INSTRUCTION =
+  "[PLAIN-ENGLISH MODE ACTIVE] Expand every technical term on first use, say what each command, file, error, and recommendation does and why it matters, and leave no bare jargon unexplained. Plain wording overrides Caveman compression and never removes substance, warnings, or uncertainty; code, commands, and paths stay exact."
+
+const EXPLAIN_ASK =
+  "[EXPLANATION LEVEL UNSET] Ask the user once this session whether they have written code before or want plain-English explanations, then record `plain` or `technical` in the `explain-mode` file inside this install's `.shahinkit-data` directory. Ask once; never ask again once it exists."
+
+// Explanation level, parity with the Python lifecycle hook: read per turn
+// because the user can switch mid-session, and because static instruction
+// context decays. `plain`/`technical` is a recorded answer, `null` is an
+// install that has not answered yet, and `undefined` is no install data
+// directory at all, which stays silent.
+function explainMode() {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url))
+    for (const base of [dirname(here), dirname(dirname(here)), here]) {
+      const directory = join(base, ".shahinkit-data")
+      if (!existsSync(directory)) continue
+      let raw
+      try {
+        raw = readFileSync(join(directory, "explain-mode"), "utf8")
+      } catch {
+        return null
+      }
+      const value = raw.trim().toLowerCase()
+      return value === "plain" || value === "technical" ? value : null
+    }
+  } catch {}
+  return undefined
+}
 
 // Path opt-out, parity with the Python lifecycle hook: when the working
 // directory sits at or under a listed prefix, ShahinKit stays silent here.
 function optedOut() {
   try {
-    const { readFileSync } = require("node:fs")
-    const { resolve, dirname, join, sep } = require("node:path")
-    const here = dirname(new URL(import.meta.url).pathname)
+    const here = dirname(fileURLToPath(import.meta.url))
     for (const base of [dirname(here), dirname(dirname(here)), here]) {
       let raw
       try {
@@ -99,6 +135,12 @@ export const ShahinkitGuard = async ({ client }) => {
           "[PRIME — OPTIONAL] Prime is available; inspect visible PROJECT_STATE/NEXT/HANDOFF for meaningful work. Continue current session; never require a fresh session.",
         )
       }
+      const level = explainMode()
+      if (level === "plain") output.system.push(PLAIN_INSTRUCTION)
+      else if (level === null && sid && !asked.has(sid)) {
+        asked.add(sid)
+        output.system.push(EXPLAIN_ASK)
+      }
       const percent = contextUse.get(sid) ?? 0
       if (!sid || percent < RECOMMEND_AT_PERCENT || advised.has(sid)) return
       advised.add(sid)
@@ -118,6 +160,7 @@ export const ShahinkitGuard = async ({ client }) => {
         const sid = String(event?.properties?.sessionID ?? "")
         contextUse.delete(sid)
         advised.delete(sid)
+        asked.delete(sid)
         idleNotifiedAt.delete(sid)
         primed.delete(sid)
         return

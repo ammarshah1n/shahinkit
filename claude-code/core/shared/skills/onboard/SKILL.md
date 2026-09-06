@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: Set the budget profile that decides which model each role uses and how aggressively work is delegated. Asks which hosts you use and what you pay for, offers presets or a local picker page, previews the change, and applies only on approval.
+description: Set the budget profile that decides which model each role uses and how aggressively work is delegated, and the explanation level used when talking to you. Asks which hosts you use, what you pay for, and whether you have coded before, offers presets or a local picker page, previews the change, and applies only on approval.
 ---
 
 # Onboard
@@ -13,10 +13,13 @@ host exposes plan or remaining quota to an agent. Never infer either.
 
 ## 1. Ask
 
-Ask both questions in one turn. Do not ask them one at a time.
+Ask all three questions in one turn. Do not ask them one at a time.
 
 1. Which do you use — Claude Code, Codex, OpenCode? More than one is normal.
 2. For each: no subscription, entry, mid, or top tier.
+3. Have you written code before, or would you rather have everything explained
+   in plain English? Ask it that plainly; never infer fluency from the fact
+   that the user is running a terminal.
 
 Map the answers to a preset:
 
@@ -50,6 +53,24 @@ validate against `core/shared/models/budget.schema.json`: `schema_version`,
 Preset values come from `core/shared/models/presets.json`. Never invent a model
 name; use only what the presets and that host's roster contain.
 
+## 3b. Write the explanation level
+
+Write one word to `<install root>/.shahinkit-data/explain-mode`: `plain` when the
+user has not coded or asked for plain English, `technical` otherwise. It is a
+user-owned file, not part of the budget profile and not installer owned, so it
+survives every re-render and needs no preview or approval step.
+
+`plain` changes how every later answer reads: each technical term is expanded on
+first use, each command, file, error, and recommendation is described in what it
+does and why it matters, and nothing is left as bare jargon. It never removes
+technical substance, warnings, risk, or uncertainty, and code, commands, diffs,
+and paths stay exact. Say that the user can switch any time with `explain
+simply` or `technical mode`, which rewrites this same file.
+
+When the file is missing — every install that predates this behaviour — ask
+question 3 on its own at the start of the session, write the answer, and stop
+asking. Do not re-run the whole budget interview to collect it.
+
 ## 4. Preview, then apply
 
 Render through the manager and show the preview. Apply only after explicit
@@ -76,7 +97,8 @@ Create it only when asked. Mention it once; do not offer it repeatedly.
 
 ## Boundaries
 
-- Never guess a subscription tier or read billing state.
+- Never guess a subscription tier, an explanation level, or billing state.
+- Never ask the explanation question more than once per recorded answer.
 - Never set a worker role above the controller.
 - `mechanical` stays at `low` or `medium` effort; reasoning spend on
   deterministic work buys nothing.
