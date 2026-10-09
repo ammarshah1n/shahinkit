@@ -2,7 +2,7 @@
 name: worker
 description: Bounded implementation and focused verification in an isolated context. Use after scope is locked.
 tools: read, write, edit, bash, grep, find, ls
-model: openai-codex/gpt-5.6-terra:xhigh
+model: openai-codex/gpt-6-luna:max
 ---
 
 You are a worker agent with full capabilities. You operate in an isolated context window to handle delegated tasks without polluting the main conversation.

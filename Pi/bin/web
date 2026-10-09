@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""web — lightweight search and page fetch. Python standard library only.
+
+  web search "<query>" [n]    Brave Search API (default; check provider pricing)
+  web research "<query>" [n]  Exa for conceptual/landscape/similar-page research,
+                               or after two failed search rewordings
+  web get <url> [chars]        Fetch readable plain text (free; check provider pricing)
+
+Search falls back to Exa with a stderr note when Brave has no key or errors.
+Keys: $BRAVE_API_KEY / ~/.config/brave/key / macOS keychain brave-api-key;
+      $EXA_API_KEY / ~/.config/exa/key / macOS keychain exa-api-key.
+WEB_PROXY is an optional proxy URL, retried only when a direct request is blocked.
+Exit codes: 0 success; 1 error; 3 blocked; 4 no results.
+"""
+import html
+import json
+import os
+import re
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+UA = "Mozilla/5.0 (compatible; web/1.0)"
+BLOCK_MARKS = ("access denied", "blocked by", "network filter")
+
+
+class Fail(Exception):
+    def __init__(self, message, code=1):
+        super().__init__(message)
+        self.code = code
+
+
+def key(name, filename, service):
+    if os.environ.get(name, "").strip():
+        return os.environ[name].strip()
+    try:
+        with open(os.path.expanduser(filename), encoding="utf-8") as f:
+            value = f.read().strip()
+            if value:
+                return value
+    except OSError:
+        pass
+    if sys.platform == "darwin":
+        try:
+            p = subprocess.run(["security", "find-generic-password", "-s", service, "-w"],
+                               capture_output=True, text=True, check=False)
+            if p.returncode == 0 and p.stdout.strip():
+                return p.stdout.strip()
+        except OSError:
+            pass
+    raise Fail(f"missing {service} API key ({name}, {filename}" +
+               (f", macOS keychain {service}" if sys.platform == "darwin" else "") + ")")
+
+
+def request(url, data=None, headers=None, timeout=35, what="request"):
+    headers = {"User-Agent": UA, **(headers or {})}
+    req = urllib.request.Request(url, data=data, headers=headers)
+
+    def send(proxy=None):
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({"http": proxy, "https": proxy}) if proxy else
+            urllib.request.ProxyHandler({})
+        )
+        try:
+            with opener.open(req, timeout=timeout) as response:
+                return response.read().decode("utf-8", "replace"), response.status
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", "replace")
+            if e.code in (403, 451) and any(mark in body.lower() for mark in BLOCK_MARKS):
+                raise Fail(f"{what} blocked (HTTP {e.code})", 3)
+            return body, e.code
+
+    try:
+        return send()
+    except Fail as e:
+        if e.code != 3:
+            raise
+        direct_error = e
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        direct_error = e
+    proxy = os.environ.get("WEB_PROXY", "").strip()
+    if proxy:
+        try:
+            return send(proxy)
+        except (Fail, urllib.error.URLError, TimeoutError, OSError) as retry:
+            raise Fail(f"{what} blocked; WEB_PROXY retry failed: {retry}", 3)
+    raise Fail(f"{what} blocked or unreachable: {direct_error}", 3)
+
+
+def plain(value):
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", value or "")).split())
+
+
+def text(page):
+    page = re.sub(r"(?is)<(script|style|nav|footer|svg|noscript|form)[^>]*>.*?</\1>", " ", page)
+    page = re.sub(r"(?is)<br\s*/?>|</p>|</div>|</li>|</h[1-6]>", "\n", page)
+    page = re.sub(r"(?s)<[^>]+>", " ", page)
+    page = html.unescape(page)
+    page = re.sub(r"[ \t\u00a0]+", " ", page)
+    return re.sub(r"\n\s*\n\s*\n+", "\n\n", page).strip()
+
+
+def brave(query, count):
+    token = key("BRAVE_API_KEY", "~/.config/brave/key", "brave-api-key")
+    url = "https://api.search.brave.com/res/v1/web/search?" + urllib.parse.urlencode(
+        {"q": query, "count": max(1, min(count, 20))})
+    body, status = request(url, headers={"Accept": "application/json", "X-Subscription-Token": token},
+                           what="Brave Search")
+    if status != 200:
+        raise Fail(f"Brave HTTP {status}: {body[:200]}")
+    results = (json.loads(body).get("web") or {}).get("results", [])
+    if not results:
+        raise Fail(f"no results for {query!r}", 4)
+    for item in results:
+        print(f"- {plain(item.get('title')) or '(untitled)'}\n  {item.get('url', '')}")
+        snippet = plain(item.get("description"))
+        if snippet:
+            print(f"  > {snippet[:400]}")
+    return 0
+
+
+def research(query, count):
+    token = key("EXA_API_KEY", "~/.config/exa/key", "exa-api-key")
+    payload = json.dumps({"query": query, "numResults": max(1, min(count, 25)), "type": "auto",
+                          "contents": {"highlights": {"numSentences": 3}}}).encode()
+    body, status = request("https://api.exa.ai/search", data=payload,
+                           headers={"Content-Type": "application/json", "x-api-key": token},
+                           what="Exa Search")
+    if status == 401:
+        raise Fail("Exa rejected the API key (401)")
+    if status == 429:
+        raise Fail("Exa rate limit/quota exhausted (429)", 4)
+    if status != 200:
+        raise Fail(f"Exa HTTP {status}: {body[:200]}")
+    results = json.loads(body).get("results", [])
+    if not results:
+        raise Fail(f"no results for {query!r}", 4)
+    for item in results:
+        print(f"- {(item.get('title') or '(untitled)').strip()}\n  {item.get('url', '')}")
+        for highlight in (item.get("highlights") or [])[:1]:
+            print(f"  > {' '.join(highlight.split())[:400]}")
+    return 0
+
+
+def search(query, count):
+    try:
+        return brave(query, count)
+    except Fail as e:
+        if e.code in (3, 4):
+            raise
+        print(f"web: Brave unavailable ({e}); falling back to Exa", file=sys.stderr)
+    return research(query, count)
+
+
+def get(url, limit):
+    body, status = request(url, headers={"Accept-Language": "en"}, what="page fetch")
+    if status >= 400:
+        raise Fail(f"HTTP {status} fetching {url}")
+    readable = text(body)
+    if not readable:
+        raise Fail(f"{url} returned no readable text (possibly a JavaScript-rendered page)", 4)
+    print(readable[:limit])
+    if len(readable) > limit:
+        print(f"\n[truncated: {len(readable) - limit} more chars of {len(readable)}]")
+    return 0
+
+
+def main(args):
+    if args in (["--help"], ["-h"]):
+        print(__doc__)
+        return 0
+    if len(args) in (2, 3) and args[0] in ("search", "research"):
+        try:
+            count = int(args[2]) if len(args) == 3 else 8
+        except ValueError:
+            raise Fail("result count must be an integer")
+        return (search if args[0] == "search" else research)(args[1], count)
+    if len(args) in (2, 3) and args[0] == "get":
+        try:
+            limit = int(args[2]) if len(args) == 3 else 20000
+        except ValueError:
+            raise Fail("character limit must be an integer")
+        if limit < 0:
+            raise Fail("character limit must not be negative")
+        return get(args[1], limit)
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Fail as error:
+        print(f"web: {error}", file=sys.stderr)
+        sys.exit(error.code)
+    except Exception as error:
+        print(f"web: {type(error).__name__}: {error}", file=sys.stderr)
+        sys.exit(1)

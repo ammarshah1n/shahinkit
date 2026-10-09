@@ -21,7 +21,9 @@ function doctrinePath(cwd: string, projectTrusted: boolean): string {
 
 export default function (pi: ExtensionAPI) {
 	pi.on("before_agent_start", async (event, ctx) => {
-		if (!/fable|sol|opus/i.test(ctx.model?.id ?? "")) return;
+		// Astra is included: a controller-tier model that otherwise reads and edits
+		// everything inline instead of fanning out.
+		if (!/fable|sol|opus|astra/i.test(ctx.model?.id ?? "")) return;
 		try {
 			const doctrine = readFileSync(doctrinePath(ctx.cwd, ctx.isProjectTrusted()), "utf8");
 			return { systemPrompt: `${event.systemPrompt}\n\n${doctrine}` };

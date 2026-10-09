@@ -1,12 +1,13 @@
 // Verify the HUD quota parsers against representative provider headers.
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const TEST_AGENT_DIR = mkdtempSync(join(tmpdir(), "shahinkit-hud-"));
 process.env.PI_CODING_AGENT_DIR = TEST_AGENT_DIR;
+process.env.QUOTA_LOG = join(TEST_AGENT_DIR, "quota-history.jsonl");
 writeFileSync(join(TEST_AGENT_DIR, "hud-weather.txt"), "☀️ +20°C\n");
 
 const PI_ROOT = process.env.PI_PACKAGE_ROOT || join(
@@ -70,7 +71,10 @@ const ctx = {
 };
 
 const handlers = {};
-mod({ on: (e, fn) => { handlers[e] = fn; }, registerCommand: () => {} });
+const commands = {};
+let notice = "";
+ctx.ui.notify = (text) => { notice = text; };
+mod({ on: (e, fn) => { handlers[e] = fn; }, registerCommand: (name, def) => { commands[name] = def; } });
 await handlers.session_start({}, ctx);
 const footer = factory(tui, theme, footerData);
 const line2 = () => footer.render(120)[1].trim().replace(/\s+/g, " ");
@@ -97,10 +101,20 @@ check("no claim hint → picks the hardest-binding window (91%/7d)", /Usage .*91
 
 handlers.after_provider_response({ headers: { "x-codex-plan-type": "pro", "x-codex-primary-window-minutes": "abc", "x-codex-primary-used-percent": "xyz" } });
 const g = line2();
-check("garbage headers → stale quota cleared, no NaN", !/Usage|NaN|undefined/.test(g), g);
+check("garbage headers → retain last valid quota, no NaN", /Usage .*91%\/7d/.test(g) && !/NaN|undefined/.test(g), g);
 handlers.after_provider_response({ headers: ANTHROPIC });
+const beforeMissing = line2();
 handlers.after_provider_response({ headers: undefined });
-check("missing headers object → stale quota cleared", !line2().includes("Usage"), line2());
+check("missing headers object → retain last valid quota", line2().includes("Usage") && line2() === beforeMissing, line2());
+
+const quotaRecords = () => readFileSync(process.env.QUOTA_LOG, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse);
+const countBeforeDuplicate = quotaRecords().length;
+// Re-register as a fresh extension load to verify persisted dedupe across reload.
+mod({ on: (e, fn) => { handlers[e] = fn; }, registerCommand: (name, def) => { commands[name] = def; } });
+handlers.after_provider_response({ headers: ANTHROPIC });
+check("unchanged provider/window/percent/reset is not logged twice, even after reload", quotaRecords().length === countBeforeDuplicate, `${quotaRecords().length} records`);
+await commands.quota.handler("", ctx);
+check("/quota shows history without an external helper", /anthropic 5h: 3%/.test(notice) && /codex 1w: 8%/.test(notice), notice);
 
 footer.dispose();
 console.log(fail ? `\nRESULT: ${fail} FAILED` : "\nRESULT: ALL PASS");

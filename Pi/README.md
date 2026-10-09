@@ -4,7 +4,7 @@ This is the portable Pi-only slice of ShahinKit. It mirrors the reusable parts
 of the active setup, not the full ShahinKit skill set and not a raw copy of
 `~/.pi/agent`.
 
-Last audited against the live setup: **2026-09-03**.
+Last audited against the live setup: **2026-10-09** (see `AUDIT-2026-10-09.md`).
 
 ## Included
 
@@ -19,10 +19,15 @@ Last audited against the live setup: **2026-09-03**.
 - `themes/` — `claude-mix`, `dark-hi`, `ember`, and `lagoon`.
 - `tests/` — portable HUD, terminal-sanitization, image-guard, `pi-bg`, remote-map, and project-trust checks.
 - `bin/luna` — one-shot Luna scout wrapper with private prompt-file handling.
+- `bin/web` — stdlib search/fetch tool for agents: `web search` (Brave, default), `web research` (Exa, real research only), `web get <url>` (free fetch). Keys from `BRAVE_API_KEY` / `EXA_API_KEY`, `~/.config/{brave,exa}/key`, or the macOS keychain; optional `WEB_PROXY` retry. Copy it onto `PATH` as `web`. Works for any host, not only Pi.
+- `extensions/turn-budget.ts` — runaway guard: pauses auto-chaining after 250 assistant messages / $40 / 90 min / 12 chained background turns per user prompt (cheaper-model profile configurable), steers once at 75%, `/budget`.
+- `extensions/auto-title.ts` — names the session from the first real prompt; optional LLM refinement only when `PI_AUTO_TITLE_MODEL` is set (prompt text then goes to that provider).
+- `extensions/image-cap.ts` — validates and caps image attachments before send.
 - `packages.example.json` — pinned examples of four separately installed, compatible Pi packages; nothing is installed automatically.
 - `prompts/` — `/implement`, `/implement-and-review`, and `/scout-and-plan`.
 - `skills/` — the six portable Pi skills: `delegation-routing`, `plan`, `read`, `session-handoff`, `ship`, and `wrap-up`.
 - `FABLE-MODE.md` — controller-tier read-fan-out doctrine.
+- `AUDIT-2026-10-09.md` — the 2026-10-09 refresh: what was ported, what stayed private.
 - `AUDIT-2026-09-03.md` — exact inventory, exclusions, fixes, and verification evidence for this refresh.
 
 Symlinked source skills are materialized as regular files.

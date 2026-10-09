@@ -1162,7 +1162,7 @@
   ],
   "adapter_inputs": {
     "claude-code": {
-      "CLAUDE.md": "3d089a29c77dd6e33b6ffd47b15ef22d740ef84a87d96e2d18b8d6d2e2a6d3b9",
+      "CLAUDE.md": "c7fa25945613688dcca735762c09a4d2260ee23397fad85f1f621fb3760e4921",
       "README.md": "20d8f0fdd901894aa8e061bf554b9f6e83d18c3a6473fee17b60e8b8253e6711",
       "agents/controller.md": "1f83f3aa0c527d3c8429eeb831b0c6d363fce0da6430d711635c37dde7347dc9",
       "agents/implementation.md": "6435ba87e01e0bf8657d89b3165a1769d52c007b6cd73b47ec7024ef96335d57",
@@ -1187,7 +1187,7 @@
       "skills/course-rag/SKILL.md": "338bfac7022dc6f1deb411d480f8a6058e18c9923c9d5f585de3bd638595ce49"
     },
     "codex": {
-      "AGENTS.md": "cb2713d8b8bfd53315384723ce273944be9c4a9799cc73f47cec0350e9809295",
+      "AGENTS.md": "80efda3025228a423f9ccfda0f5006ef0b6af09a691ab1945a44148af72d8556",
       "README.md": "ff8b91c87b41ae34778bdd03e3b4980648fb10fdecb2b8db05bf4ebff3ae2430",
       "config/agents/controller.toml": "0bab7759283e704ea43a9b106e3c2282d0ab031ff8a4d0d6d4d73dd703603eff",
       "config/agents/implementation.toml": "0e4bc262c865540027fe2b0131e86e954e862de3778d21230789e6cf60a6f0e8",
@@ -1223,7 +1223,7 @@
       ".opencode/plugins/portable-gates.features.mjs": "53180aa1f759ee87110b9d99465d805709ba31fa1a080391e242065a898e2965",
       ".opencode/plugins/portable-gates.mjs": "4c4531078345404a21fcc2a7bc71fd994f7cbb75aee52c774bbec5d060edd2e3",
       ".opencode/plugins/shahinkit-guard.mjs": "67e09f60e7af6e50eedc4fb3058191d9b7e96cfa6e6fd24653ef6e31b9bd2f8e",
-      "AGENTS.md": "961a19636715e603496f8738b6aa82c0e8bd68132fe02fe9ff9183846ddc0153",
+      "AGENTS.md": "14a3e7d551db02368a62b00d9c16efc7e748f1d4a791efa6854b8258b4d877a4",
       "README.md": "d75b5d94dc1571f8136ce659fede3924a266204cb4482ed489e8b1fd571b628b",
       "opencode.jsonc.example": "d61382f71e9b023b6fb1950d7bb7bbc7921c096df50d35f12024c6f72591a57f",
       "opencode.user.jsonc.example": "223e2b04194b95a444ace2e5d3be977605f420d533ce9d00945ba719b7b284d2",

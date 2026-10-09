@@ -14,7 +14,7 @@
  */
 
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import type { AssistantMessage, ToolResultMessage } from "@earendil-works/pi-ai";
@@ -63,6 +63,7 @@ function parseCodexQuota(h: Record<string, string>): Quota | null {
 const AGENT_DIR = getAgentDir();
 const WEATHER_CACHE = join(AGENT_DIR, "hud-weather.txt");
 const WEATHER_MAX_AGE_MS = 30 * 60 * 1000;
+const QUOTA_LOG = process.env.QUOTA_LOG ?? join(AGENT_DIR, "quota-history.jsonl");
 const TICK_MS = 10_000;
 
 const THINKING_COLOR: Record<string, string> = {
@@ -153,6 +154,14 @@ export default function (pi: ExtensionAPI) {
 	let startedAt = Date.now();
 	let dirty = false;
 	let quota: Quota | null = null;
+	let lastQuotaKey = "";
+	try {
+		const lines = readFileSync(QUOTA_LOG, "utf8").trim().split("\n");
+		const last = JSON.parse(lines.at(-1) ?? "{}");
+		if (last.provider && last.window && Number.isFinite(last.percent)) {
+			lastQuotaKey = `${last.provider}|${last.window}|${last.percent}|${last.resetAt ?? ""}`;
+		}
+	} catch { /* no prior quota history */ }
 
 	// Subscription usage is only knowable from provider response headers. Anthropic
 	// sends them on its normal path; Codex only sends them over the SSE transport
@@ -160,13 +169,17 @@ export default function (pi: ExtensionAPI) {
 	// Codex yields nothing and the HUD simply omits the gauge rather than guessing.
 	pi.on("after_provider_response", (event: any) => {
 		const h = event?.headers as Record<string, string> | undefined;
-		quota = h
-			? h["anthropic-ratelimit-unified-status"]
-				? parseAnthropicQuota(h)
-				: h["x-codex-plan-type"]
-					? parseCodexQuota(h)
-					: null
-			: null;
+		if (!h) return;
+		const provider = h["anthropic-ratelimit-unified-status"] ? "anthropic" : h["x-codex-plan-type"] ? "codex" : null;
+		const next = provider === "anthropic" ? parseAnthropicQuota(h) : provider === "codex" ? parseCodexQuota(h) : null;
+		if (!next) return; // Missing or malformed headers must not erase the last valid reading.
+		quota = next;
+		const key = `${provider}|${next.window}|${next.percent}|${next.resetAt ?? ""}`;
+		if (key === lastQuotaKey) return;
+		lastQuotaKey = key;
+		try {
+			appendFileSync(QUOTA_LOG, `${JSON.stringify({ ts: Date.now(), provider, window: next.window, percent: next.percent, resetAt: next.resetAt, status: event?.status ?? 0 })}\n`);
+		} catch { /* Quota logging must never break a session. */ }
 	});
 
 	/** Cheap async git-dirty probe; result is read synchronously during render. */
@@ -370,6 +383,19 @@ export default function (pi: ExtensionAPI) {
 		if (!ctx.hasUI || ctx.mode !== "tui") return;
 		install(ctx);
 		installed = true;
+	});
+
+	pi.registerCommand("quota", {
+		description: "Show the latest recorded subscription quota",
+		handler: async (_args, ctx) => {
+			try {
+				const records = readFileSync(QUOTA_LOG, "utf8").trim().split("\n").filter(Boolean).slice(-10).map((line) => JSON.parse(line));
+				const summary = records.map((r) => `${r.provider} ${r.window}: ${Number(r.percent).toFixed(0)}%`).join(" · ");
+				ctx.ui.notify(summary || "No quota readings yet.", "info");
+			} catch {
+				ctx.ui.notify("Quota history unavailable.", "warning");
+			}
+		},
 	});
 
 	pi.registerCommand("hud", {

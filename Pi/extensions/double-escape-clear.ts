@@ -29,7 +29,7 @@ class DoubleEscapeClearEditor extends CustomEditor {
 
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
-		if (ctx.mode !== "tui" || ctx.ui.getEditorComponent()) return;
+		if (ctx.mode !== "tui") return;
 		ctx.ui.setEditorComponent((tui, theme, keybindings) =>
 			new DoubleEscapeClearEditor(tui, theme, keybindings),
 		);

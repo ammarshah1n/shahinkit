@@ -49,8 +49,9 @@ chmod +x "$BIN/pi"
 if PATH="$BIN:$PATH" PI_CODING_AGENT_DIR="$AG" PI_BG_DIR="$BG2" "$ROOT/Pi/bin/pi-bg" run worker --local --no-wt 'TASK PRIVATE WORDS' >/dev/null 2>&1; then
   echo "pi-bg accepted task text in argv" >&2; exit 1
 fi
-job=$(printf '%s\n' 'TASK PRIVATE WORDS' | CAPTURE_CHILD="$BG2/child.pid" PATH="$BIN:$PATH" PI_CODING_AGENT_DIR="$AG" PI_BG_DIR="$BG2" "$ROOT/Pi/bin/pi-bg" run worker --local --no-wt)
+job=$(printf '%s\n' 'TASK PRIVATE WORDS' | CAPTURE_CHILD="$BG2/child.pid" PI_SESSION_ID=smoke-session PATH="$BIN:$PATH" PI_CODING_AGENT_DIR="$AG" PI_BG_DIR="$BG2" "$ROOT/Pi/bin/pi-bg" run worker --local --no-wt)
 pid=$(cat "$BG2/$job.pid")
+[[ $(cat "$BG2/$job.owner") == smoke-session ]]
 command=$(ps -p "$pid" -o command=)
 [[ $command != *'TASK PRIVATE WORDS'* && $command != *'SYSTEM PRIVATE WORDS'* ]]
 out=$(PI_CODING_AGENT_DIR="$AG" PI_BG_DIR="$BG2" "$ROOT/Pi/bin/pi-bg" ls)

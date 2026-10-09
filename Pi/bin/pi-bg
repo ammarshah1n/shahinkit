@@ -148,7 +148,8 @@ showdiff() {
 remove_artifacts() {
   local id=$1
   rm -f "$D/$id.jsonl" "$D/$id.err" "$D/$id.sys" "$D/$id.pid" "$D/$id.process" "$D/$id.meta" \
-    "$D/$id.task" "$D/$id.prompt" "$D/$id.host" "$D/$id.worktree" "$D/$id.collected" "$D/$id.reserve"
+    "$D/$id.task" "$D/$id.prompt" "$D/$id.host" "$D/$id.worktree" "$D/$id.collected" "$D/$id.reserve" \
+    "$D/$id.owner" "$D/$id.notified"
 }
 clean_one() {
   local id=$1 force=$2 w host guard prompt_cleanup
@@ -301,6 +302,7 @@ run)
     else token=exited; fi
   fi
   printf '%s\n' "$token" > "$D/$id.process"
+  [ -z "${PI_SESSION_ID:-}" ] || printf '%s\n' "$PI_SESSION_ID" > "$D/$id.owner"
   rm -f "$D/$id.reserve"; trap - EXIT
   echo "$id"
   ;;

@@ -210,10 +210,16 @@ function isFailedResult(result: SingleResult): boolean {
 
 function getResultOutput(result: SingleResult): string {
 	if (isFailedResult(result)) {
-		return safeText(result.errorMessage || result.stderr || getFinalOutput(result.messages) || "(no output)");
+		const reason = result.errorMessage || result.stderr;
+		const partial = getFinalOutput(result.messages);
+		if (reason && partial) return safeText(`${reason}\n\n--- partial output (${result.messages.length} msgs) ---\n${partial}`);
+		return safeText(reason || partial || "(no output)");
 	}
 	return getFinalOutput(result.messages) || "(no output)";
 }
+
+// Blocking calls are bounded; background jobs are intentionally not.
+const BLOCKING_TIMEOUT_MS = Math.max(0.001, Number(process.env.PI_SUBAGENT_TIMEOUT_MIN) || 10) * 60_000;
 
 function truncateParallelOutput(output: string): string {
 	const byteLength = Buffer.byteLength(output, "utf8");
@@ -302,6 +308,7 @@ async function runSingleAgent(
 	onUpdate: OnUpdateCallback | undefined,
 	makeDetails: (results: SingleResult[]) => SubagentDetails,
 	notify: NotifyCallback,
+	blocking = true,
 ): Promise<SingleResult> {
 	const agent = agents.find((a) => a.name === agentName);
 
@@ -378,6 +385,7 @@ async function runSingleAgent(
 		else if (remoteDispatch.reason !== "unconfigured")
 			notify(`⚠ LOCAL subagent '${safeText(agentName, 200)}' (reason: ${remoteDispatch.reason})`, "warning");
 		let wasAborted = false;
+		let timedOut = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
 			const detached = process.platform !== "win32";
@@ -390,6 +398,7 @@ async function runSingleAgent(
 			let buffer = "";
 			let closed = false;
 			let killTimer: NodeJS.Timeout | undefined;
+			let timeoutTimer: NodeJS.Timeout | undefined;
 			let abortListener: (() => void) | undefined;
 			const removeAbortListener = () => {
 				if (signal && abortListener) signal.removeEventListener("abort", abortListener);
@@ -447,6 +456,7 @@ async function runSingleAgent(
 			proc.on("close", (code) => {
 				closed = true;
 				if (killTimer) clearTimeout(killTimer);
+				if (timeoutTimer) clearTimeout(timeoutTimer);
 				removeAbortListener();
 				if (buffer.trim()) processLine(buffer);
 				resolve(code ?? 0);
@@ -455,30 +465,44 @@ async function runSingleAgent(
 			proc.on("error", () => {
 				closed = true;
 				if (killTimer) clearTimeout(killTimer);
+				if (timeoutTimer) clearTimeout(timeoutTimer);
 				removeAbortListener();
 				resolve(1);
 			});
 
+			const signalTree = (sig: NodeJS.Signals) => {
+				try { detached && proc.pid ? process.kill(-proc.pid, sig) : proc.kill(sig); } catch { /* already exited */ }
+			};
+			const killProc = () => {
+				wasAborted = true;
+				signalTree("SIGTERM");
+				killTimer = setTimeout(() => { if (!closed) signalTree("SIGKILL"); }, 5000);
+				killTimer.unref();
+			};
 			if (signal) {
-				const killProc = () => {
-					wasAborted = true;
-					const signalTree = (sig: NodeJS.Signals) => {
-						try { detached && proc.pid ? process.kill(-proc.pid, sig) : proc.kill(sig); } catch { /* already exited */ }
-					};
-					signalTree("SIGTERM");
-					killTimer = setTimeout(() => { if (!closed) signalTree("SIGKILL"); }, 5000);
-					killTimer.unref();
-				};
 				if (signal.aborted) killProc();
 				else {
 					abortListener = killProc;
 					signal.addEventListener("abort", abortListener, { once: true });
 				}
 			}
+			if (blocking) {
+				timeoutTimer = setTimeout(() => {
+					timedOut = true;
+					notify(`Subagent '${safeText(agentName, 200)}' killed after ${Math.round(BLOCKING_TIMEOUT_MS / 60_000)} min (PI_SUBAGENT_TIMEOUT_MIN)`, "warning");
+					killProc();
+				}, BLOCKING_TIMEOUT_MS);
+				timeoutTimer.unref();
+			}
 		});
 
 		currentResult.exitCode = exitCode;
-		if (wasAborted) throw new Error("Subagent was aborted");
+		if (wasAborted) {
+			currentResult.stopReason = timedOut ? "error" : "aborted";
+			currentResult.errorMessage = timedOut
+				? `Subagent timed out after ${Math.round(BLOCKING_TIMEOUT_MS / 60_000)} min (PI_SUBAGENT_TIMEOUT_MIN); use background: true for long work`
+				: "Subagent was aborted";
+		}
 		return currentResult;
 	} finally {
 		try {
@@ -701,6 +725,13 @@ export default function (pi: ExtensionAPI) {
 				}
 			}
 
+			let forcedBackground = false;
+			if (hasTasks && params.tasks!.length > 1 && !params.background) {
+				params = { ...params, background: true };
+				forcedBackground = true;
+				notify(`Multi-task call with ${params.tasks!.length} tasks forced to background`, "warning");
+			}
+
 			if (params.background) {
 				if (hasChain)
 					return {
@@ -728,7 +759,7 @@ export default function (pi: ExtensionAPI) {
 					try {
 						result = await runSingleAgent(
 							defaultCwd, agents, t.agent, t.task, t.cwd, t.model ?? params.model, undefined,
-							controller.signal, undefined, makeDetails(mode), notify,
+							controller.signal, undefined, makeDetails(mode), notify, false,
 						);
 					} catch (e) {
 						result = {
@@ -760,7 +791,7 @@ export default function (pi: ExtensionAPI) {
 					content: [
 						{
 							type: "text",
-							text: `Backgrounded ${jobs.length} subagent job(s). Keep working; each result arrives as a follow-up message.\n${lines.join("\n")}\nCheck with subagent_status.`,
+							text: `${forcedBackground ? "Multiple blocking tasks are forbidden; forced background: true. " : ""}Backgrounded ${jobs.length} subagent job(s). Keep working; each result arrives as a follow-up message.\n${lines.join("\n")}\nCheck with subagent_status.`,
 						},
 					],
 					details: makeDetails(mode)([]),

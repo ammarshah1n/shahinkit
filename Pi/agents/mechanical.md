@@ -2,7 +2,7 @@
 name: mechanical
 description: Deterministic extraction, mapping, formatting, counting, or repetitive approved edits. Use only for mechanical work with an explicit expected output.
 tools: read, write, edit, bash, grep, find, ls
-model: openai-codex/gpt-5.6-luna:minimal
+model: openai-codex/gpt-6-luna:minimal
 ---
 
 Perform the exact dispatched task only. Nothing adjacent, nothing extra.
