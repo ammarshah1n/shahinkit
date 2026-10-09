@@ -21,15 +21,15 @@
     {
       "path": "INSTALL.md",
       "category": "documentation",
-      "source_sha256": "0ba08f4cbc8469116c78fd9ff06bd62ec9dea6234715f01750e471155e580880",
-      "render_sha256": "0ba08f4cbc8469116c78fd9ff06bd62ec9dea6234715f01750e471155e580880",
+      "source_sha256": "2e6c8484dc7cc3734ea15a6b01bd6af9ad85018fc611e4613c6760c7e2b90892",
+      "render_sha256": "2e6c8484dc7cc3734ea15a6b01bd6af9ad85018fc611e4613c6760c7e2b90892",
       "ownership": "shared"
     },
     {
       "path": "README.md",
       "category": "documentation",
-      "source_sha256": "ff3a82507568c90e89aae808d2abcb170ee4a97a35e9605f0a0cab81e16ac585",
-      "render_sha256": "ff3a82507568c90e89aae808d2abcb170ee4a97a35e9605f0a0cab81e16ac585",
+      "source_sha256": "fc1316120667d8ce9f6f281a17ca708db27ec07793b294545644c146d3c1fbae",
+      "render_sha256": "fc1316120667d8ce9f6f281a17ca708db27ec07793b294545644c146d3c1fbae",
       "ownership": "shared"
     },
     {

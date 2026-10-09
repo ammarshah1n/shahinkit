@@ -25,6 +25,8 @@ ShahinKit shows exactly what it intends to add. Nothing is installed until you
 approve that preview. Public releases also verify repository, release tag, and
 file integrity before changing your host configuration.
 
+**Full replication guide** — Brave + Exa web search setup, every subagent roster, and the dispatch rules: [`SETUP-GUIDE.md`](SETUP-GUIDE.md).
+
 ## Pi setup
 
 Pi is intentionally not part of the receipt-backed host installer. Review and

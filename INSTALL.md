@@ -187,3 +187,6 @@ postinstall, cloud-memory setup, telemetry configuration, secret extraction,
 or arbitrary subprocess is part of this contract. Optional Context7, Timed,
 research, and dev-scope MCP examples stay disabled until user explicitly
 enables reviewed host configuration.
+
+**Full replication guide** — Brave + Exa web search setup, every subagent roster, and the dispatch rules: [`SETUP-GUIDE.md`](SETUP-GUIDE.md).
+
