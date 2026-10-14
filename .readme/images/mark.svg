@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">ShahinKit mark</title>
+  <desc id="desc">A pair of square brackets frames three staggered work bars, with a small acid-yellow accent.</desc>
+  <rect width="128" height="128" fill="#F3F0E7"/>
+  <g fill="none" stroke="#191B18" stroke-linecap="square" stroke-width="8">
+    <path d="M39 27H25v74h14M89 27h14v74H89"/>
+  </g>
+  <g stroke="#191B18" stroke-linecap="square" stroke-width="8">
+    <path d="M49 48h34M49 64h24M49 80h34"/>
+  </g>
+  <rect x="78" y="59" width="9" height="9" fill="#DFFF70"/>
+</svg>

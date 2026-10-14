@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 460" role="img" aria-labelledby="title desc">
+  <title id="title">ShahinKit — Cut through the shit. Build something proper.</title>
+  <desc id="desc">Editorial introduction to ShahinKit, with a routing mark, bold headline, supported-host note, and a simple one-to-three worker diagram.</desc>
+  <rect width="1440" height="460" fill="#F3F0E7"/>
+
+  <g fill="none" stroke="#191B18" stroke-linecap="square" stroke-width="4">
+    <path d="M94 43h-9v42h9M122 43h9v42h-9"/>
+    <path d="M100 55h16M100 64h11M100 73h16"/>
+  </g>
+  <rect x="111" y="60" width="5" height="5" fill="#DFFF70"/>
+  <text x="148" y="73" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" letter-spacing="-0.6">ShahinKit</text>
+  <text x="1368" y="61" text-anchor="end" fill="#69705D" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="1.4">YOUR AGENT. YOUR RULES.</text>
+  <path d="M72 108H1368" stroke="#D8D9CF" stroke-width="1.5"/>
+
+  <text x="72" y="205" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="77" font-weight="700" letter-spacing="-4">Cut through the shit.</text>
+  <text x="72" y="296" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="77" font-weight="700" letter-spacing="-4">Build something proper.</text>
+  <rect x="72" y="326" width="56" height="7" fill="#DFFF70"/>
+
+  <g fill="none" stroke="#69705D" stroke-width="2">
+    <path d="M1206 233h42M1248 233v-39h28M1248 233v39h28M1248 233h28"/>
+  </g>
+  <rect x="1192" y="219" width="28" height="28" fill="#191B18"/>
+  <g fill="#F3F0E7" stroke="#191B18" stroke-width="2">
+    <rect x="1276" y="185" width="28" height="18"/>
+    <rect x="1276" y="224" width="28" height="18"/>
+    <rect x="1276" y="263" width="28" height="18"/>
+  </g>
+  <rect x="1285" y="229" width="8" height="8" fill="#DFFF70"/>
+  <text x="1248" y="307" text-anchor="middle" fill="#69705D" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="1.3">DELEGATE. VERIFY.</text>
+
+  <path d="M72 374H1368" stroke="#D8D9CF" stroke-width="1.5"/>
+  <text x="72" y="414" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Claude Code</text>
+  <circle cx="180" cy="409" r="2.5" fill="#69705D"/>
+  <text x="199" y="414" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Codex</text>
+  <circle cx="265" cy="409" r="2.5" fill="#69705D"/>
+  <text x="284" y="414" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">OpenCode</text>
+  <circle cx="374" cy="409" r="2.5" fill="#69705D"/>
+  <text x="393" y="414" fill="#191B18" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Pi</text>
+  <text x="418" y="414" fill="#69705D" font-family="Arial, Helvetica, sans-serif" font-size="12">standalone snapshot</text>
+  <text x="1368" y="414" text-anchor="end" fill="#69705D" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="0.4">BUILT FROM DOING THE WORK</text>
+</svg>
